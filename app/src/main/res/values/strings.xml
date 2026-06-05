@@ -3,7 +3,7 @@
     <string name="about_description">轻量的第三方B站客户端</string>
     <string name="about_say">软件名来自原神中的“虚空终端”\n最低兼容安卓4.0\n愿你在这一方小小的屏幕中，找到属于自己的小小的快乐\n提示：长按设置中的“关于”按钮有彩蛋哦！</string>
     <string name="about_group_tip">哔哩终端开发团队不会对个别用户出现的个别问题进行针对性修复，不会对特殊情况下才触发的问题进行及时修复，不会保证实现不必要或难以实现的功能。\n\n另外，如果你有能力修复问题，欢迎fork终端仓库提交pr</string>
-    <string name="about_group">官网域名：biliterminal.cn\n如果你位于福建、河南、黑龙江等地区，您可能无法正常访问官网。\n\n交流群：482091687\n备用群：656364457\n测试组：745414928</string>
+    <string name="about_group">此版本为非官方构建，出问题请不要打扰官方！本分支开源地址 https://github.com/PianoEthan/BiliTerminal</string>
     <string name="about_wearbili">注意：本软件仅使用了WearBili的旧版页面布局，与WearBili不存在其他关系！\n另：如果你使用的是手表且性能足够，欢迎前往使用Re:WearBili以获得更好的体验！</string>
     <string name="about_opensource">本程序完全开源，代码部分遵循GNU GPL-V3.0协议，布局（UI）部分遵循CC BY-NC-SA协议。\n你可以前往 https://gitee.com/RobinNotBad/BiliClient 获取源代码。</string>
     <string name="about_source">本程序使用或借鉴了下列项目的部分代码及其合法收集的API：\nWearBili：https://github.com/SpaceXC/WearBili\n腕上哔哩：https://github.com/luern0313/WristBilibili\nBAC Document：https://socialsisteryi.github.io/bilibili-API-collect\n小电视播放器：https://github.com/xinxiangshiicheng/xinxiangshicheng_wearbili_player\n程序的界面借鉴于WearBili的UI部分，设计者为@JesseGary_（已得到授权）\n\n本程序使用的第三方库：\nOkHttp：com.squareup.okhttp3:okhttp\nGlide：com.github.bumptech.glide:glide\nPhotoView：com.github.chrisbanes:PhotoView\nJsoup：org.jsoup:jsoup\nEventBus：org.greenrobot:eventbus\nIJKPlayer：https://github.com/bilibili/ijkplayer\nDanmakuFlameMaster：com.github.ctiao:DanmakuFlameMaster\nGeetest：com.geetest.sensebot:sensebot\nAOSP：https://source.android.google.cn/\n\n软件图标提供者：银狐enlab（原图来自B站）\n其他部分图标来自网络，有修改，版权归原作者所有，如有侵权，请联系开发组删除。</string>

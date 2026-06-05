@@ -135,26 +135,7 @@ public class SettingMainActivity extends InstanceActivity {
                 return true;
             });
 
-            //检查更新
-            MaterialCardView checkUpdate = findViewById(R.id.checkupdate);
-            checkUpdate.setOnClickListener(view -> {
-                MsgUtil.showMsg("正在获取...");
-                CenterThreadPool.run(() -> {
-                    try {
-                        AppInfoApi.checkUpdate(this, true);
-                    } catch (Exception e) {
-                        runOnUiThread(() -> MsgUtil.showMsg("连接到哔哩终端接口时发生错误"));
-                    }
-                });
-            });
 
-            //公告列表
-            MaterialCardView announcement = findViewById(R.id.announcement);
-            announcement.setOnClickListener(view -> {
-                Intent intent = new Intent();
-                intent.setClass(this, AnnouncementsActivity.class);
-                startActivity(intent);
-            });
 
             //清除教程进度
             MaterialCardView refreshTutorial = findViewById(R.id.refresh_tutorial);

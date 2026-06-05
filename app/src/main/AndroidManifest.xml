@@ -50,16 +50,7 @@
             android:exported="true"
             android:label="测试页面"
             android:screenOrientation="locked" />
-        <activity
-            android:name=".activity.update.UpdateInstallActivity"
-            android:exported="false"
-            android:label="下载更新"
-            android:screenOrientation="locked" />
-        <activity
-            android:name=".activity.update.UpdateInfoActivity"
-            android:exported="false"
-            android:label="更新详情"
-            android:screenOrientation="locked" />
+
         <activity
             android:name=".activity.video.local.DownloadListActivity"
             android:exported="true"
@@ -105,11 +96,7 @@
             android:exported="false"
             android:label="追番列表"
             android:screenOrientation="locked" />
-        <activity
-            android:name=".activity.settings.SponsorActivity"
-            android:exported="true"
-            android:label="捐赠列表"
-            android:screenOrientation="locked" />
+
         <activity
             android:name=".activity.CatchActivity"
             android:exported="false"
@@ -138,11 +125,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activity.settings.AnnouncementsActivity"
-            android:exported="false"
-            android:label="公告列表"
-            android:screenOrientation="locked" />
+
         <activity
             android:name=".activity.ListChooseActivity"
             android:exported="false"

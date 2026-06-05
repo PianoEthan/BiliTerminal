@@ -141,10 +141,7 @@ public class AboutActivity extends BaseActivity {
                 MsgUtil.showText("开源图标的信息", str.toString());
             });
 
-            findViewById(R.id.sponsor_list).setOnClickListener(view -> {
-                Intent intent = new Intent(this, SponsorActivity.class);
-                startActivity(intent);
-            });
+
 
             if (!ToolsUtil.isDebugBuild()) findViewById(R.id.debug_tip).setVisibility(View.GONE);
             findViewById(R.id.version_code_card).setOnClickListener(view -> {

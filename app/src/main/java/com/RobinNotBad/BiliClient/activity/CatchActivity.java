@@ -47,8 +47,6 @@ public class CatchActivity extends BaseActivity {
 
         if (stack != null) {
 
-            boolean allow_upload = false;
-
             if (stack.contains("java.lang.NumberFormatException"))
                 reason_str = new SpannableString("可能的崩溃原因：\n数值转换出错");
             else if (stack.contains("java.lang.UnsatisfiedLinkError"))
@@ -58,26 +56,9 @@ public class CatchActivity extends BaseActivity {
             else if (stack.contains("java.lang.OutOfMemoryError"))
                 reason_str = new SpannableString("可能的崩溃原因：\n内存爆了，这在小内存设备上很正常");
             else
-                allow_upload = true;
+                reason_str = new SpannableString("未知的崩溃原因");
 
-            if (allow_upload) btn_upload.setOnClickListener(view -> {
-                btn_upload.setEnabled(false);
-                if (SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, -1) == -1)
-                    MsgUtil.toast("我们不对未登录时遇到的问题负责\n——除非它真的经常出现且非常影响使用");
-                else {
-                    CenterThreadPool.run(() -> {
-                        ApiResult res = AppInfoApi.uploadStack(stack, this);
-                        runOnUiThread(() -> {
-                            if (res.code >= 0)
-                                btn_upload.setText("请带着你的报错ID：" + res.code + "\n和你崩溃前进行的操作\n去找开发者\n（提醒：开发者不保证会修好也不保证随时回复你）");
-                            else btn_upload.setText(res.message);
-
-                            if (res.code == -1) btn_upload.setEnabled(true);
-                        });
-                    });
-                }
-            });
-            else btn_upload.setText("此类型报错不可上传\n非特殊情况请勿打扰开发者谢谢喵");
+            btn_upload.setVisibility(android.view.View.GONE);
 
         } else finish();
 
