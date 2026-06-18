@@ -38,6 +38,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.BufferedSink;
+import okio.ByteString;
 
 /**
  * 被 luern0313 创建于 2019/10/13.
@@ -185,6 +187,70 @@ public class NetWorkUtil {
 
     public static Response post(String url, String data) throws IOException {
         return post(url, data, webHeaders);
+    }
+
+    /**
+     * 上传文件（multipart/form-data）
+     *
+     * @param url      上传地址
+     * @param fileName 文件名
+     * @param mimeType MIME类型
+     * @param fileData 文件二进制数据
+     * @param params   额外表单参数
+     * @return Response
+     */
+    public static Response uploadFile(String url, String fileName, String mimeType, byte[] fileData, Map<String, String> params) throws IOException {
+        Logu.d("upload-url", url);
+        OkHttpClient client = getOkHttpInstance();
+
+        String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+        MediaType mediaType = MediaType.parse(mimeType);
+
+        RequestBody requestBody = new RequestBody() {
+            @Override
+            public MediaType contentType() {
+                return MediaType.parse("multipart/form-data; boundary=" + boundary);
+            }
+
+            @Override
+            public long contentLength() throws IOException {
+                return -1;
+            }
+
+            @Override
+            public void writeTo(BufferedSink sink) throws IOException {
+                // 文件部分
+                sink.writeUtf8("--").writeUtf8(boundary).writeUtf8("\r\n");
+                sink.writeUtf8("Content-Disposition: form-data; name=\"file_up\"; filename=\"").writeUtf8(fileName).writeUtf8("\"\r\n");
+                sink.writeUtf8("Content-Type: ").writeUtf8(mimeType).writeUtf8("\r\n\r\n");
+                sink.write(ByteString.of(fileData));
+                sink.writeUtf8("\r\n");
+
+                // 其他参数
+                if (params != null) {
+                    for (Map.Entry<String, String> entry : params.entrySet()) {
+                        sink.writeUtf8("--").writeUtf8(boundary).writeUtf8("\r\n");
+                        sink.writeUtf8("Content-Disposition: form-data; name=\"").writeUtf8(entry.getKey()).writeUtf8("\"\r\n\r\n");
+                        sink.writeUtf8(entry.getValue()).writeUtf8("\r\n");
+                    }
+                }
+
+                // 结束标记
+                sink.writeUtf8("--").writeUtf8(boundary).writeUtf8("--\r\n");
+                sink.flush();
+            }
+        };
+
+        Request.Builder requestBuilder = new Request.Builder().url(url).post(requestBody);
+        for (int i = 0; i < webHeaders.size(); i += 2) {
+            String key = webHeaders.get(i);
+            String val = webHeaders.get(i + 1);
+            if (!key.equalsIgnoreCase("Content-Type")) {
+                requestBuilder.addHeader(key, val);
+            }
+        }
+        Request request = requestBuilder.build();
+        return executeWithDoctypeRetry(client, request);
     }
 
     private static Response executeWithDoctypeRetry(OkHttpClient client, Request request) throws IOException {

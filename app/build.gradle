@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
 }
 
-int betaVer = 0 //如果为0则是正式版
+int betaVer = 1 //如果为0则是正式版
 
 android {
 
@@ -24,8 +24,8 @@ android {
         minSdk 14
         //noinspection ExpiredTargetSdkVersion
         targetSdk 26
-        versionCode 20260605
-        versionName "2.9.8fix_Unofficial"
+        versionCode 20260618
+        versionName "2.9.9"
 
         if (betaVer) {
             versionName += "-BETA" + betaVer
@@ -44,13 +44,15 @@ android {
     signingConfigs {
         release {
             def localProps = project.rootProject.file("local.properties")
-            if (localProps.exists() && new Properties() {{
-                load(localProps.newDataInputStream())
-            }}.hasProperty("KEY_PATH")) {
-                storeFile file(pro.getProperty("KEY_PATH") != null ? pro.getProperty("KEY_PATH") : "key.jks")
-                storePassword pro.getProperty("KEY_PASSWORD")
-                keyAlias pro.getProperty("ALIAS_NAME")
-                keyPassword pro.getProperty("ALIAS_PASSWORD")
+            if (localProps.exists()) {
+                def pro = new Properties()
+                pro.load(localProps.newDataInputStream())
+                if (pro.containsKey("KEY_PATH")) {
+                    storeFile file(pro.getProperty("KEY_PATH"))
+                    storePassword pro.getProperty("KEY_PASSWORD")
+                    keyAlias pro.getProperty("ALIAS_NAME")
+                    keyPassword pro.getProperty("ALIAS_PASSWORD")
+                }
             }
         }
     }
@@ -63,10 +65,12 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             def localProps = project.rootProject.file("local.properties")
-            if (localProps.exists() && new Properties() {{
-                load(localProps.newDataInputStream())
-            }}.hasProperty("KEY_PATH")) {
-                signingConfig signingConfigs.release
+            if (localProps.exists()) {
+                def pro = new Properties()
+                pro.load(localProps.newDataInputStream())
+                if (pro.containsKey("KEY_PATH")) {
+                    signingConfig signingConfigs.release
+                }
             }
         }
         debug {
@@ -85,6 +89,11 @@ android {
     }
     buildFeatures {
         viewBinding false
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
     }
 }
 

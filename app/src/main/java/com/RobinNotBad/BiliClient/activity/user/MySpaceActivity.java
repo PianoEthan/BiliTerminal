@@ -29,7 +29,7 @@ public class MySpaceActivity extends InstanceActivity {
 
     private ImageView userAvatar;
     private TextView userName, userFans, userExp;
-    private MaterialCardView myInfo, follow, watchLater, favorite, bangumi, history, creative, vip, loginRecord, coinLog, expLog, editSign, logout;
+    private MaterialCardView myInfo, follow, watchLater, favorite, bangumi, history, creative, vip, loginRecord, coinLog, expLog, publishOpus, editSign, logout;
 
     private boolean confirmLogout = false;
     private UserInfo currentUserInfo;
@@ -58,6 +58,7 @@ public class MySpaceActivity extends InstanceActivity {
             loginRecord = findViewById(R.id.login_record);
             coinLog = findViewById(R.id.coin_log);
             expLog = findViewById(R.id.exp_log);
+            publishOpus = findViewById(R.id.publish_opus);
             editSign = findViewById(R.id.edit_sign);
             logout = findViewById(R.id.logout);
 
@@ -152,6 +153,12 @@ public class MySpaceActivity extends InstanceActivity {
                             Intent intent = new Intent();
                             intent.setClass(MySpaceActivity.this, EditSignActivity.class);
                             intent.putExtra("currentSign", userInfo.sign);
+                            startActivity(intent);
+                        });
+
+                        publishOpus.setOnClickListener(view -> {
+                            Intent intent = new Intent();
+                            intent.setClass(MySpaceActivity.this, PublishOpusActivity.class);
                             startActivity(intent);
                         });
 

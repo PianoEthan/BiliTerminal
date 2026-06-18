@@ -38,12 +38,198 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import okhttp3.HttpUrl;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 //新的动态api，旧的那个实在太蛋疼而且说不定随时会被弃用（
 
 public class DynamicApi {
+
+    /**
+     * 图片上传结果
+     */
+    public static class ImageUploadResult {
+        public String imageUrl;
+        public int width;
+        public int height;
+        public double size;
+
+        public ImageUploadResult(String imageUrl, int width, int height, double size) {
+            this.imageUrl = imageUrl;
+            this.width = width;
+            this.height = height;
+            this.size = size;
+        }
+    }
+
+    /**
+     * 上传图片到B站（用于动态/图文投稿）
+     *
+     * @param imageBytes 图片二进制数据
+     * @param fileName   文件名（如 image.jpg）
+     * @param mimeType   MIME类型（如 image/jpeg）
+     * @param category   图片分类：daily(默认)/draw/cos
+     * @return 上传结果，包含图片URL、宽高、大小，失败返回null
+     */
+    public static ImageUploadResult uploadImage(byte[] imageBytes, String fileName, String mimeType, String category) throws IOException, JSONException {
+        String url = "https://api.bilibili.com/x/dynamic/feed/draw/upload_bfs";
+        String csrf = SharedPreferencesUtil.getString("csrf", "");
+
+        Map<String, String> params = new HashMap<>();
+        params.put("category", category != null ? category : "daily");
+        params.put("biz", "new_dyn");
+        params.put("csrf", csrf);
+
+        Response resp = NetWorkUtil.uploadFile(url, fileName, mimeType, imageBytes, params);
+        ResponseBody body = resp.body();
+        if (body == null) return null;
+
+        JSONObject result = new JSONObject(body.string());
+        if (result.getInt("code") == 0 && result.has("data")) {
+            JSONObject data = result.getJSONObject("data");
+            return new ImageUploadResult(
+                    data.getString("image_url"),
+                    data.optInt("image_width", 0),
+                    data.optInt("image_height", 0),
+                    data.optDouble("img_size", 0)
+            );
+        }
+        return null;
+    }
+
+    /**
+     * 发布图文（Opus）
+     *
+     * @param title       标题（可选）
+     * @param content     文字内容
+     * @param images      图片信息列表（通过uploadImage获取）
+     * @return 发送成功返回的动态id，失败返回-1
+     */
+    public static long publishOpus(String title, String content, List<ImageUploadResult> images) throws IOException, JSONException {
+        String csrf = SharedPreferencesUtil.getString("csrf", "");
+        String mid;
+        try {
+            mid = SharedPreferencesUtil.getString("mid", "0");
+        } catch (ClassCastException e) {
+            // mid 可能存为 Long 类型
+            try {
+                mid = String.valueOf(SharedPreferencesUtil.getLong("mid", 0L));
+            } catch (Exception e2) {
+                mid = String.valueOf(SharedPreferencesUtil.getInt("mid", 0));
+            }
+        }
+
+        // 构建 contents 数组
+        JSONArray contents = new JSONArray();
+
+        // 标题（如果有）
+        if (title != null && !title.isEmpty()) {
+            JSONObject titleNode = new JSONObject();
+            titleNode.put("raw_text", title);
+            titleNode.put("type", 1); // 普通文本
+            titleNode.put("biz_id", "");
+            contents.put(titleNode);
+
+            // 换行
+            JSONObject newline = new JSONObject();
+            newline.put("raw_text", "\n");
+            newline.put("type", 1);
+            newline.put("biz_id", "");
+            contents.put(newline);
+        }
+
+        // 文字内容
+        if (content != null && !content.isEmpty()) {
+            JSONObject textNode = new JSONObject();
+            textNode.put("raw_text", content);
+            textNode.put("type", 1);
+            textNode.put("biz_id", "");
+            contents.put(textNode);
+        }
+
+        // 构建 pics 数组 - 使用上传返回的真实宽高信息
+        JSONArray pics = new JSONArray();
+        if (images != null) {
+            for (ImageUploadResult img : images) {
+                JSONObject pic = new JSONObject();
+                pic.put("img_src", img.imageUrl);
+                pic.put("img_width", img.width > 0 ? img.width : 800);
+                pic.put("img_height", img.height > 0 ? img.height : 600);
+                pic.put("img_size", img.size > 0 ? img.size : 0);
+                pics.put(pic);
+            }
+        }
+
+        // 生成 upload_id: {mid}_{timestamp}_{random}
+        String uploadId = mid + "_" + (System.currentTimeMillis() / 1000) + "_" + (int)(Math.random() * 10000);
+
+        // 构建请求体 - 使用 /x/dynamic/feed/create/dyn 端点
+        JSONObject reqBody = new JSONObject();
+        JSONObject dynReq = new JSONObject();
+
+        // scene: 1=纯文本 2=图文
+        dynReq.put("scene", (pics.length() > 0) ? 2 : 1);
+
+        // upload_id
+        dynReq.put("upload_id", uploadId);
+
+        // content - contents是数组
+        JSONObject contentObj = new JSONObject();
+        contentObj.put("contents", contents);
+        dynReq.put("content", contentObj);
+
+        // pics（如果有图片）
+        if (pics.length() > 0) {
+            dynReq.put("pics", pics);
+        }
+
+        // option
+        JSONObject option = new JSONObject();
+        option.put("close_comment", 0); // 0=开启评论 1=关闭评论
+        dynReq.put("option", option);
+
+        reqBody.put("dyn_req", dynReq);
+
+        // 添加 dm_img 风控参数和 WBI 签名
+        Map<String, String> dmParams = DmImgParamUtil.getDmImgParams();
+        String baseUrl = "https://api.bilibili.com/x/dynamic/feed/create/dyn";
+
+        // 使用 HttpUrl.Builder 正确构建 URL
+        HttpUrl.Builder urlBuilder = Objects.requireNonNull(HttpUrl.parse(baseUrl)).newBuilder()
+                .addQueryParameter("csrf", csrf)
+                .addQueryParameter("gaia_source", "main_web")
+                .addQueryParameter("dm_img_str", dmParams.get("dm_img_str"))
+                .addQueryParameter("dm_cover_img_str", dmParams.get("dm_cover_img_str"))
+                .addQueryParameter("dm_img_list", dmParams.get("dm_img_list"))
+                .addQueryParameter("dm_img_inter", dmParams.get("dm_img_inter"));
+
+        // 添加 WBI 签名参数
+        String wbiUrl = ConfInfoApi.signWBI(urlBuilder.build().toString());
+
+        Logu.v("publishOpus url=" + wbiUrl);
+        Logu.v("publishOpus reqBody=" + reqBody);
+        Response resp = NetWorkUtil.postJson(wbiUrl, reqBody.toString());
+        try {
+            ResponseBody body = resp.body();
+            if (body == null) {
+                Logu.e("publishOpus: response body is null");
+                return -1;
+            }
+            String respStr = body.string();
+            Logu.v("publishOpus response=" + respStr);
+            JSONObject result = new JSONObject(respStr);
+            if (result.getInt("code") == 0 && result.has("data")) {
+                return result.getJSONObject("data").getLong("dyn_id");
+            } else {
+                Logu.e("publishOpus error: code=" + result.optInt("code") + ", message=" + result.optString("message", "unknown"));
+            }
+        } catch (JSONException e) {
+            MsgUtil.err("发布图文", e);
+            return -1;
+        }
+        return -1;
+    }
 
     /**
      * 发送纯文本动态

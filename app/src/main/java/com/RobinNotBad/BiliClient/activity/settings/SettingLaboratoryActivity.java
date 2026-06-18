@@ -30,7 +30,9 @@ public class SettingLaboratoryActivity extends RefreshListActivity {
                 add(new SettingSection("switch", "新版弹幕获取方式", "new_danmaku_api",
                         getString(R.string.desc_new_danmaku_api), "true"));
                 add(new SettingSection("switch", "私信未读标记", SharedPreferencesUtil.PRIVATE_MSG_UNREAD_BADGE_ENABLE,
-                        getString(R.string.desc_private_msg_unread_badge_enable), "false"));
+                        getString(R.string.desc_private_msg_unread_badge_enable), "true"));
+                add(new SettingSection("switch", "图文投稿图片上传", SharedPreferencesUtil.LAB_OPUS_IMAGE_UPLOAD,
+                        "在发布动态时允许选择本地图片作为配图，关闭则仅发布纯文本动态", "false"));
 
                 add(new SettingSection("title", "下载", "", "", ""));
                 add(new SettingSection("switch", "使用旧版下载器", "dev_download_old",
@@ -57,6 +59,8 @@ public class SettingLaboratoryActivity extends RefreshListActivity {
                         getString(R.string.setting_lab_media_session), "false"));
                 add(new SettingSection("switch", "互动视频调试", "player_interaction_debug",
                         "在互动视频播放时，在左侧倍速按钮上方显示调试按钮，可以查看和修改互动视频的变量", "false"));
+                add(new SettingSection("switch", "互动视频", SharedPreferencesUtil.PLAYER_INTERACTION_ENABLE,
+                        "启用互动视频功能，包括选项交互、进度回溯等", "true"));
 
                 add(new SettingSection("title", "网络请求", "", "", ""));
                 add(new SettingSection("input_float", "接口重试间隔（秒）", SharedPreferencesUtil.API_RETRY_INTERVAL_SECONDS,

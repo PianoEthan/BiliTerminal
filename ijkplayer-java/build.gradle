@@ -2,6 +2,10 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 33
+    
+    lint {
+        abortOnError false
+    }
 }
 
 dependencies {

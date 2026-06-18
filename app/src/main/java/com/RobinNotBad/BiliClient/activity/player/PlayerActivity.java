@@ -215,6 +215,13 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
     private InteractionVideoData.InteractionQuestion currentQuestion = null;
     private boolean questionShown = false;
     private LinearLayout interactionChoiceLayout;
+    private Handler interactionTimeoutHandler;
+    private Runnable interactionTimeoutRunnable;
+    private List<InteractionVideoData.InteractionStoryProgress> storyProgressList;
+    private int currentStoryCursor = 0;
+    private boolean isLeafNode = false;
+    private boolean noBacktracking = false;
+    private InteractionVideoData.InteractionSkin currentSkin = null;
 
     @Override
     public void onBackPressed() {
@@ -402,7 +409,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 loadViewPoints();
             }
 
-            if (!destroyed && isOnlineVideo && aid > 0 && cid > 0) {
+            if (!destroyed && isOnlineVideo && aid > 0 && cid > 0 && SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PLAYER_INTERACTION_ENABLE, true)) {
                 loadInteractionVideo();
             }
 
@@ -1774,6 +1781,11 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
             mediaSession = null;
         }
 
+        cancelInteractionTimeout();
+        interactionData = null;
+        storyProgressList = null;
+        currentSkin = null;
+
         setRequestedOrientation(SharedPreferencesUtil.getBoolean("ui_landscape", false)
                 ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -2526,7 +2538,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                             loadViewPoints();
                         }
 
-                        if (!destroyed && isOnlineVideo && aid > 0 && cid > 0) {
+                        if (!destroyed && isOnlineVideo && aid > 0 && cid > 0 && SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PLAYER_INTERACTION_ENABLE, true)) {
                             loadInteractionVideo();
                         }
                     }), 60);
@@ -2717,6 +2729,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                             interactionChoiceLayout.setVisibility(View.GONE);
                             interactionChoiceLayout.removeAllViews();
                         }
+                        cancelInteractionTimeout();
                     });
                     
                     long edgeId = 0;
@@ -2730,12 +2743,28 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                     interactionData = InteractionVideoApi.getEdgeInfo(aid, null, interactionGraphVersion, edgeId);
                     if (interactionData != null) {
                         currentEdgeId = interactionData.edgeId;
-                        Logu.d("互动视频", "成功加载互动视频数据，edge_id: " + currentEdgeId);
-                        runOnUiThread(() -> updateDebugButtonVisibility());
+                        isLeafNode = interactionData.isLeaf == 1;
+                        noBacktracking = interactionData.noBacktracking == 1;
+                        currentSkin = interactionData.edges != null ? interactionData.edges.skin : null;
+                        
+                        if (interactionData.storyList != null && !interactionData.storyList.isEmpty()) {
+                            updateStoryProgress(interactionData.storyList);
+                        }
+                        
+                        preloadInteractionVideos();
+                        
+                        Logu.d("互动视频", "成功加载互动视频数据，edge_id: " + currentEdgeId + ", is_leaf: " + isLeafNode);
+                        runOnUiThread(() -> {
+                            updateDebugButtonVisibility();
+                            if (isLeafNode) {
+                                handleLeafNode();
+                            }
+                        });
                     }
                 } else {
                     interactionData = null;
                     currentEdgeId = 0;
+                    isLeafNode = false;
                     runOnUiThread(() -> {
                         questionShown = false;
                         currentQuestion = null;
@@ -2747,6 +2776,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 e.printStackTrace();
                 interactionData = null;
                 currentEdgeId = 0;
+                isLeafNode = false;
                 runOnUiThread(() -> {
                     questionShown = false;
                     currentQuestion = null;
@@ -2754,6 +2784,109 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 });
             }
         });
+    }
+
+    private void updateStoryProgress(List<InteractionVideoData.InteractionStoryNode> storyList) {
+        storyProgressList = new ArrayList<>();
+        int maxCursor = 0;
+        InteractionVideoData.InteractionStoryNode currentNode = null;
+        
+        for (InteractionVideoData.InteractionStoryNode node : storyList) {
+            InteractionVideoData.InteractionStoryProgress progress = new InteractionVideoData.InteractionStoryProgress();
+            progress.nodeId = node.nodeId;
+            progress.edgeId = node.edgeId;
+            progress.title = node.title;
+            progress.cid = node.cid;
+            progress.startPos = node.startPos;
+            progress.cover = node.cover;
+            progress.isCurrent = node.isCurrent == 1;
+            progress.cursor = (int) node.cursor;
+            storyProgressList.add(progress);
+            
+            if (progress.cursor > maxCursor) {
+                maxCursor = progress.cursor;
+            }
+            if (progress.isCurrent) {
+                currentNode = node;
+            }
+        }
+        
+        currentStoryCursor = maxCursor;
+        
+        if (currentNode != null && currentNode.startPos > 0) {
+            progress_history = currentNode.startPos / 1000;
+            Logu.d("互动视频", "恢复进度位置: " + progress_history + "秒");
+        }
+    }
+
+    private void preloadInteractionVideos() {
+        if (interactionData == null || interactionData.preload == null || 
+            interactionData.preload.video == null || interactionData.preload.video.isEmpty()) {
+            return;
+        }
+        
+        Logu.d("互动视频", "开始预加载 " + interactionData.preload.video.size() + " 个视频分P");
+        
+        for (InteractionVideoData.InteractionPreloadVideo preloadVideo : interactionData.preload.video) {
+            if (preloadVideo.cid != cid && preloadVideo.cid > 0) {
+                CenterThreadPool.run(() -> {
+                    try {
+                        PlayerData preloadData = new PlayerData();
+                        preloadData.aid = aid;
+                        preloadData.cid = preloadVideo.cid;
+                        preloadData.qn = getTargetQuality();
+                        PlayerApi.getVideo(preloadData, false);
+                        Logu.d("互动视频", "预加载完成: cid=" + preloadVideo.cid);
+                    } catch (Exception e) {
+                        Logu.e("互动视频", "预加载失败: cid=" + preloadVideo.cid + ", " + e.getMessage());
+                    }
+                });
+            }
+        }
+    }
+
+    private void handleLeafNode() {
+        if (!isLeafNode) return;
+        
+        Logu.d("互动视频", "到达结束模块");
+        runOnUiThread(() -> {
+            if (!SharedPreferencesUtil.getBoolean("player_interaction_auto_exit", true)) {
+                MsgUtil.showMsg("互动视频已结束");
+                return;
+            }
+            
+            if (storyProgressList != null && !storyProgressList.isEmpty() && !noBacktracking) {
+                showBacktrackDialog();
+            }
+        });
+    }
+
+    private void showBacktrackDialog() {
+        if (storyProgressList == null || storyProgressList.isEmpty()) return;
+        
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("选择回溯节点");
+        
+        String[] items = new String[storyProgressList.size()];
+        for (int i = 0; i < storyProgressList.size(); i++) {
+            InteractionVideoData.InteractionStoryProgress progress = storyProgressList.get(i);
+            items[i] = progress.title + " (进度" + progress.cursor + ")";
+        }
+        
+        builder.setItems(items, (dialog, which) -> {
+            InteractionVideoData.InteractionStoryProgress selected = storyProgressList.get(which);
+            backtrackToNode(selected);
+        });
+        
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    private void backtrackToNode(InteractionVideoData.InteractionStoryProgress target) {
+        Logu.d("互动视频", "回溯到节点: " + target.title + ", edge_id: " + target.edgeId);
+        
+        initialEdgeId = target.edgeId;
+        loadInteractionVideo();
     }
 
     private void updateDebugButtonVisibility() {
@@ -2809,29 +2942,168 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 btn_control.setImageResource(R.drawable.btn_player_play);
             }
 
-            if (interactionChoiceLayout == null) {
-                createInteractionChoiceLayout();
+            cancelInteractionTimeout();
+
+            if (question.type == 2) {
+                showCoordinateModeQuestion(question);
+            } else {
+                showBottomModeQuestion(question);
             }
 
-            interactionChoiceLayout.removeAllViews();
-            
-            for (InteractionVideoData.InteractionChoice choice : question.choices) {
-                if (choice.isHidden == 1) continue;
-                
-                if (choice.condition != null && !choice.condition.isEmpty()) {
-                    if (!evaluateCondition(choice.condition)) {
-                        continue;
-                    }
-                }
-
-                TextView choiceView = createChoiceView(choice);
-                interactionChoiceLayout.addView(choiceView);
-            }
-
-            if (interactionChoiceLayout.getChildCount() > 0) {
-                interactionChoiceLayout.setVisibility(View.VISIBLE);
+            if (question.duration > 0) {
+                startInteractionTimeout(question.duration);
             }
         });
+    }
+
+    private void showCoordinateModeQuestion(InteractionVideoData.InteractionQuestion question) {
+        if (interactionChoiceLayout == null) {
+            createInteractionChoiceLayout();
+        }
+
+        interactionChoiceLayout.removeAllViews();
+        interactionChoiceLayout.setOrientation(LinearLayout.VERTICAL);
+        interactionChoiceLayout.setGravity(android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
+        
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) interactionChoiceLayout.getLayoutParams();
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params.setMargins(0, 0, 0, 100);
+        interactionChoiceLayout.setLayoutParams(params);
+        
+        for (InteractionVideoData.InteractionChoice choice : question.choices) {
+            if (choice.isHidden == 1) continue;
+            
+            if (choice.condition != null && !choice.condition.isEmpty()) {
+                if (!evaluateCondition(choice.condition)) {
+                    continue;
+                }
+            }
+
+            TextView choiceView = createChoiceView(choice);
+            
+            if (currentSkin != null && currentSkin.choiceImage != null && !currentSkin.choiceImage.isEmpty()) {
+                try {
+                    android.graphics.drawable.Drawable drawable = android.graphics.drawable.Drawable.createFromStream(
+                        new java.net.URL(currentSkin.choiceImage).openStream(), "choice_image");
+                    if (drawable != null) {
+                        choiceView.setBackground(drawable);
+                    }
+                } catch (Exception e) {
+                    Logu.e("互动视频", "加载选项图片失败: " + e.getMessage());
+                }
+            }
+            
+            applySkinToChoiceView(choiceView);
+            interactionChoiceLayout.addView(choiceView);
+        }
+
+        if (interactionChoiceLayout.getChildCount() > 0) {
+            interactionChoiceLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void showBottomModeQuestion(InteractionVideoData.InteractionQuestion question) {
+        if (interactionChoiceLayout == null) {
+            createInteractionChoiceLayout();
+        }
+
+        interactionChoiceLayout.removeAllViews();
+        interactionChoiceLayout.setOrientation(LinearLayout.VERTICAL);
+        interactionChoiceLayout.setGravity(android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
+        
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) interactionChoiceLayout.getLayoutParams();
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params.setMargins(0, 0, 0, 100);
+        interactionChoiceLayout.setLayoutParams(params);
+        
+        InteractionVideoData.InteractionChoice defaultChoice = null;
+        
+        for (InteractionVideoData.InteractionChoice choice : question.choices) {
+            if (choice.isHidden == 1) continue;
+            
+            if (choice.condition != null && !choice.condition.isEmpty()) {
+                if (!evaluateCondition(choice.condition)) {
+                    continue;
+                }
+            }
+
+            if (choice.isDefault == 1) {
+                defaultChoice = choice;
+            }
+
+            TextView choiceView = createChoiceView(choice);
+            applySkinToChoiceView(choiceView);
+            interactionChoiceLayout.addView(choiceView);
+        }
+
+        if (interactionChoiceLayout.getChildCount() > 0) {
+            interactionChoiceLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void applySkinToChoiceView(TextView choiceView) {
+        if (currentSkin == null) return;
+        
+        if (currentSkin.titleTextColor != null && !currentSkin.titleTextColor.isEmpty()) {
+            try {
+                choiceView.setTextColor(android.graphics.Color.parseColor("#" + currentSkin.titleTextColor));
+            } catch (Exception e) {
+                Logu.e("互动视频", "解析文字颜色失败: " + currentSkin.titleTextColor);
+            }
+        }
+        
+        if (currentSkin.titleShadowColor != null && !currentSkin.titleShadowColor.isEmpty()) {
+            try {
+                int shadowColor = android.graphics.Color.parseColor("#" + currentSkin.titleShadowColor);
+                choiceView.setShadowLayer(
+                    currentSkin.titleShadowRadius > 0 ? currentSkin.titleShadowRadius : 3.0f,
+                    currentSkin.titleShadowOffsetX,
+                    currentSkin.titleShadowOffsetY,
+                    shadowColor
+                );
+            } catch (Exception e) {
+                Logu.e("互动视频", "解析阴影颜色失败: " + currentSkin.titleShadowColor);
+            }
+        }
+    }
+
+    private void startInteractionTimeout(long durationMs) {
+        if (interactionTimeoutHandler == null) {
+            interactionTimeoutHandler = new Handler(Looper.getMainLooper());
+        }
+        
+        interactionTimeoutRunnable = () -> {
+            if (questionShown && currentQuestion != null) {
+                InteractionVideoData.InteractionChoice defaultChoice = null;
+                for (InteractionVideoData.InteractionChoice choice : currentQuestion.choices) {
+                    if (choice.isDefault == 1) {
+                        defaultChoice = choice;
+                        break;
+                    }
+                }
+                
+                if (defaultChoice != null) {
+                    Logu.d("互动视频", "超时，选择默认选项: " + defaultChoice.option);
+                    handleChoiceSelection(defaultChoice);
+                } else if (currentQuestion.choices != null && !currentQuestion.choices.isEmpty()) {
+                    InteractionVideoData.InteractionChoice firstChoice = currentQuestion.choices.get(0);
+                    if (firstChoice.isHidden != 1) {
+                        Logu.d("互动视频", "超时，选择第一个选项: " + firstChoice.option);
+                        handleChoiceSelection(firstChoice);
+                    }
+                }
+            }
+        };
+        
+        interactionTimeoutHandler.postDelayed(interactionTimeoutRunnable, durationMs);
+        Logu.d("互动视频", "启动超时计时器: " + durationMs + "ms");
+    }
+
+    private void cancelInteractionTimeout() {
+        if (interactionTimeoutHandler != null && interactionTimeoutRunnable != null) {
+            interactionTimeoutHandler.removeCallbacks(interactionTimeoutRunnable);
+            interactionTimeoutRunnable = null;
+        }
     }
 
     private TextView createChoiceView(InteractionVideoData.InteractionChoice choice) {

@@ -2,6 +2,10 @@ package com.RobinNotBad.BiliClient.activity.settings;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,31 +17,26 @@ import com.RobinNotBad.BiliClient.activity.article.OpusInfoActivity;
 import com.RobinNotBad.BiliClient.activity.base.BaseActivity;
 import com.RobinNotBad.BiliClient.activity.settings.login.SpecialLoginActivity;
 import com.RobinNotBad.BiliClient.api.ConfInfoApi;
+import com.RobinNotBad.BiliClient.api.DynamicApi;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.NetWorkUtil;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.android.material.textfield.TextInputEditText;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.BufferedSource;
 
 public class TestActivity extends BaseActivity {
 
     SwitchMaterial sw_wbi, sw_post;
     EditText input_link, input_data, output;
-    MaterialCardView btn_crash, btn_request, btn_cookies, btn_opus;
-
-    JSONArray conversation;
+    TextInputEditText input_opus_title, input_opus_content;
+    MaterialCardView btn_crash, btn_request, btn_cookies, btn_opus, btn_log, btn_publish_opus;
 
     @SuppressLint({"MutatingSharedPrefs", "SetTextI18n"})
     @Override
@@ -52,6 +51,10 @@ public class TestActivity extends BaseActivity {
         output = findViewById(R.id.output_json);
         btn_crash = findViewById(R.id.crash);
         btn_opus = findViewById(R.id.opus);
+        btn_log = findViewById(R.id.log);
+        btn_publish_opus = findViewById(R.id.publish_opus);
+        input_opus_title = findViewById(R.id.input_opus_title);
+        input_opus_content = findViewById(R.id.input_opus_content);
 
         input_link.setText(SharedPreferencesUtil.getString("dev_test_link", ""));
 
@@ -100,153 +103,82 @@ public class TestActivity extends BaseActivity {
             startActivity(intent);
         });
 
-
         btn_opus.setOnClickListener(v -> startActivity(new Intent(this, OpusInfoActivity.class).putExtra("id", 781871626480254985L)));
 
-
-        //我为什么要加这个？
+        // 一键崩溃测试
         btn_crash.setOnClickListener(v -> {
-            input_data.setVisibility(View.VISIBLE);
-            sw_wbi.setText("使用R1");
-            sw_post.setVisibility(View.GONE);
-            btn_cookies.setVisibility(View.GONE);
-            btn_request.setVisibility(View.GONE);
-            btn_opus.setVisibility(View.GONE);
-            TextView desc = findViewById(R.id.desc);
-            desc.setText(getString(R.string.dev_catgirl_desc));
+            throw new RuntimeException("这是一次故意的崩溃测试！如果你看到了这个，说明崩溃功能正常工作喵～");
+        });
+
+        // 日志查看
+        btn_log.setOnClickListener(v -> {
+            Intent intent = new Intent(this, LogViewerActivity.class);
+            startActivity(intent);
+        });
+
+        // 图文投稿
+        btn_publish_opus.setOnClickListener(v -> {
+            String title = input_opus_title.getText().toString().trim();
+            String content = input_opus_content.getText().toString().trim();
+
+            if (content.isEmpty()) {
+                MsgUtil.showMsg("请输入内容喵～");
+                return;
+            }
 
             CenterThreadPool.run(() -> {
                 try {
-                    if (conversation == null) {
-                        conversation = new JSONArray();
-                        JSONObject prompt = new JSONObject();
-                        try {
-                            prompt.put("role", "system");
-                            prompt.put("content", getString(R.string.dev_catgirl_prompt));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        conversation.put(prompt);
-                        runOnUiThread(() -> input_link.setText(SharedPreferencesUtil.getString("dev_catgirl_apikey", "")));
+                    runOnUiThread(() -> MsgUtil.showMsg("正在生成并上传图片..."));
+
+                    // 生成测试图片
+                    Bitmap bitmap = Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmap);
+                    Paint paint = new Paint();
+                    paint.setColor(Color.parseColor("#FF6B9D"));
+                    canvas.drawRect(0, 0, 800, 600, paint);
+                    paint.setColor(Color.WHITE);
+                    paint.setTextSize(50);
+                    paint.setTextAlign(Paint.Align.CENTER);
+                    String displayText = title.isEmpty() ? content.substring(0, Math.min(content.length(), 15)) : title;
+                    canvas.drawText(displayText, 400, 320, paint);
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+                    byte[] imageBytes = baos.toByteArray();
+
+                    // 上传图片
+                    DynamicApi.ImageUploadResult uploadResult = DynamicApi.uploadImage(imageBytes, "test.jpg", "image/jpeg", "daily");
+                    if (uploadResult == null) {
+                        runOnUiThread(() -> MsgUtil.showMsg("图片上传失败喵～"));
                         return;
                     }
 
-                    String api_key = input_link.getText().toString();
-                    if (api_key.isEmpty()) {
-                        MsgUtil.showMsg("请在链接栏填写API KEY！");
-                        return;
+                    runOnUiThread(() -> MsgUtil.showMsg("图片上传成功，正在发布图文..."));
+
+                    // 发布图文
+                    List<DynamicApi.ImageUploadResult> images = new ArrayList<>();
+                    images.add(uploadResult);
+
+                    long dynId = DynamicApi.publishOpus(title, content, images);
+
+                    if (dynId > 0) {
+                        runOnUiThread(() -> MsgUtil.showMsg("图文发布成功！动态ID: " + dynId));
                     } else {
-                        SharedPreferencesUtil.putString("dev_catgirl_apikey", api_key);
+                        runOnUiThread(() -> MsgUtil.showMsg("图文发布失败喵～"));
                     }
-                    ArrayList<String> deepseekHeaders = new ArrayList<>() {{
-                        add("Content-Type");
-                        add("application/json");
-                        add("Authorization");
-                        add("Bearer " + api_key);
-                        add("Accept");
-                        add("text/event-stream");
-                    }};
-
-                    String input_str = input_data.getText().toString();
-                    if (input_str.isEmpty()) {
-                        MsgUtil.showMsg("请在POST数据栏填写文字！");
-                        return;
-                    }
-                    JSONObject input_json = new JSONObject();
-                    input_json.put("role", "user");
-                    input_json.put("content", input_str);
-                    conversation.put(input_json);
-
-                    JSONObject requestJson = new JSONObject();
-                    String model = sw_wbi.isChecked() ? "reasoner" : "chat";
-                    requestJson.put("model", "deepseek-" + model);
-                    requestJson.put("stream", true);
-                    requestJson.put("messages", conversation);
-
-                    MsgUtil.showMsg("发出请求，请等待回应！");
-                    runOnUiThread(() -> {
-                        btn_crash.setEnabled(false);
-                        output.setText("");
-                        input_link.clearFocus();
-                        input_data.clearFocus();
-                        output.clearFocus();
-                        input_link.setEnabled(false);
-                        input_data.setEnabled(false);
-                        output.setEnabled(false);
-                    });
-
-                    Response response = NetWorkUtil.postJson("https://api.deepseek.com/chat/completions",
-                            requestJson.toString(),
-                            deepseekHeaders);
-                    ResponseBody body = response.body();
-                    if (body == null) return;
-                    BufferedSource source = body.source();
-
-                    MsgUtil.showMsg("得到响应，请继续等待！");
-
-                    boolean reasoning = sw_wbi.isChecked();
-
-                    StringBuilder contentBuilder = new StringBuilder();
-
-                    while (!source.exhausted()) {
-                        String line = source.readUtf8Line();
-                        if (line == null) break;
-                        Log.d("debug-deepseek", line);
-
-                        if (line.startsWith("data:")) {
-                            String jsonData = line.substring(6).trim();
-                            if ("[DONE]".equals(jsonData)) break;
-
-                            JSONObject data = new JSONObject(jsonData);
-                            JSONArray choices = data.getJSONArray("choices");
-                            JSONObject delta = choices.getJSONObject(0).getJSONObject("delta");
-
-                            String deltaContent;
-                            if (!delta.isNull("reasoning_content")) {
-                                deltaContent = delta.optString("reasoning_content");
-                            } else if (!delta.isNull("content")) {
-                                if (reasoning) {
-                                    reasoning = false;
-                                    runOnUiThread(() -> output.append("\n\n*思考结束*\n\n"));
-                                }
-                                deltaContent = delta.optString("content");
-                            } else deltaContent = "";
-
-                            if (!reasoning) contentBuilder.append(deltaContent);
-                            runOnUiThread(() -> output.append(deltaContent));
-                        }
-                    }
-
-                    response.close();
-
-                    String output_str = contentBuilder.toString();
-                    if (!output_str.isEmpty()) {
-                        JSONObject output_json = new JSONObject();
-                        output_json.put("role", "assistant");
-                        output_json.put("content", output_str);
-                        conversation.put(output_json);
-                    }
-
-                    MsgUtil.showMsg("响应结束，请查看下方文本框！");
                 } catch (Exception e) {
-                    report(e);
+                    runOnUiThread(() -> {
+                        MsgUtil.showMsg("图文投稿失败: " + e.getMessage());
+                        Log.e("TestActivity", "publishOpus error", e);
+                    });
                 }
-
-                runOnUiThread(() -> {
-                    btn_crash.setEnabled(true);
-                    output.setEnabled(true);
-                    input_link.setEnabled(true);
-                    input_data.setEnabled(true);
-                });
             });
-
         });
     }
 
     @Override
     protected void onDestroy() {
-        if (conversation == null)
-            SharedPreferencesUtil.putString("dev_test_link", input_link.getText().toString());
+        SharedPreferencesUtil.putString("dev_test_link", input_link.getText().toString());
         super.onDestroy();
     }
 }

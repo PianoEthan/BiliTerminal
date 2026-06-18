@@ -52,6 +52,12 @@
             android:screenOrientation="locked" />
 
         <activity
+            android:name=".activity.settings.LogViewerActivity"
+            android:exported="false"
+            android:label="日志查看"
+            android:screenOrientation="locked" />
+
+        <activity
             android:name=".activity.video.local.DownloadListActivity"
             android:exported="true"
             android:label="下载列表"
@@ -397,6 +403,11 @@
             android:name=".activity.user.EditSignActivity"
             android:exported="true"
             android:label="修改描述"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".activity.user.PublishOpusActivity"
+            android:exported="false"
+            android:label="发布动态"
             android:screenOrientation="locked" />
         <activity
             android:name=".activity.user.CreativeCenterActivity"

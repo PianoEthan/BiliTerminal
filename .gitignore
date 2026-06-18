@@ -8,4 +8,8 @@
 .cxx
 local.properties
 .androidide
-
+terminal.log
+*.jks
+*.keystore
+key.properties
+local.properties

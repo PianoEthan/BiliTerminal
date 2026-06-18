@@ -26,11 +26,13 @@ public class SharedPreferencesUtil {
     public static final String PRIVATE_MSG_AUTO_READ_ENABLE = "private_msg_auto_read_enable";
     public static final String FOLLOW_GROUP_MODE = "follow_group_mode";
     public static final String NIGHT_REMINDER_ENABLE = "night_reminder_enable";
+    public static final String PLAYER_INTERACTION_ENABLE = "player_interaction_enable";
     public static final String SEARCH_DEFAULT_CONTENT_ENABLE = "search_default_content_enable";
     public static final String PLAYER_MEDIA_SESSION_ENABLE = "player_media_session_enable";
     public static final String RECENT_UP_DISPLAY_ENABLE = "recent_up_display_enable";
     public static final String API_RETRY_INTERVAL_SECONDS = "api_retry_interval_seconds";
     public static final String API_RETRY_MAX_TIMES = "api_retry_max_times";
+    public static final String LAB_OPUS_IMAGE_UPLOAD = "lab_opus_image_upload";
 
     public static String cookies = "cookies";
     public static String mid = "mid";

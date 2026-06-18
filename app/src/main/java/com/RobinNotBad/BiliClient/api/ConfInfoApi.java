@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import okhttp3.HttpUrl;
@@ -68,12 +69,37 @@ public class ConfInfoApi {
         } else mixin_key = SharedPreferencesUtil.getString("wbi_mixin_key", "");
 
         String wts = String.valueOf(System.currentTimeMillis() / 1000);
-        String calc_str = sortUrlParams(Uri.encode(url_query, "@#&=*+-_.,:!?()/~'%") + "&wts=" + wts) + mixin_key;
-        Logu.d(calc_str);
+        
+        // 使用 HttpUrl 解析 URL 并获取参数
+        HttpUrl httpUrl = Objects.requireNonNull(HttpUrl.parse(url_query));
+        Set<String> paramNames = httpUrl.queryParameterNames();
+        Map<String, String> paramMap = new HashMap<>();
+        for (String name : paramNames) {
+            paramMap.put(name, httpUrl.queryParameter(name));
+        }
+        paramMap.put("wts", wts);
+        
+        // 使用 TreeMap 排序参数
+        Map<String, String> sortedMap = new TreeMap<>(paramMap);
+        
+        // 构建签名字符串
+        StringBuilder calcStr = new StringBuilder();
+        boolean isFirst = true;
+        for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
+            if (!isFirst) {
+                calcStr.append("&");
+            } else {
+                isFirst = false;
+            }
+            calcStr.append(entry.getKey()).append("=").append(entry.getValue());
+        }
+        calcStr.append(mixin_key);
+        
+        Logu.d("WBI calc_str=" + calcStr);
 
-        String w_rid = ToolsUtil.md5(calc_str);
+        String w_rid = ToolsUtil.md5(calcStr.toString());
 
-        return Objects.requireNonNull(HttpUrl.parse(url_query)).newBuilder().addQueryParameter("w_rid", w_rid).addQueryParameter("wts", wts).build().toString();
+        return httpUrl.newBuilder().addQueryParameter("w_rid", w_rid).addQueryParameter("wts", wts).build().toString();
     }
 
     public static String sortUrlParams(String url) {

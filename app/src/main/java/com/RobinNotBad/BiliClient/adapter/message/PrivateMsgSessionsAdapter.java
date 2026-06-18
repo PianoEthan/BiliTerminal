@@ -102,7 +102,7 @@ public class PrivateMsgSessionsAdapter
 
             UserInfo user = userMap != null ? userMap.get(msgContent.talkerUid) : null;
             if (user != null) {
-                if (msgContent.unread > 0 && SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PRIVATE_MSG_UNREAD_BADGE_ENABLE, false)) {
+                if (msgContent.unread > 0 && SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PRIVATE_MSG_UNREAD_BADGE_ENABLE, true)) {
                     SpannableStringBuilder nameStr = new SpannableStringBuilder(user.name);
                     int nameLength = user.name.length();
                     nameStr.append(BADGE_TEXT);

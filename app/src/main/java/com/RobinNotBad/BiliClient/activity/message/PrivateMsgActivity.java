@@ -145,7 +145,6 @@ public class PrivateMsgActivity extends BaseActivity {
                     runOnUiThread(() -> {
                         try {
                             if (result.getInt("code") == 0) {
-                                MsgUtil.showMsg("发送成功");
                                 refresh();
                             } else {
                                 if (result.getInt("code") == 21047) {

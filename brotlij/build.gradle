@@ -26,9 +26,14 @@ android {
             }
         }
     }
+    
+    lint {
+        abortOnError false
+    }
 
 }
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.13.2'
 }

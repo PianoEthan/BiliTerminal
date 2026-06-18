@@ -101,5 +101,16 @@ public class InteractionVideoData {
         public String name;
         public int skipOverwrite;
     }
+
+    public static class InteractionStoryProgress {
+        public long nodeId;
+        public long edgeId;
+        public String title;
+        public long cid;
+        public long startPos;
+        public String cover;
+        public boolean isCurrent;
+        public int cursor;
+    }
 }
 
