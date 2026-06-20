@@ -19,13 +19,13 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.viewpager.widget.ViewPager;
 
 import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.activity.base.InstanceActivity;
 import com.RobinNotBad.BiliClient.adapter.SearchHistoryAdapter;
 import com.RobinNotBad.BiliClient.adapter.SearchSuggestionsAdapter;
+import com.RobinNotBad.BiliClient.adapter.viewpager.ViewPagerFragmentAdapter;
 import com.RobinNotBad.BiliClient.api.SearchApi;
 import com.RobinNotBad.BiliClient.helper.TutorialHelper;
 import com.RobinNotBad.BiliClient.ui.widget.recycler.CustomLinearManager;
@@ -39,6 +39,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class SearchActivity extends InstanceActivity {
@@ -47,7 +48,7 @@ public class SearchActivity extends InstanceActivity {
     private RecyclerView suggestionsRecyclerview;
     SearchHistoryAdapter searchHistoryAdapter;
     SearchSuggestionsAdapter searchSuggestionsAdapter;
-    ViewPager2 viewPager;
+    ViewPager viewPager;
     EditText keywordInput;
     private ConstraintLayout searchBar;
     private boolean searchBarVisible = true;
@@ -63,6 +64,7 @@ public class SearchActivity extends InstanceActivity {
 
     boolean tutorial_show;
     String classname;
+    ViewPagerFragmentAdapter vpfAdapter;
 
     String[] specialList = {"心理疾病", "自杀", "自尽", "自残", "抑郁", "双相", "安眠药"};
 
@@ -125,30 +127,15 @@ public class SearchActivity extends InstanceActivity {
             });
             historyRecyclerview.setVisibility(View.VISIBLE);
             suggestionsRecyclerview.setVisibility(View.GONE);
-            FragmentStateAdapter vpfAdapter = new FragmentStateAdapter(this) {
-                @Override
-                public int getItemCount() {
-                    return 4;
-                }
-
-                @NonNull
-                @Override
-                public Fragment createFragment(int position) {
-                    if (position == 0)
-                        return SearchVideoFragment.newInstance();
-                    if (position == 1)
-                        return SearchArticleFragment.newInstance();
-                    if (position == 2)
-                        return SearchUserFragment.newInstance();
-                    if (position == 3)
-                        return SearchLiveFragment.newInstance();
-                    throw new IllegalArgumentException(
-                            "return value of getItemCount() method maybe not associate with argument position");
-                }
-            };
+            List<Fragment> fragmentList = new ArrayList<>();
+            fragmentList.add(SearchVideoFragment.newInstance());
+            fragmentList.add(SearchArticleFragment.newInstance());
+            fragmentList.add(SearchUserFragment.newInstance());
+            fragmentList.add(SearchLiveFragment.newInstance());
+            vpfAdapter = new ViewPagerFragmentAdapter(getSupportFragmentManager(), fragmentList);
             viewPager.setAdapter(vpfAdapter);
 
-            viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                     if (position != 0) {
@@ -159,13 +146,18 @@ public class SearchActivity extends InstanceActivity {
                             SharedPreferencesUtil.putBoolean("tutorial_pager_" + classname, false);
                         }
                     }
+                }
 
-                    Fragment fragmentCurr = getSupportFragmentManager()
-                            .findFragmentByTag("f" + viewPager.getCurrentItem());
-                    if (fragmentCurr != null) {
-                        ((SearchFragment) fragmentCurr).refresh(); // 在fragment里已做判断
+                @Override
+                public void onPageSelected(int position) {
+                    SearchFragment fragment = (SearchFragment) vpfAdapter.getFragment(position);
+                    if (fragment != null) {
+                        fragment.refresh();
                     }
-                    super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
                 }
             });
 
@@ -370,14 +362,13 @@ public class SearchActivity extends InstanceActivity {
 
                 try {
                     for (int i = 0; i < 4; i++) {
-                        Fragment fragmentById = getSupportFragmentManager().findFragmentByTag("f" + i);
-                        if (fragmentById != null)
-                            ((SearchFragment) fragmentById).update(str);
+                        SearchFragment fragment = (SearchFragment) vpfAdapter.getFragment(i);
+                        if (fragment != null)
+                            fragment.update(str);
                     }
-                    Fragment fragmentCurr = getSupportFragmentManager()
-                            .findFragmentByTag("f" + viewPager.getCurrentItem());
+                    SearchFragment fragmentCurr = (SearchFragment) vpfAdapter.getFragment(viewPager.getCurrentItem());
                     if (fragmentCurr != null) {
-                        ((SearchFragment) fragmentCurr).refresh();
+                        fragmentCurr.refresh();
                         requestFragmentFocus();
                     }
                 } catch (Exception e) {
@@ -422,10 +413,9 @@ public class SearchActivity extends InstanceActivity {
     }
 
     private void requestFragmentFocus(){
-        Fragment fragmentCurr = getSupportFragmentManager()
-                .findFragmentByTag("f" + viewPager.getCurrentItem());
+        SearchFragment fragmentCurr = (SearchFragment) vpfAdapter.getFragment(viewPager.getCurrentItem());
         if (fragmentCurr != null) {
-            ((SearchFragment) fragmentCurr).refresh();
+            fragmentCurr.refresh();
             if (fragmentCurr.getView() != null) {
                 View recyclerView = fragmentCurr.getView().findViewById(R.id.recyclerView);
                 recyclerView.setFocusable(true);

@@ -57,7 +57,7 @@ public class SearchVideoFragment extends SearchFragment {
                     else CenterThreadPool.runOnUiThread(() -> {
                         int lastSize = videoCardList.size();
                         videoCardList.addAll(list);
-                        videoCardAdapter.notifyItemRangeInserted(lastSize + 1, videoCardList.size() - lastSize);
+                        videoCardAdapter.notifyItemRangeInserted(lastSize, videoCardList.size() - lastSize);
                     });
                 } else setBottom(true);
             } catch (Exception e) {

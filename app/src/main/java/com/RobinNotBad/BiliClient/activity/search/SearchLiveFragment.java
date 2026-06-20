@@ -13,9 +13,6 @@ import com.RobinNotBad.BiliClient.api.SearchApi;
 import com.RobinNotBad.BiliClient.model.LiveRoom;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,21 +50,27 @@ public class SearchLiveFragment extends SearchFragment {
         CenterThreadPool.run(() -> {
             Log.e("debug", "加载下一页");
             try {
-                Object result = SearchApi.searchType(keyword, page, "live");
+                com.google.gson.JsonElement result = SearchApi.searchType(keyword, page, "live");
                 if (result != null) {
                     if (page == 1) showEmptyView(false);
-                    JSONArray jsonArray = null;
-                    if (result instanceof JSONObject)
-                        jsonArray = ((JSONObject) result).optJSONArray("live_room");
-                    else if (result instanceof JSONArray) jsonArray = (JSONArray) result;
+                    com.google.gson.JsonArray arr = null;
+                    if (result.isJsonObject()) {
+                        com.google.gson.JsonElement lr = result.getAsJsonObject().get("live_room");
+                        if (lr != null && lr.isJsonArray()) arr = lr.getAsJsonArray();
+                    } else if (result.isJsonArray()) {
+                        arr = result.getAsJsonArray();
+                    }
 
                     List<LiveRoom> list = new ArrayList<>();
-                    if (jsonArray != null) list.addAll(LiveApi.analyzeLiveRooms(jsonArray));
+                    if (arr != null) {
+                        org.json.JSONArray jsonArray = new org.json.JSONArray(arr.toString());
+                        list.addAll(LiveApi.analyzeLiveRooms(jsonArray));
+                    }
                     if (list.size() == 0) setBottom(true);
                     else CenterThreadPool.runOnUiThread(() -> {
                         int lastSize = roomList.size();
                         roomList.addAll(list);
-                        liveCardAdapter.notifyItemRangeInserted(lastSize + 1, roomList.size() - lastSize);
+                        liveCardAdapter.notifyItemRangeInserted(lastSize, roomList.size() - lastSize);
                     });
                 } else setBottom(true);
             } catch (Exception e) {

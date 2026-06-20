@@ -50,17 +50,19 @@ public class SearchArticleFragment extends SearchFragment {
         CenterThreadPool.run(() -> {
             Log.e("debug", "加载下一页");
             try {
-                JSONArray result = (JSONArray) SearchApi.searchType(keyword, page, "article");
+                com.google.gson.JsonElement result = SearchApi.searchType(keyword, page, "article");
                 if (result != null) {
                     if (page == 1) showEmptyView(false);
-                    ArrayList<ArticleCard> list = new ArrayList<>();
-                    SearchApi.getArticlesFromSearchResult(result, list);
-                    if (list.size() == 0) setBottom(true);
-                    CenterThreadPool.runOnUiThread(() -> {
+                    if (result.isJsonArray()) {
+                        ArrayList<ArticleCard> list = new ArrayList<>();
+                        SearchApi.getArticlesFromSearchResult(new org.json.JSONArray(result.getAsJsonArray().toString()), list);
+                        if (list.size() == 0) setBottom(true);
+                        CenterThreadPool.runOnUiThread(() -> {
                         int lastSize = articleCardList.size();
                         articleCardList.addAll(list);
-                        articleCardAdapter.notifyItemRangeInserted(lastSize + 1, articleCardList.size() - lastSize);
-                    });
+                        articleCardAdapter.notifyItemRangeInserted(lastSize, articleCardList.size() - lastSize);
+                        });
+                    } else setBottom(true);
                 } else setBottom(true);
             } catch (Exception e) {
                 report(e);

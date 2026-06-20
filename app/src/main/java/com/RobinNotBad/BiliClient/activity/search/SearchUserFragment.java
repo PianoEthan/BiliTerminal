@@ -52,17 +52,19 @@ public class SearchUserFragment extends SearchFragment {
         CenterThreadPool.run(() -> {
             Log.e("debug", "加载下一页");
             try {
-                JSONArray result = (JSONArray) SearchApi.searchType(keyword, page, "bili_user");
+                com.google.gson.JsonElement result = SearchApi.searchType(keyword, page, "bili_user");
                 if (result != null) {
                     if (page == 1) showEmptyView(false);
-                    List<UserInfo> list = new ArrayList<>();
-                    SearchApi.getUsersFromSearchResult(result, list);
-                    if (list.size() == 0) setBottom(true);
-                    CenterThreadPool.runOnUiThread(() -> {
+                    if (result.isJsonArray()) {
+                        List<UserInfo> list = new ArrayList<>();
+                        SearchApi.getUsersFromSearchResult(new org.json.JSONArray(result.getAsJsonArray().toString()), list);
+                        if (list.size() == 0) setBottom(true);
+                        CenterThreadPool.runOnUiThread(() -> {
                         int lastSize = userInfoList.size();
                         userInfoList.addAll(list);
-                        userInfoAdapter.notifyItemRangeInserted(lastSize + 1, userInfoList.size() - lastSize);
-                    });
+                        userInfoAdapter.notifyItemRangeInserted(lastSize, userInfoList.size() - lastSize);
+                        });
+                    } else setBottom(true);
                 } else setBottom(true);
             } catch (Exception e) {
                 loadFail(e);
