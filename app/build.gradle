@@ -1,0 +1,127 @@
+plugins {
+    id 'com.android.application'
+}
+
+int betaVer = 0 //如果为0则是正式版
+
+android {
+
+    namespace 'com.RobinNotBad.BiliClient'
+    //noinspection GradleDependency
+    compileSdk 33
+
+    sourceSets {
+        main{
+            jniLibs.srcDirs = ['libs']
+            java {
+                exclude '**/GeetestUtil.java'
+            }
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.RobinNotBad.BiliClient"
+        minSdk 14
+        //noinspection ExpiredTargetSdkVersion
+        targetSdk 26
+        versionCode 20260621
+        versionName "3.0.0-Qx"
+
+        if (betaVer) {
+            versionName += "-BETA" + betaVer
+        }
+
+        multiDexEnabled true
+
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters 'armeabi-v7a','x86',"mips"
+        }
+
+        resConfigs 'zh'
+    }
+
+    signingConfigs {
+        release {
+            def localProps = project.rootProject.file("local.properties")
+            if (localProps.exists() && new Properties() {{
+                load(localProps.newDataInputStream())
+            }}.hasProperty("KEY_PATH")) {
+                storeFile file(pro.getProperty("KEY_PATH") != null ? pro.getProperty("KEY_PATH") : "key.jks")
+                storePassword pro.getProperty("KEY_PASSWORD")
+                keyAlias pro.getProperty("ALIAS_NAME")
+                keyPassword pro.getProperty("ALIAS_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            buildConfigField "boolean", "BETA", String.valueOf(betaVer > 0)
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            def localProps = project.rootProject.file("local.properties")
+            if (localProps.exists() && new Properties() {{
+                load(localProps.newDataInputStream())
+            }}.hasProperty("KEY_PATH")) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            buildConfigField "boolean", "BETA", String.valueOf(betaVer > 0)
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    packagingOptions {
+        exclude 'META-INF/androidx.cardview_cardview.version'
+    }
+    buildFeatures {
+        viewBinding false
+    }
+}
+
+dependencies {
+    //noinspection GradleDependency
+    implementation 'com.google.zxing:core:3.3.0'
+    //noinspection GradleDependency
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    //noinspection GradleDependency
+    implementation 'com.google.android.material:material:1.9.0'
+    //noinspection GradleDependency
+    implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'com.github.bumptech.glide:glide:4.13.2'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.13.2'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.13.2'
+    //noinspection GradleDependency
+    implementation 'org.jsoup:jsoup:1.10.2'
+    //noinspection GradleCompatible
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation 'org.greenrobot:eventbus:3.2.0'
+    // Geetest（目前没用到）
+    //implementation 'com.geetest.sensebot:sensebot:4.4.2.1'
+    //danmaku
+    //implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+    //implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21'
+    //implementation 'com.github.ctiao:ndkbitmap-x86:0.9.21'
+    //ijk
+    implementation project(path: ':ijkplayer-java')
+    implementation project(path: ':DanmakuFlameMaster')
+    implementation project(path: ':brotlij')
+    implementation 'androidx.asynclayoutinflater:asynclayoutinflater:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    def multidex_version = "2.0.1"
+    implementation "androidx.multidex:multidex:$multidex_version"
+    implementation "org.brotli:dec:0.1.2"
+    implementation "com.aayushatharva.brotli4j:brotli4j:1.16.0"
+    implementation 'com.google.protobuf:protobuf-javalite:3.21.12'
+    implementation 'com.google.code.gson:gson:2.8.9'
+}
