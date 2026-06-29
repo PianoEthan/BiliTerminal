@@ -154,6 +154,15 @@ public class ReplyInfoActivity extends BaseActivity {
                     Log.e("debug", "到底了");
                     bottom = true;
                 }
+            } else {
+                runOnUiThread(() -> {
+                    refreshLayout.setRefreshing(false);
+                    if (SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, 0) == 0) {
+                        MsgUtil.showMsgLong("请先登录后再查看评论");
+                    } else {
+                        MsgUtil.showMsgLong("加载失败，请稍后重试");
+                    }
+                });
             }
             refreshing = false;
         } catch (Exception e) {

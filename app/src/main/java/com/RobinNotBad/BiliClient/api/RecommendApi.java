@@ -25,6 +25,11 @@ public class RecommendApi {
         public List<Item> item;
     }
 
+    public static class PopularResponse {
+        @SerializedName("list")
+        public List<Item> list;
+    }
+
     public static class Item {
         @SerializedName("bvid")
         public String bvid;
@@ -90,33 +95,35 @@ public class RecommendApi {
         return videoList;
     }
 
-    public static void getPopular(List<VideoCard> videoCardList, int page) throws IOException, JSONException {
+    public static boolean getPopular(List<VideoCard> videoCardList, int page) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/web-interface/popular?pn=" + page + "&ps=10";
         String json = NetWorkUtil.getJson(url).toString();
-        ApiResponse<RecommendResponse> resp = GsonUtil.fromJson(json,
-                new com.google.gson.reflect.TypeToken<ApiResponse<RecommendResponse>>(){}.getType());
-        if (resp == null || !resp.isSuccess() || resp.data == null || resp.data.item == null) return;
+        ApiResponse<PopularResponse> resp = GsonUtil.fromJson(json,
+                new com.google.gson.reflect.TypeToken<ApiResponse<PopularResponse>>(){}.getType());
+        if (resp == null || !resp.isSuccess() || resp.data == null || resp.data.list == null) return false;
 
-        for (Item card : resp.data.item) {
+        for (Item card : resp.data.list) {
             if (card == null) continue;
             String upName = card.owner != null ? card.owner.name : "";
             int viewCount = card.stat != null ? card.stat.view : 0;
             videoCardList.add(new VideoCard(card.title, upName, StringUtil.toWan(viewCount) + "观看", card.pic, 0, card.bvid));
         }
+        return true;
     }
 
-    public static void getPrecious(List<VideoCard> videoCardList, int page) throws IOException, JSONException {
+    public static boolean getPrecious(List<VideoCard> videoCardList, int page) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/web-interface/popular/precious?page=" + page + "&page_size=10";
         String json = NetWorkUtil.getJson(url).toString();
-        ApiResponse<RecommendResponse> resp = GsonUtil.fromJson(json,
-                new com.google.gson.reflect.TypeToken<ApiResponse<RecommendResponse>>(){}.getType());
-        if (resp == null || !resp.isSuccess() || resp.data == null || resp.data.item == null) return;
+        ApiResponse<PopularResponse> resp = GsonUtil.fromJson(json,
+                new com.google.gson.reflect.TypeToken<ApiResponse<PopularResponse>>(){}.getType());
+        if (resp == null || !resp.isSuccess() || resp.data == null || resp.data.list == null) return false;
 
-        for (Item card : resp.data.item) {
+        for (Item card : resp.data.list) {
             if (card == null) continue;
             String upName = card.owner != null ? card.owner.name : "";
             int viewCount = card.stat != null ? card.stat.view : 0;
             videoCardList.add(new VideoCard(card.title, upName, StringUtil.toWan(viewCount) + "观看", card.pic, 0, card.bvid));
         }
+        return true;
     }
 }

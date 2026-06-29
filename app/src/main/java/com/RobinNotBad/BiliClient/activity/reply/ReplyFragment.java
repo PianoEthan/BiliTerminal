@@ -172,7 +172,6 @@ public class ReplyFragment extends RefreshListFragment {
                 Pair<Integer, String> pageState = ReplyApi.getRepliesLazy(aid, 0, pagination, type, sort, list);
                 int result = pageState.first;
                 this.pagination = pageState.second;
-                setRefreshing(false);
                 if (result != -1) {
                     Log.e("debug", "下一页");
                     runOnUiThread(() -> {
@@ -184,6 +183,17 @@ public class ReplyFragment extends RefreshListFragment {
                         Log.e("debug", "到底了");
                         bottom = true;
                     }
+                    setRefreshing(false);
+                } else {
+                    this.page--;
+                    runOnUiThread(() -> {
+                        setRefreshing(false);
+                        if (SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, 0) == 0) {
+                            MsgUtil.showMsgLong("请先登录后再查看评论");
+                        } else {
+                            MsgUtil.showMsgLong("加载失败，请稍后重试");
+                        }
+                    });
                 }
             } catch (Exception e) {
                 loadFail(e);

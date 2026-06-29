@@ -79,42 +79,54 @@ public class PopularActivity extends InstanceActivity {
         runOnUiThread(() -> swipeRefreshLayout.setRefreshing(true));
         try {
             List<VideoCard> list = new ArrayList<>();
-            RecommendApi.getPopular(list, page);
-            page++;
+            boolean success = RecommendApi.getPopular(list, page);
+            if (success) {
+                page++;
+                runOnUiThread(() -> {
+                    videoCardList.addAll(list);
+                    swipeRefreshLayout.setRefreshing(false);
+                    refreshing = false;
+                    if (firstRefresh) {
+                        firstRefresh = false;
+                        videoCardAdapter = new VideoCardAdapter(this, videoCardList);
+                        recyclerView.setAdapter(videoCardAdapter);
+
+                        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                            @Override
+                            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                                super.onScrollStateChanged(recyclerView, newState);
+                            }
+
+                            @Override
+                            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                                super.onScrolled(recyclerView, dx, dy);
+                                LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                                assert manager != null;
+                                int lastItemPosition = manager.findLastCompletelyVisibleItemPosition();  //获取最后一个完全显示的itemPosition
+                                int itemCount = manager.getItemCount();
+                                if (lastItemPosition >= (itemCount - 3) && dy > 0 && !refreshing) {// 滑动到倒数第三个就可以刷新了
+                                    refreshing = true;
+                                    CenterThreadPool.run(() -> addPopular()); //加载第二页
+                                }
+                            }
+                        });
+                    } else {
+                        videoCardAdapter.notifyItemRangeInserted(videoCardList.size() - list.size(), list.size());
+                    }
+                });
+            } else {
+                runOnUiThread(() -> {
+                    swipeRefreshLayout.setRefreshing(false);
+                    refreshing = false;
+                    MsgUtil.showMsgLong("加载失败，请稍后重试");
+                });
+            }
+        } catch (Exception e) {
             runOnUiThread(() -> {
-                videoCardList.addAll(list);
+                MsgUtil.err(e);
                 swipeRefreshLayout.setRefreshing(false);
                 refreshing = false;
-                if (firstRefresh) {
-                    firstRefresh = false;
-                    videoCardAdapter = new VideoCardAdapter(this, videoCardList);
-                    recyclerView.setAdapter(videoCardAdapter);
-
-                    recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                        @Override
-                        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                            super.onScrollStateChanged(recyclerView, newState);
-                        }
-
-                        @Override
-                        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                            super.onScrolled(recyclerView, dx, dy);
-                            LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                            assert manager != null;
-                            int lastItemPosition = manager.findLastCompletelyVisibleItemPosition();  //获取最后一个完全显示的itemPosition
-                            int itemCount = manager.getItemCount();
-                            if (lastItemPosition >= (itemCount - 3) && dy > 0 && !refreshing) {// 滑动到倒数第三个就可以刷新了
-                                refreshing = true;
-                                CenterThreadPool.run(() -> addPopular()); //加载第二页
-                            }
-                        }
-                    });
-                } else {
-                    videoCardAdapter.notifyItemRangeInserted(videoCardList.size() - list.size(), list.size());
-                }
             });
-        } catch (Exception e) {
-            runOnUiThread(() -> MsgUtil.err(e));
         }
     }
 }
