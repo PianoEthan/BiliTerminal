@@ -289,14 +289,33 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_play"
+        <LinearLayout
+            android:id="@+id/btnRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="播放"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/episodes" />
+            app:layout_constraintTop_toBottomOf="@id/episodes">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_play"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="播放" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_follow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="追番"
+                android:textColor="#FB7299"
+                app:strokeColor="#FB7299" />
+
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.RobinNotBad.BiliClient.ui.widget.RotaryNestedScrollView>

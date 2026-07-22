@@ -27,14 +27,22 @@ import com.RobinNotBad.BiliClient.adapter.video.MediaEpisodeAdapter;
 import com.RobinNotBad.BiliClient.api.BangumiApi;
 import com.RobinNotBad.BiliClient.model.Bangumi;
 import com.RobinNotBad.BiliClient.ui.widget.recycler.CustomLinearManager;
+import androidx.lifecycle.MutableLiveData;
+
+import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.GlideUtil;
+import com.RobinNotBad.BiliClient.util.Logu;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
+import com.RobinNotBad.BiliClient.util.NetWorkUtil;
+import com.RobinNotBad.BiliClient.util.Result;
+import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BangumiInfoFragment extends Fragment {
     private long mediaId;
@@ -69,13 +77,27 @@ public class BangumiInfoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         view.setVisibility(View.GONE);
         episodeRecyclerView = rootView.findViewById(R.id.rv_episode_list);
-        //拉数据
-        CenterThreadPool
-                .supplyAsyncWithLiveData(() -> BangumiApi.getBangumi(mediaId))
-                .observe(getViewLifecycleOwner(), (result) -> result.onSuccess((bangumi) -> {
-                    this.bangumi = bangumi;
-                    initView();
-                }).onFailure((error) -> MsgUtil.err("番剧详情：", error)));
+        //用 MutableLiveData+CenterThreadPool.run 替代 supplyAsyncWithLiveData，
+        //避免 fetch 异常（如 B站返回 HTML）被 supplyAsyncWithLiveData 内部 MsgUtil.err 弹对话框
+        MutableLiveData<Result<Bangumi>> liveData = new MutableLiveData<>();
+        CenterThreadPool.run(() -> {
+            try {
+                liveData.postValue(Result.success(BangumiApi.getBangumi(mediaId)));
+            } catch (Exception e) {
+                liveData.postValue(Result.failure(e));
+            }
+        });
+        liveData.observe(getViewLifecycleOwner(), (result) -> result.onSuccess((bangumi) -> {
+            this.bangumi = bangumi;
+            initView();
+            checkFollowStatus();
+        }).onFailure((error) -> {
+                    MsgUtil.showMsgLong("番剧信息获取失败！\n可能已下架？");
+                    Logu.e("BangumiInfoFragment", "getBangumi failed: " + error.getMessage());
+                    if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
+                        getActivity().finish();
+                    }
+                }));
     }
 
     @SuppressLint("SetTextI18n")
@@ -83,6 +105,11 @@ public class BangumiInfoFragment extends Fragment {
         //init data.
         ImageView imageMediaCover = rootView.findViewById(R.id.image_media_cover);
         Button playButton = rootView.findViewById(R.id.btn_play);
+        Button followButton = rootView.findViewById(R.id.btn_follow);
+        //初始状态用 SharedPreferences 缓存判断（追番列表加载时已缓存 media_id/season_id）
+        long sid = bangumi.info != null ? bangumi.info.season_id : 0;
+        followButton.setText(SharedPreferencesUtil.getBoolean("bangumi_follow_" + sid, false) ? "已追番" : "追番");
+        followButton.setOnClickListener(v -> toggleFollow(followButton));
         TextView title = rootView.findViewById(R.id.text_title);
         TextView subtitle = rootView.findViewById(R.id.text_subtitle);
         TextView areaType = rootView.findViewById(R.id.text_area_type);
@@ -345,4 +372,51 @@ public class BangumiInfoFragment extends Fragment {
             return String.valueOf(num);
         }
     }
+
+    /**查询追番状态：参照 PiliPlus 用 /pgc/view/web/season/user/status */
+    private void checkFollowStatus() {
+        if (bangumi == null || bangumi.info == null) return;
+        long sid = bangumi.info.season_id;
+        if (SharedPreferencesUtil.getBoolean("bangumi_follow_" + sid, false)) {
+            Button btn = rootView.findViewById(R.id.btn_follow);
+            btn.setText("已追番");
+            return;
+        }
+        Button btn = rootView.findViewById(R.id.btn_follow);
+        CenterThreadPool.run(() -> {
+            try {
+                String url = "https://api.bilibili.com/pgc/view/web/season/user/status?season_id=" + sid;
+                org.json.JSONObject root = NetWorkUtil.getJson(url);
+                if (root.optInt("code") == 0) {
+                    org.json.JSONObject result = root.optJSONObject("result");
+                    if (result != null && result.optInt("follow", 0) == 1) {
+                        SharedPreferencesUtil.putBoolean("bangumi_follow_" + sid, true);
+                        requireActivity().runOnUiThread(() -> btn.setText("已追番"));
+                    }
+                }
+            } catch (Exception ignored) {}
+        });
+    }
+
+    private void toggleFollow(Button btn) {
+        if (bangumi == null || bangumi.info == null) return;
+        long sid = bangumi.info.season_id;
+        String cacheKey = "bangumi_follow_" + sid;
+        boolean isFollowing = SharedPreferencesUtil.getBoolean(cacheKey, false);
+        CenterThreadPool.run(() -> {
+            try {
+                String url = "https://api.bilibili.com/pgc/web/follow/" + (isFollowing ? "del" : "add");
+                String body = "season_id=" + sid + "&csrf=" + SharedPreferencesUtil.getString("csrf", "");
+                NetWorkUtil.post(url, body, NetWorkUtil.webHeaders).body().string();
+                SharedPreferencesUtil.putBoolean(cacheKey, !isFollowing);
+                requireActivity().runOnUiThread(() -> {
+                    btn.setText(isFollowing ? "追番" : "已追番");
+                    MsgUtil.showMsg(isFollowing ? "已取消追番" : "已追番");
+                });
+            } catch (Exception e) {
+                requireActivity().runOnUiThread(() -> MsgUtil.showMsg("操作失败，请稍后重试"));
+            }
+        });
+    }
+
 }

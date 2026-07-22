@@ -32,8 +32,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 //评论详细信息
@@ -52,6 +54,8 @@ public class ReplyInfoActivity extends BaseActivity {
     private boolean bottom = false;
     private int page = 1;
     private boolean refreshing = false;
+    //已加载子评论的 rpid 集合，作为分页兜底去重，避免重复评论
+    private final Set<Long> loadedRpids = new HashSet<>();
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -94,6 +98,9 @@ public class ReplyInfoActivity extends BaseActivity {
                 Future<Integer> future = CenterThreadPool.supplyAsyncWithFuture(() -> ReplyApi.getReplies(oid, rpid, page, type, sort, replyList));
                 CenterThreadPool.observe(future, (result) -> {
                     if (result != -1) {
+                        loadedRpids.clear();
+                        loadedRpids.add(rootReply.rpid);   //排除根评论本身，避免其重复出现在子评论列表
+                        ReplyApi.filterDuplicateReplies(replyList, loadedRpids);
                         replyList.add(0, rootReply);
                         replyAdapter = new ReplyAdapter(this, replyList, oid, rpid, type.getTypeCode(), sort, up_mid);
                         replyAdapter.isManager = isManager;
@@ -137,6 +144,7 @@ public class ReplyInfoActivity extends BaseActivity {
     }
 
     private void continueLoading() {
+        if (bottom) return;   //到底拦截，避免无效请求
         runOnUiThread(() -> refreshLayout.setRefreshing(true));
         page++;
         try {
@@ -144,6 +152,8 @@ public class ReplyInfoActivity extends BaseActivity {
             int result = ReplyApi.getReplies(oid, rpid, page, type, sort, list);
             if (result != -1) {
                 Log.e("debug", "下一页");
+                //兜底去重，避免分页边界返回重复子评论
+                ReplyApi.filterDuplicateReplies(list, loadedRpids);
                 runOnUiThread(() -> {
                     replyList.addAll(list);
                     replyAdapter.notifyItemRangeInserted(replyList.size() - list.size() + 2, list.size());  //顶上有两个固定项
@@ -155,17 +165,13 @@ public class ReplyInfoActivity extends BaseActivity {
                     bottom = true;
                 }
             } else {
-                runOnUiThread(() -> {
-                    refreshLayout.setRefreshing(false);
-                    if (SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, 0) == 0) {
-                        MsgUtil.showMsgLong("请先登录后再查看评论");
-                    } else {
-                        MsgUtil.showMsgLong("加载失败，请稍后重试");
-                    }
-                });
+                page--;   //翻页失败大概率是到底了（B站-404等），静默结束不弹窗
+                bottom = true;
+                runOnUiThread(() -> refreshLayout.setRefreshing(false));
             }
             refreshing = false;
         } catch (Exception e) {
+            page--;
             runOnUiThread(() -> {
                 MsgUtil.err(e);
                 refreshLayout.setRefreshing(false);
@@ -176,6 +182,8 @@ public class ReplyInfoActivity extends BaseActivity {
     @SuppressLint("NotifyDataSetChanged")
     private void refresh() {
         page = 1;
+        bottom = false;
+        loadedRpids.clear();
         refreshLayout.setRefreshing(true);
 
         TerminalContext.getInstance().getReply(type, oid, rpid).observe(this, (rootReplyResult) -> rootReplyResult.onSuccess((rootReply) -> {
@@ -183,6 +191,8 @@ public class ReplyInfoActivity extends BaseActivity {
             Future<Integer> future = CenterThreadPool.supplyAsyncWithFuture(() -> ReplyApi.getReplies(oid, rpid, page, type, sort, list));
             CenterThreadPool.observe(future, (result) -> {
                 if (result != -1) {
+                    loadedRpids.add(rootReply.rpid);
+                    ReplyApi.filterDuplicateReplies(list, loadedRpids);
                     runOnUiThread(() -> {
                         replyList.clear();
                         replyList.add(0, rootReply);

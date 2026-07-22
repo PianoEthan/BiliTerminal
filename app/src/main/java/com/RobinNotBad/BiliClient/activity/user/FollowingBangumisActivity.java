@@ -8,6 +8,7 @@ import com.RobinNotBad.BiliClient.adapter.video.VideoCardAdapter;
 import com.RobinNotBad.BiliClient.api.BangumiApi;
 import com.RobinNotBad.BiliClient.model.VideoCard;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
+import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,10 @@ public class FollowingBangumisActivity extends RefreshListActivity {
                 int result = BangumiApi.getFollowingList(page, list);
                 if (result != -1) {
                     Log.e("debug", "下一页");
+                    //将追番列表条目缓存为已追番（用 season_id 作为 key，与详情页 seasonStatus API 一致）
+                    for (VideoCard vc : list) {
+                        if (vc.aid > 0) SharedPreferencesUtil.putBoolean("bangumi_follow_" + vc.aid, true);
+                    }
                     runOnUiThread(() -> {
                         videoList.addAll(list);
                         videoCardAdapter.notifyItemRangeInserted(videoList.size() - list.size(), list.size());

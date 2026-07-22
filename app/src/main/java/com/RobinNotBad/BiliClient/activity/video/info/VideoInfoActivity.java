@@ -111,9 +111,12 @@ public class VideoInfoActivity extends BaseActivity {
             if (seek_reply != -1) viewPager.setCurrentItem(1);
         }).onFailure((error) -> {
             loading.setImageResource(R.mipmap.loading_2233_error);
-            MsgUtil.showMsg("获取信息失败！\n可能是视频不存在？");
-            CenterThreadPool.runOnUIThreadAfter(5L, TimeUnit.SECONDS, () ->
-                    MsgUtil.err(error));
+            MsgUtil.showMsgLong("获取信息失败！可能是视频不存在？");
+            Logu.e("VideoInfoActivity", "getVideoInfo failed: " + error.getMessage());
+            //视频已失效时2秒后自动关闭页面，避免用户看到卡住的加载界面
+            CenterThreadPool.runOnUIThreadAfter(2L, TimeUnit.SECONDS, () -> {
+                if (!isFinishing()) finish();
+            });
         }));
     }
 

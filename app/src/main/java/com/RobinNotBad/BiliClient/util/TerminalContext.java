@@ -280,58 +280,48 @@ public class TerminalContext {
 
     // ---------------------------- 数据源上下文 ----------------------------------------
     public LiveData<Result<VideoInfo>> getVideoInfoByAidOrBvId(long aid, String bvid) {
-        String key;
-        if (aid > 0) {
-            key = ContentType.Video.getTypeCode() + "_" + aid;
-        } else {
-            key = ContentType.Video.getTypeCode() + "_" + bvid;
-        }
+        String key = aid > 0 ? ContentType.Video.getTypeCode() + "_" + aid : ContentType.Video.getTypeCode() + "_" + bvid;
         Object obj = contentLruCache.get(key);
-        if (!(obj instanceof VideoInfo)) {
-            return CenterThreadPool.supplyAsyncWithLiveData(() -> fetchVideoInfoByAidOrBvId(aid, bvid, true).getOrThrow());
-        } else {
+        if (obj instanceof VideoInfo) {
             return new MutableLiveData<>(Result.success((VideoInfo) obj));
         }
+        return asyncToLiveData(() -> fetchVideoInfoByAidOrBvId(aid, bvid, true));
     }
 
     public LiveData<Result<ArticleInfo>> getArticleInfoByCvId(long cvid) {
         String key = ContentType.Article.getTypeCode() + "_" + cvid;
         Object obj = contentLruCache.get(key);
-        if (!(obj instanceof ArticleInfo)) {
-            return CenterThreadPool.supplyAsyncWithLiveData(() -> fetchArticleInfo(cvid, true).getOrThrow());
-        } else {
+        if (obj instanceof ArticleInfo) {
             return new MutableLiveData<>(Result.success((ArticleInfo) obj));
         }
+        return asyncToLiveData(() -> fetchArticleInfo(cvid, true));
     }
 
     public LiveData<Result<Dynamic>> getDynamicById(long id) {
         String key = ContentType.Dynamic.getTypeCode() + "_" + id;
         Object obj = contentLruCache.get(key);
-        if (!(obj instanceof Dynamic)) {
-            return CenterThreadPool.supplyAsyncWithLiveData(() -> fetchDynamic(id, true).getOrThrow());
-        } else {
+        if (obj instanceof Dynamic) {
             return new MutableLiveData<>(Result.success((Dynamic) obj));
         }
+        return asyncToLiveData(() -> fetchDynamic(id, true));
     }
 
     public LiveData<Result<Opus>> getOpusById(long id) {
         String key = ContentType.Dynamic.getTypeCode() + "_" + id;
         Object obj = contentLruCache.get(key);
-        if (!(obj instanceof Opus)) {
-            return CenterThreadPool.supplyAsyncWithLiveData(() -> fetchOpus(id, true).getOrThrow());
-        } else {
+        if (obj instanceof Opus) {
             return new MutableLiveData<>(Result.success((Opus) obj));
         }
+        return asyncToLiveData(() -> fetchOpus(id, true));
     }
 
     public LiveData<Result<LiveInfo>> getLiveInfoByRoomId(long roomId) {
         String key = ContentType.Live.getTypeCode() + "_" + roomId;
         Object obj = contentLruCache.get(key);
-        if (!(obj instanceof LiveInfo)) {
-            return CenterThreadPool.supplyAsyncWithLiveData(() -> fetchLiveInfo(roomId, true).getOrThrow());
-        } else {
+        if (obj instanceof LiveInfo) {
             return new MutableLiveData<>(Result.success((LiveInfo) obj));
         }
+        return asyncToLiveData(() -> fetchLiveInfo(roomId, true));
     }
 
     public LiveData<Result<Reply>> getReply(ContentType contentType, long contentId, long replyId) {
@@ -339,9 +329,26 @@ public class TerminalContext {
         Object obj = contentLruCache.get(key);
         if (obj instanceof Reply) {
             return new MutableLiveData<>(Result.success((Reply) obj));
-        } else {
-            return CenterThreadPool.supplyAsyncWithLiveData(() -> fetchReply(contentType, contentId, replyId, true).getOrThrow());
         }
+        return asyncToLiveData(() -> fetchReply(contentType, contentId, replyId, true));
+    }
+
+    /**
+     * 将 fetch 任务（返回 Result）包装为 LiveData<Result>，且不抛出异常：
+     * fetch 失败时仅 emit Result.failure，由各 Activity/Fragment 的 onFailure 统一以友好 Toast 提示用户。
+     * 修复前使用 supplyAsyncWithLiveData(...getOrThrow())，fetch 失败时异常逃逸触发 CenterThreadPool 内部的
+     * MsgUtil.err 弹底层异常对话框（如"video object is null"），用户体验差且不必要。
+     */
+    private <T> LiveData<Result<T>> asyncToLiveData(java.util.concurrent.Callable<Result<T>> supplier) {
+        MutableLiveData<Result<T>> liveData = new MutableLiveData<>();
+        CenterThreadPool.run(() -> {
+            try {
+                liveData.postValue(supplier.call());
+            } catch (Exception e) {
+                liveData.postValue(Result.failure(e));
+            }
+        });
+        return liveData;
     }
 
 

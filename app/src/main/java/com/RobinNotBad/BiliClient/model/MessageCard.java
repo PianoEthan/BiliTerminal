@@ -23,6 +23,7 @@ public class MessageCard {
     public long sourceId;
     public long rootId;
     public long targetId;
+    public String contentUri;   //B站消息中的完整内容 URL（用于定位跳转目标）
 
     public static class Cursor {
         public final boolean is_end;

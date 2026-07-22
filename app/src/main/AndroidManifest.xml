@@ -440,6 +440,11 @@
             android:label="热门"
             android:screenOrientation="locked" />
         <activity
+            android:name=".activity.video.HotSearchActivity"
+            android:exported="true"
+            android:label="热搜"
+            android:screenOrientation="locked" />
+        <activity
             android:name=".activity.video.RankingActivity"
             android:exported="true"
             android:label="全站排行榜"

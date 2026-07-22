@@ -26,6 +26,7 @@ import com.RobinNotBad.BiliClient.activity.settings.login.LoginActivity;
 import com.RobinNotBad.BiliClient.activity.user.MySpaceActivity;
 import com.RobinNotBad.BiliClient.activity.video.PopularActivity;
 import com.RobinNotBad.BiliClient.activity.video.PreciousActivity;
+import com.RobinNotBad.BiliClient.activity.video.HotSearchActivity;
 import com.RobinNotBad.BiliClient.activity.video.RankingActivity;
 import com.RobinNotBad.BiliClient.activity.video.RecommendActivity;
 import com.RobinNotBad.BiliClient.activity.video.TimelineActivity;
@@ -58,6 +59,7 @@ public class MenuActivity extends BaseActivity {
     public static final Map<String, Pair<String, Class<? extends InstanceActivity>>> btnNames = new LinkedHashMap<>() {{
         put("recommend", new Pair<>("推荐", RecommendActivity.class));
         put("popular", new Pair<>("热门", PopularActivity.class));
+        put("hotsearch", new Pair<>("热搜", HotSearchActivity.class));
         put("precious", new Pair<>("入站必刷", PreciousActivity.class));
         put("ranking", new Pair<>("全站排行榜", RankingActivity.class));
         put("live", new Pair<>("直播", RecommendLiveActivity.class));
@@ -124,6 +126,7 @@ public class MenuActivity extends BaseActivity {
         }
 
         if (!SharedPreferencesUtil.getBoolean("menu_popular", true)) btnList.remove("popular");
+        if (!SharedPreferencesUtil.getBoolean("menu_hotsearch", true)) btnList.remove("hotsearch");
         if (!SharedPreferencesUtil.getBoolean("menu_precious", false)) btnList.remove("precious");
         if (!SharedPreferencesUtil.getBoolean("menu_ranking", false)) btnList.remove("ranking");
         if (!SharedPreferencesUtil.getBoolean("menu_live", false)) btnList.remove("live");
@@ -250,6 +253,7 @@ public class MenuActivity extends BaseActivity {
         return new ArrayList<>() {{
             add("recommend");
             add("popular");
+            add("hotsearch");
             add("precious");
             add("ranking");
             add("live");

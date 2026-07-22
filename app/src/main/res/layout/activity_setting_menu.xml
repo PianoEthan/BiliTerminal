@@ -69,6 +69,20 @@
                 android:layout_height="wrap_content">
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/menu_hotsearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="显示“热搜”" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/menu_live"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

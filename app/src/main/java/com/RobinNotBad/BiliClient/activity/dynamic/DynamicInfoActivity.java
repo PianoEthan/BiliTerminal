@@ -15,6 +15,8 @@ import com.RobinNotBad.BiliClient.api.ReplyApi;
 import com.RobinNotBad.BiliClient.event.ReplyEvent;
 import com.RobinNotBad.BiliClient.helper.TutorialHelper;
 import com.RobinNotBad.BiliClient.util.AnimationUtils;
+import com.RobinNotBad.BiliClient.util.CenterThreadPool;
+import com.RobinNotBad.BiliClient.util.Logu;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.TerminalContext;
 import org.greenrobot.eventbus.Subscribe;
@@ -62,8 +64,12 @@ public class DynamicInfoActivity extends BaseActivity {
                     AnimationUtils.fadeOut(findViewById(R.id.loading), 100);
                     TutorialHelper.showPagerTutorial(this, 2);
                 }).onFailure((e) -> {
-                    MsgUtil.err(e);
                     ((ImageView) findViewById(R.id.loading)).setImageResource(R.mipmap.loading_2233_error);
+                    MsgUtil.showMsgLong("动态信息获取失败！\n可能已被删除？");
+                    Logu.e("DynamicInfoActivity", "getDynamic failed: " + e.getMessage());
+                    CenterThreadPool.runOnUIThreadAfter(2L, java.util.concurrent.TimeUnit.SECONDS, () -> {
+                        if (isFinishing()) finish();
+                    });
                 }));
 
     }

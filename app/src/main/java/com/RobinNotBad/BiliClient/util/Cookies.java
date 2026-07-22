@@ -16,9 +16,10 @@ public class Cookies {
         cookieMap.clear();
         String[] cookies = cookieString.split("; ");
         for (String cookie : cookies) {
-            String[] parts = cookie.split("=");
-            if (parts.length == 2) {
-                cookieMap.put(parts[0], parts[1]);
+            //按首个等号切分：值本身可能含有等号（如base64填充），也可能为空串
+            int index = cookie.indexOf('=');
+            if (index > 0) {
+                cookieMap.put(cookie.substring(0, index), cookie.substring(index + 1));
             }
         }
     }

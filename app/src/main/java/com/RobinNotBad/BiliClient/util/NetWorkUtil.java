@@ -290,7 +290,7 @@ public class NetWorkUtil {
 
     public static byte[] readStream(InputStream inStream) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[8192];
         int len;
         while ((len = inStream.read(buffer)) != -1) {
             outStream.write(buffer, 0, len);
@@ -302,16 +302,19 @@ public class NetWorkUtil {
 
     public static byte[] uncompress(byte[] inputByte) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(inputByte.length);
+        Inflater inflater = new Inflater(true);
         try {
-            Inflater inflater = new Inflater(true);
             inflater.setInput(inputByte);
             byte[] buffer = new byte[4 * 1024];
             while (!inflater.finished()) {
+                if (inflater.needsInput() || inflater.needsDictionary()) break;   //数据不完整时避免空转
                 int count = inflater.inflate(buffer);
                 outputStream.write(buffer, 0, count);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Logu.e("NetWorkUtil", "uncompress failed");
+        } finally {
+            inflater.end();    //释放底层zlib的native内存
         }
         byte[] output = outputStream.toByteArray();
         outputStream.close();
@@ -321,7 +324,8 @@ public class NetWorkUtil {
     public static String getInfoFromCookie(String name, String cookie) {
         String[] cookies = cookie.split("; ");
         for (String i : cookies) {
-            if (i.contains(name + "="))
+            //每条cookie形态为 name=value，应以前缀匹配，避免 name 是其他cookie名的子串时误中
+            if (i.startsWith(name + "="))
                 return i.substring(name.length() + 1);
         }
         return "";
@@ -353,7 +357,8 @@ public class NetWorkUtil {
             boolean added = false;
             for (int i = 0; i < oldCookies.size(); i++) {  //查找旧cookie表有没有
                 String oldCookie = oldCookies.get(i);
-                if (oldCookie.contains(key)) {
+                //必须前缀匹配：contains会把 sid= 误匹配到 b_lsid= 之类的项，导致互相覆盖
+                if (oldCookie.startsWith(key)) {
                     oldCookies.set(i, newCookie);    //有的话直接换掉
                     added = true;
                     break;

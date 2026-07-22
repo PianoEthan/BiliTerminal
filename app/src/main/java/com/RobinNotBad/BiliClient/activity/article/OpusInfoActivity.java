@@ -18,6 +18,8 @@ import com.RobinNotBad.BiliClient.event.ReplyEvent;
 import com.RobinNotBad.BiliClient.helper.TutorialHelper;
 import com.RobinNotBad.BiliClient.model.Opus;
 import com.RobinNotBad.BiliClient.util.AnimationUtils;
+import com.RobinNotBad.BiliClient.util.CenterThreadPool;
+import com.RobinNotBad.BiliClient.util.Logu;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.TerminalContext;
 
@@ -80,7 +82,12 @@ public class OpusInfoActivity extends BaseActivity {
                     TutorialHelper.showPagerTutorial(this, 2);
                 }).onFailure((error) -> {
                     loadingView.setImageResource(R.mipmap.loading_2233_error);
-                    MsgUtil.err(error);
+                    MsgUtil.showMsgLong("专栏信息获取失败！\n可能已被删除？");
+                    Logu.e("OpusInfoActivity", "getOpus failed: " + error.getMessage());
+                    AnimationUtils.fadeOut(loadingView, 100);
+                    CenterThreadPool.runOnUIThreadAfter(2L, java.util.concurrent.TimeUnit.SECONDS, () -> {
+                        if (isFinishing()) finish();
+                    });
                 }));
 
 

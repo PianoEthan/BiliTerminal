@@ -184,8 +184,8 @@ public class MessageApi {
             if (obj.users != null) for (MsgUser u : obj.users) mc.user.add(parseUser(u));
             LikeItemData item = obj.item;
             if (item == null) { mc.getType = MessageCard.GET_TYPE_LIKE; list.add(mc); continue; }
-            mc.businessId = item.business_id; mc.subjectId = item.item_id; mc.sourceId = item.source_id;
-            mc.rootId = item.root_id; mc.itemType = item.type;
+            mc.businessId = item.business_id; mc.subjectId = item.subject_id; mc.sourceId = item.source_id;
+            mc.rootId = item.root_id; mc.itemType = item.type; mc.contentUri = item.uri;
             switch (item.type) {
                 case "video": mc.content = "等总共 " + obj.counts + " 人点赞了你的视频"; mc.videoCard = parseVideoCard(item); break;
                 case "reply": mc.content = "等总共 " + obj.counts + " 人点赞了你的评论"; mc.replyInfo = buildReply(item, false); break;
@@ -216,6 +216,7 @@ public class MessageApi {
             if (item == null) { mc.getType = MessageCard.GET_TYPE_REPLY; list.add(mc); continue; }
             mc.businessId = item.business_id; mc.subjectId = item.subject_id; mc.sourceId = item.source_id;
             mc.rootId = item.root_id; mc.itemType = item.type; mc.targetId = item.target_id;
+            mc.contentUri = item.uri;
             // 原版逻辑：action 文本显示 source_content（直接父级 C）
             mc.content = (item.source_content != null) ? item.source_content : item.title;
             mc.getType = MessageCard.GET_TYPE_REPLY;
@@ -249,8 +250,9 @@ public class MessageApi {
             mc.user = new ArrayList<>(); if (obj.user != null) mc.user.add(parseUser(obj.user));
             LikeItemData item = obj.item;
             if (item == null) { mc.getType = MessageCard.GET_TYPE_AT; list.add(mc); continue; }
-            mc.businessId = item.business_id; mc.subjectId = item.item_id; mc.sourceId = item.source_id;
+            mc.businessId = item.business_id; mc.subjectId = item.subject_id; mc.sourceId = item.source_id;
             mc.rootId = item.root_id; mc.itemType = item.type; mc.getType = MessageCard.GET_TYPE_AT;
+            mc.contentUri = item.uri;
             switch (item.type) {
                 case "video": mc.videoCard = parseVideoCard(item); break;
                 case "reply": Reply r = buildReply(item, false);

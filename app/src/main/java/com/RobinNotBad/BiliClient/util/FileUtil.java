@@ -32,7 +32,7 @@ public class FileUtil {
     }
 
     public static void deleteFolder(File folder) {
-        if (!folder.exists()) return;
+        if (folder == null || !folder.exists()) return;
 
         if (folder.isFile()) {
             folder.delete();
@@ -40,25 +40,21 @@ public class FileUtil {
         }
 
         File[] templist = folder.listFiles();
-        assert templist != null;
-        for (File file : templist) {
-            if (file.isFile()) {   //如果该项是文件，直接删除
-                file.delete();
-            } else {    //如果该项是目录
-                if (Objects.requireNonNull(file.listFiles()).length != 0)
-                    deleteFolder(file);    //如果子文件夹不是空的，继续扫描下去，实现套娃效果
+        if (templist != null) {
+            for (File file : templist) {
+                //无论是否为空都递归：空目录在递归末尾会被直接删除
+                //（原先仅对非空目录递归，空子目录残留会导致父目录删除失败）
+                deleteFolder(file);
             }
-            Log.e("debug", file.toString());
         }
         folder.delete();
     }
 
     public static String readString(File file) {
         if (file == null || !file.exists() || !file.canRead() || !file.isFile()) return null;
-        try {
+        try (FileInputStream inputStream = new FileInputStream(file);
+             FileChannel channel = inputStream.getChannel()) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            FileInputStream inputStream = new FileInputStream(file);
-            FileChannel channel = inputStream.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate(1 << 13);
             int i;
             while ((i = channel.read(buffer)) != -1) {
@@ -66,9 +62,10 @@ public class FileUtil {
                 outputStream.write(buffer.array(), 0, i);
                 buffer.clear();
             }
-            return outputStream.toString();
+            //用字符串形式：toString(Charset)在API33以下不存在
+            return outputStream.toString("UTF-8");
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("FileUtil", "readString failed: " + file);
             return null;
         }
     }
