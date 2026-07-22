@@ -132,6 +132,10 @@ public class PrivateMsgApi {
         return userMap;
     }
 
+    /**
+     * 获取私信会话列表（参照 PiliPlus getSessionSs 的解析逻辑）
+     * 原 Bug：account_info 条件取反，导致有用户信息的会话全部被过滤
+     */
     public static ArrayList<PrivateMsgSession> getSessionsList(int size)
             throws IOException, JSONException {
         String url =
@@ -139,28 +143,49 @@ public class PrivateMsgApi {
         JSONObject root = NetWorkUtil.getJson(url);
         ArrayList<PrivateMsgSession> sessionList = new ArrayList<>();
         if (root.has("data") && !root.isNull("data")) {
-            JSONArray sessions = root.getJSONObject("data").getJSONArray("session_list");
-            for (int i = 0; i < sessions.length(); ++i) {
-                PrivateMsgSession session = new PrivateMsgSession();
-                JSONObject sessionJson = sessions.getJSONObject(i);
-                session.talkerUid = sessionJson.getLong("talker_id");
-
-                if (!sessionJson.isNull("last_msg")) {
-                    session.contentType = sessionJson.getJSONObject("last_msg").getInt("msg_type");
-                    String content = sessionJson.getJSONObject("last_msg").getString("content");
-
-                    if (content.endsWith("}") && content.startsWith("{"))
-                        session.content = new JSONObject(content);
-                }
-
-                session.unread = sessionJson.getInt("unread_count");
-
-                if (!sessionJson.has("account_info") && sessionJson.isNull("account_info"))
+            JSONObject data = root.getJSONObject("data");
+            if (data.has("session_list") && !data.isNull("session_list")) {
+                JSONArray sessions = data.getJSONArray("session_list");
+                for (int i = 0; i < sessions.length(); ++i) {
+                    PrivateMsgSession session = parseSession(sessions.getJSONObject(i));
                     sessionList.add(session);
-
+                }
             }
         }
         return sessionList;
+    }
+
+    /**
+     * 统一解析单个会话 JSON（参照 PiliPlus session_ss/data.dart）
+     */
+    private static PrivateMsgSession parseSession(JSONObject sessionJson) throws JSONException {
+        PrivateMsgSession session = new PrivateMsgSession();
+        session.talkerUid = sessionJson.getLong("talker_id");
+        session.unread = sessionJson.optInt("unread_count", 0);
+        session.maxSeqno = sessionJson.optLong("max_seqno", 0);
+        session.ackSeqno = sessionJson.optLong("ack_seqno", 0);
+
+        // 解析 account_info 获取用户信息（PiliPlus 风格：直接从 API 取）
+        if (sessionJson.has("account_info") && !sessionJson.isNull("account_info")) {
+            JSONObject accInfo = sessionJson.getJSONObject("account_info");
+            session.talkerName = accInfo.optString("name", "");
+            session.talkerFace = accInfo.optString("face", "");
+        }
+
+        // 解析最后一条消息
+        if (!sessionJson.isNull("last_msg")) {
+            JSONObject lastMsg = sessionJson.getJSONObject("last_msg");
+            session.contentType = lastMsg.optInt("msg_type", 1);
+            session.lastMsgTimestamp = lastMsg.optLong("timestamp", 0);
+            String content = lastMsg.optString("content", "");
+            if (!content.isEmpty() && content.endsWith("}") && content.startsWith("{")) {
+                try {
+                    session.content = new JSONObject(content);
+                } catch (JSONException ignored) {}
+            }
+        }
+
+        return session;
     }
 
     public static ArrayList<PrivateMsgSession> getNewSessionsList(long beginTs, int size, int build, String mobiApp)
@@ -188,19 +213,7 @@ public class PrivateMsgApi {
             if (data.has("session_list") && !data.isNull("session_list")) {
                 JSONArray sessions = data.getJSONArray("session_list");
                 for (int i = 0; i < sessions.length(); ++i) {
-                    PrivateMsgSession session = new PrivateMsgSession();
-                    JSONObject sessionJson = sessions.getJSONObject(i);
-                    session.talkerUid = sessionJson.getLong("talker_id");
-
-                    if (!sessionJson.isNull("last_msg")) {
-                        session.contentType = sessionJson.getJSONObject("last_msg").getInt("msg_type");
-                        String content = sessionJson.getJSONObject("last_msg").getString("content");
-
-                        if (content.endsWith("}") && content.startsWith("{"))
-                            session.content = new JSONObject(content);
-                    }
-
-                    session.unread = sessionJson.getInt("unread_count");
+                    PrivateMsgSession session = parseSession(sessions.getJSONObject(i));
                     sessionList.add(session);
                 }
             }
