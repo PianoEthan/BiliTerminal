@@ -101,23 +101,39 @@ public class PrivateMsgSessionsAdapter
             holder.contentText.setEllipsize(TextUtils.TruncateAt.END);
 
             UserInfo user = userMap != null ? userMap.get(msgContent.talkerUid) : null;
+            String avatarUrl = null;
+            String displayName;
+
             if (user != null) {
-                if (msgContent.unread > 0 && SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PRIVATE_MSG_UNREAD_BADGE_ENABLE, false)) {
-                    SpannableStringBuilder nameStr = new SpannableStringBuilder(user.name);
-                    int nameLength = user.name.length();
-                    nameStr.append(BADGE_TEXT);
-                    nameStr.setSpan(
-                            new RadiusBackgroundSpan(1, cardRoundRadius, BADGE_TEXT_COLOR, BADGE_BG_COLOR),
-                            nameLength + 1, nameStr.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-                    holder.nameText.setText(nameStr);
-                } else {
-                    holder.nameText.setText(user.name);
-                }
-                Glide.with(BiliTerminal.context).asDrawable().load(GlideUtil.url(user.avatar))
+                avatarUrl = user.avatar;
+                displayName = user.name;
+            } else if (msgContent.talkerName != null && !msgContent.talkerName.isEmpty()) {
+                avatarUrl = msgContent.talkerFace;
+                displayName = msgContent.talkerName;
+            } else {
+                displayName = "用户_" + msgContent.talkerUid;
+            }
+
+            if (msgContent.unread > 0 && SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PRIVATE_MSG_UNREAD_BADGE_ENABLE, false)) {
+                SpannableStringBuilder nameStr = new SpannableStringBuilder(displayName);
+                int nameLength = displayName.length();
+                nameStr.append(BADGE_TEXT);
+                nameStr.setSpan(
+                        new RadiusBackgroundSpan(1, cardRoundRadius, BADGE_TEXT_COLOR, BADGE_BG_COLOR),
+                        nameLength + 1, nameStr.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                holder.nameText.setText(nameStr);
+            } else {
+                holder.nameText.setText(displayName);
+            }
+
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                Glide.with(BiliTerminal.context).asDrawable().load(GlideUtil.url(avatarUrl))
                         .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .placeholder(R.mipmap.akari)
                         .apply(RequestOptions.circleCropTransform())
                         .into(holder.avatarView);
+            } else {
+                holder.avatarView.setImageResource(R.mipmap.akari);
             }
 
             holder.itemView.setOnClickListener(view -> {
