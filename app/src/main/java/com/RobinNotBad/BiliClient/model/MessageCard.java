@@ -13,6 +13,7 @@ public class MessageCard {
     public long timeStamp = 0;
     public String timeDesc = "";
     public String content;
+    public String contentUri;
     public VideoCard videoCard = null;
     public Reply replyInfo = null;
     public Reply dynamicInfo = null;

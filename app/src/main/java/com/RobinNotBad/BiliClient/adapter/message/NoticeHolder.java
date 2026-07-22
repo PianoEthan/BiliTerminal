@@ -201,11 +201,11 @@ public class NoticeHolder extends RecyclerView.ViewHolder {
         }
 
         // URI 解析失败，按 subjectId / sourceId 回退（参照 PiliPlus 容错逻辑）
-        if (msg.subjectId > 0 && msg.subjectId > 100000000) {
+        if (msg.subjectId > 100000000) {
             TerminalContext.getInstance().enterDynamicDetailPage(context, msg.subjectId, 0, seekReply);
             return;
         }
-        if (msg.sourceId > 0 && msg.sourceId > 100000000) {
+        if (msg.sourceId > 100000000) {
             TerminalContext.getInstance().enterDynamicDetailPage(context, msg.sourceId, 0, seekReply);
             return;
         }
