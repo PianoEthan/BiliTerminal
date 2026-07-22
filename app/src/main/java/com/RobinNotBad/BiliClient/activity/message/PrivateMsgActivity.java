@@ -68,16 +68,21 @@ public class PrivateMsgActivity extends BaseActivity {
         CenterThreadPool.run(() -> {
             try {
                 allMsg = PrivateMsgApi.getPrivateMsg(uid, 50, 0, 0);
+                if (allMsg == null || allMsg.length() == 0) {
+                    runOnUiThread(() -> MsgUtil.showMsg("无法加载私信，请检查网络或登录状态"));
+                    return;
+                }
                 list = PrivateMsgApi.getPrivateMsgList(allMsg);
                 Collections.reverse(list);
                 emoteArray = PrivateMsgApi.getEmoteJsonArray(allMsg);
                 adapter = new PrivateMsgAdapter(list, emoteArray, this);
                 
+                // PiliPlus 式自动标记已读
                 if (SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PRIVATE_MSG_AUTO_READ_ENABLE, true)) {
                     try {
                         PrivateMsgApi.updateAck(uid, 1, 0);
                     } catch (Exception e) {
-                        Log.e("PrivateMsgActivity", "自动已读失败", e);
+                        Log.e("PrivateMsgActivity", "标记已读失败", e);
                     }
                 }
                 
@@ -138,31 +143,30 @@ public class PrivateMsgActivity extends BaseActivity {
 
         sendBtn.setOnClickListener(view -> CenterThreadPool.run(() -> {
             try {
-                if (!contentEt.getText().toString().equals("")) {
-                    String content = contentEt.getText().toString();
+                String content = contentEt.getText().toString().trim();
+                if (!content.isEmpty()) {
                     runOnUiThread(() -> contentEt.setText(""));
-                    JSONObject result = PrivateMsgApi.sendMsg(SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, 114514), uid, PrivateMessage.TYPE_TEXT, System.currentTimeMillis() / 1000, "{\"content\":\"" + content + "\"}");
+                    // PiliPlus 格式：content 包裹为 JSON
+                    JSONObject result = PrivateMsgApi.sendMsg(
+                            SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, 0),
+                            uid,
+                            PrivateMessage.TYPE_TEXT,
+                            System.currentTimeMillis() / 1000,
+                            "{\"content\":\"" + content.replace("\"", "\\\"") + "\"}");
                     runOnUiThread(() -> {
-                        try {
-                            if (result.getInt("code") == 0) {
-                                MsgUtil.showMsg("发送成功");
-                                refresh();
-                            } else {
-                                if (result.getInt("code") == 21047) {
-                                    MsgUtil.showMsg(result.getString("message"));
-                                }
-                                MsgUtil.showMsg("发送失败");
-                            }
-                        } catch (JSONException e) {
-                            MsgUtil.showMsg("发送失败：\n" + result);
-                            e.printStackTrace();
+                        if (result.optInt("code", -1) == 0) {
+                            MsgUtil.showMsg("发送成功");
+                            refresh();
+                        } else {
+                            String msg = result.optString("message", result.optString("msg", "发送失败"));
+                            MsgUtil.showMsg("发送失败：" + msg);
                         }
                     });
                 } else {
                     runOnUiThread(() -> MsgUtil.showMsg("你还木有输入喵~"));
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> MsgUtil.err(e));
+                runOnUiThread(() -> MsgUtil.showMsg("发送失败：" + e.getMessage()));
             }
         }));
     }
@@ -206,10 +210,12 @@ public class PrivateMsgActivity extends BaseActivity {
     private void refresh() {
         CenterThreadPool.run(() -> {
             try {
+                if (list.isEmpty()) return;
                 int oldListSize = list.size();
-                JSONObject msgResult = PrivateMsgApi.getPrivateMsg(uid, 50, list.get(list.size() - 1).msgSeqno, 0);
+                long lastSeqno = list.get(list.size() - 1).msgSeqno;
+                JSONObject msgResult = PrivateMsgApi.getPrivateMsg(uid, 50, lastSeqno, 0);
                 ArrayList<PrivateMessage> newList = PrivateMsgApi.getPrivateMsgList(msgResult);
-                if (newList.size() > 0) {
+                if (!newList.isEmpty()) {
                     for (int i = 0; i < PrivateMsgApi.getEmoteJsonArray(msgResult).length(); ++i) {
                         JSONObject emote = PrivateMsgApi.getEmoteJsonArray(msgResult).getJSONObject(i);
                         emoteArray.put(emote);
@@ -225,7 +231,7 @@ public class PrivateMsgActivity extends BaseActivity {
                     });
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> MsgUtil.err(e));
+                Log.e("PrivateMsgActivity", "refresh error", e);
             }
         });
     }
@@ -236,7 +242,8 @@ public class PrivateMsgActivity extends BaseActivity {
         MsgUtil.showMsg("加载更多中...");
         CenterThreadPool.run(() -> {
             try {
-                if (allMsg.getInt("has_more") == 1) {
+                int hasMore = allMsg.optInt("has_more", 0);
+                if (hasMore == 1 && !list.isEmpty()) {
                     allMsg = PrivateMsgApi.getPrivateMsg(uid, 15, 0, list.get(0).msgSeqno);
                     Log.e("", allMsg.toString());
                     ArrayList<PrivateMessage> newList = PrivateMsgApi.getPrivateMsgList(allMsg);
@@ -246,19 +253,18 @@ public class PrivateMsgActivity extends BaseActivity {
                         JSONObject emote = PrivateMsgApi.getEmoteJsonArray(allMsg).getJSONObject(i);
                         emoteArray.put(emote);
                     }
-                    for (PrivateMessage a : list) {
-                        Log.e("msgAll", a.msgSeqno + a.name + "." + a.uid + "." + a.msgId + "." + a.timestamp + "." + a.content + "." + a.type);
-                    }
 
-                    Log.e("loadMore", "loadMore");
                     runOnUiThread(() -> {
                         adapter.addItem(newList);
                         MsgUtil.showMsg("已加载更多消息！");
                     });
-                    isLoadingMore = false;
-                } else runOnUiThread(() -> MsgUtil.showMsg("没有更多消息了"));
+                } else {
+                    runOnUiThread(() -> MsgUtil.showMsg("没有更多消息了"));
+                }
             } catch (Exception e) {
-                runOnUiThread(() -> MsgUtil.err(e));
+                runOnUiThread(() -> MsgUtil.showMsg("加载失败：" + e.getMessage()));
+            } finally {
+                isLoadingMore = false;
             }
         });
     }
