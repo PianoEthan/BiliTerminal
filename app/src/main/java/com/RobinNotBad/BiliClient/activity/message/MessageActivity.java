@@ -89,7 +89,12 @@ public class MessageActivity extends InstanceActivity {
             CenterThreadPool.run(() -> {
                 try {
                     JSONObject stats = MessageApi.getUnread();
-                    ArrayList<PrivateMsgSession> sessionsList = PrivateMsgApi.getSessionsList(20);
+                    // 使用 getNewSessionsList 获取更完整的会话数据
+                    ArrayList<PrivateMsgSession> sessionsList = PrivateMsgApi.getNewSessionsList(0, 20, 0, "web");
+                    // 如果新接口返回为空，回退到旧接口
+                    if (sessionsList.isEmpty()) {
+                        sessionsList = PrivateMsgApi.getSessionsList(20);
+                    }
                     Collections.sort(sessionsList, (o1, o2) -> {
                         boolean o1Unread = o1.unread > 0;
                         boolean o2Unread = o2.unread > 0;
@@ -100,21 +105,30 @@ public class MessageActivity extends InstanceActivity {
                         }
                         return 0;
                     });
+                    // 使用 session 自带的信息 + 批量用户查询兜底
                     ArrayList<Long> uidList = new ArrayList<>();
                     for (PrivateMsgSession item : sessionsList) {
                         uidList.add(item.talkerUid);
                     }
-                    HashMap<Long, UserInfo> userMap = PrivateMsgApi.getUsersInfo(uidList);
+                    HashMap<Long, UserInfo> userMap = new HashMap<>();
+                    try {
+                        if (!uidList.isEmpty()) {
+                            userMap = PrivateMsgApi.getUsersInfo(uidList);
+                        }
+                    } catch (Exception ignored) {}
+
                     PrivateMsgSessionsAdapter adapter = new PrivateMsgSessionsAdapter(this, sessionsList, userMap);
                     runOnUiThread(() -> {
                         swipeRefreshLayout.setRefreshing(false);
                         try {
-                            ((TextView) findViewById(R.id.reply_text)).setText("回复我的"
-                                    + ((stats.getInt("reply") > 0) ? ("(" + stats.getInt("reply") + "未读)") : ""));
-                            ((TextView) findViewById(R.id.like_text)).setText(
-                                    "收到的赞" + ((stats.getInt("like") > 0) ? ("(" + stats.getInt("like") + "未读)") : ""));
-                            ((TextView) findViewById(R.id.at_text)).setText(
-                                    "@我" + ((stats.getInt("at") > 0) ? ("(" + stats.getInt("at") + "未读)") : ""));
+                            if (stats != null) {
+                                ((TextView) findViewById(R.id.reply_text)).setText("回复我的"
+                                        + ((stats.getInt("reply") > 0) ? ("(" + stats.getInt("reply") + "未读)") : ""));
+                                ((TextView) findViewById(R.id.like_text)).setText(
+                                        "收到的赞" + ((stats.getInt("like") > 0) ? ("(" + stats.getInt("like") + "未读)") : ""));
+                                ((TextView) findViewById(R.id.at_text)).setText(
+                                        "@我" + ((stats.getInt("at") > 0) ? ("(" + stats.getInt("at") + "未读)") : ""));
+                            }
                             sessionsView.setLayoutManager(new CustomLinearManager(this));
                             sessionsView.setAdapter(adapter);
                             SharedPreferencesUtil.putInt(SharedPreferencesUtil.MESSAGE_UPDATE_NUM, 0);
@@ -128,7 +142,10 @@ public class MessageActivity extends InstanceActivity {
                         scrollView.requestFocus();
                     });
                 } catch (Exception e) {
-                    runOnUiThread(() -> MsgUtil.err(e));
+                    runOnUiThread(() -> {
+                        swipeRefreshLayout.setRefreshing(false);
+                        MsgUtil.err(e);
+                    });
                 }
             });
 
