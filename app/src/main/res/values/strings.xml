@@ -245,14 +245,8 @@
 
     #新增功能放到上面，修复问题放下面，方便用户看见
     <string-array name="update_log_items">
-        <item>将修改用户描述改为修改个人信息</item>
-        <item>新增修改用户头像,用户描述(原有),用户昵称,用户性别</item>
-        <item>新增长按"推荐"刷新视频</item>
-        <item>增加隐私模式，开启后看视频不记录历史</item>
-        <item>对原有的脆弱解析逻辑进行了较大重构</item>
-        <item>修复原版未登录下无法看视频的问题</item>
-        <item>修复搜索界面表冠滚动异常的问题(直接把组件替换了)</item>
-        <item>修改了"我的"-"大会员"图标,"我的"-"登录记录"图标</item>
+        <item>增加热搜排行榜</item>
+        <item>增加番剧追番按钮</item>
     </string-array>
 
     <string name="tutorial_pager">提示\n\n←这个页面可以左右翻页喵→\n\n（共有%d页，滑动一下不再显示）</string>
