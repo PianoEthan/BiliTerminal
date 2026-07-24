@@ -155,7 +155,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
     private Handler mainHandler;
     private Runnable danmakuSyncRunnable;
     private String video_url, danmaku_url;
-    private MediaSession mediaSession;
+    private Object mediaSession;
 
     private boolean isPlaying, isPrepared, hasDanmaku,
             isOnlineVideo, isLiveMode, isSeeking, isDanmakuVisible;
@@ -1771,7 +1771,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
-            mediaSession.release();
+            ((MediaSession) mediaSession).release();
             mediaSession = null;
         }
 
@@ -1861,9 +1861,9 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
         }
-        mediaSession = new MediaSession(this, "BiliClientPlayer");
-        mediaSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
-        mediaSession.setCallback(new MediaSession.Callback() {
+        MediaSession session = new MediaSession(this, "BiliClientPlayer");
+        session.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        session.setCallback(new MediaSession.Callback() {
             @Override
             public void onPlay() {
                 super.onPlay();
@@ -1915,13 +1915,15 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 });
             }
         });
-        mediaSession.setActive(true);
+        session.setActive(true);
+        mediaSession = session;
     }
 
     private void updateMediaSessionMetadata() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || mediaSession == null) {
             return;
         }
+        MediaSession session = (MediaSession) mediaSession;
         MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
         if (videoTitle != null) {
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_TITLE, videoTitle);
@@ -1929,13 +1931,14 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         if (video_all > 0) {
             metadataBuilder.putLong(MediaMetadata.METADATA_KEY_DURATION, video_all);
         }
-        mediaSession.setMetadata(metadataBuilder.build());
+        session.setMetadata(metadataBuilder.build());
     }
 
     private void updateMediaSessionPlaybackState() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || mediaSession == null) {
             return;
         }
+        MediaSession session = (MediaSession) mediaSession;
         int state = isPlaying ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED;
         long position = isPrepared && ijkPlayer != null ? ijkPlayer.getCurrentPosition() : 0;
         long actions = PlaybackState.ACTION_PLAY
@@ -1952,7 +1955,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         PlaybackState.Builder stateBuilder = new PlaybackState.Builder()
                 .setState(state, position, 1.0f)
                 .setActions(actions);
-        mediaSession.setPlaybackState(stateBuilder.build());
+        session.setPlaybackState(stateBuilder.build());
     }
 
     private void initUI() {
