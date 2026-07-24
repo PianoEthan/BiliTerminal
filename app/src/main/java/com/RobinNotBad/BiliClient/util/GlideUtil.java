@@ -2,6 +2,7 @@ package com.RobinNotBad.BiliClient.util;
 
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -19,10 +20,14 @@ public class GlideUtil {
     public static final int MAX_W_HIGH = 1024;
     public static final int MAX_W_LOW = 512;
 
+    public static boolean defaultRequestJpg() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2;
+    }
+
     public static String url(String url) {
         if (!url.startsWith("http") || url.endsWith("gif") || url.contains("@") || url.contains("afdian"))
             return url;
-        if (SharedPreferencesUtil.getBoolean("image_request_jpg", false)) {
+        if (SharedPreferencesUtil.getBoolean("image_request_jpg", defaultRequestJpg())) {
             if (url.endsWith("jpeg") || url.endsWith("jpg")) return url;
             return url + "@0e_"
                     + QUALITY_LOW + "q_"
@@ -40,7 +45,7 @@ public class GlideUtil {
     public static String url_hq(String url) {
         if (!url.startsWith("http") || url.endsWith("gif") || url.contains("@") || url.contains("afdiancdn.com"))
             return url;
-        if (SharedPreferencesUtil.getBoolean("image_request_jpg", false)) {
+        if (SharedPreferencesUtil.getBoolean("image_request_jpg", defaultRequestJpg())) {
             if (url.endsWith("jpeg") || url.endsWith("jpg")) return url;
             return url + "@0e_"
                     + QUALITY_HIGH + "q_"
