@@ -48,7 +48,7 @@ public class BaseActivity extends AppCompatActivity {
     public final ActivityResultLauncher<Intent> relayDynamicLauncher = getRelayDynamicLauncher(this);
     public boolean force_single_column = false;
 
-    //调整应用内dpi的代码，其他Activity要继承于BaseActivity才能调大小
+    //硬件加速由 BiliTerminal 统一处理，各 Activity 无需单独设置
     @Override
     protected void attachBaseContext(Context newBase) {
         old_context = newBase;

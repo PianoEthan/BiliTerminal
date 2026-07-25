@@ -8,6 +8,7 @@ import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.activity.base.RefreshListActivity;
 import com.RobinNotBad.BiliClient.adapter.SettingsAdapter;
 import com.RobinNotBad.BiliClient.model.SettingSection;
+import com.RobinNotBad.BiliClient.util.GlideUtil;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class SettingPrefActivity extends RefreshListActivity {
                 add(new SettingSection("switch", "禁止视频在相册中显示", "save_ban_gallery", getString(R.string.desc_ban_gallery),
                         "true"));
                 add(new SettingSection("switch", "请求JPG格式图片", "image_request_jpg",
-                        getString(R.string.desc_img_request_jpg), "false"));
+                        getString(R.string.desc_img_request_jpg), String.valueOf(GlideUtil.defaultRequestJpg())));
 
                 add(new SettingSection("title", "视觉", "", "", ""));
                 add(new SettingSection("switch", "加载渐入渐出动画", SharedPreferencesUtil.LOAD_TRANSITION,

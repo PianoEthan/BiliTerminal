@@ -1,6 +1,7 @@
 package com.RobinNotBad.BiliClient;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,9 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.util.DisplayMetrics;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 
 import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
@@ -50,6 +54,8 @@ public class BiliTerminal extends Application {
             ErrorCatch errorCatch = ErrorCatch.getInstance();
             errorCatch.init(context);
 
+            tryHardwareAcceleration();
+
             boolean debugBuild = isDebugBuild();
             Logu.LOGV_ENABLED = SharedPreferencesUtil.getBoolean("dev_logv", debugBuild);
             Logu.LOGD_ENABLED = SharedPreferencesUtil.getBoolean("dev_logd", debugBuild);
@@ -79,6 +85,40 @@ public class BiliTerminal extends Application {
                     }
                 });
             }
+        }
+    }
+
+    private void tryHardwareAcceleration() {
+        // API < 16 只能关硬件加速避免 GLES20Canvas.clipPath 崩溃（虽然这个方案很难绷啊）
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return;
+        }
+        try {
+            Class<?> cbInterface = Class.forName("android.app.Application$ActivityLifecycleCallbacks");
+            java.lang.reflect.Method register = Application.class.getMethod(
+                    "registerActivityLifecycleCallbacks", cbInterface);
+            int flagHwAccel = android.view.WindowManager.LayoutParams.class
+                    .getField("FLAG_HARDWARE_ACCELERATED").getInt(null);
+
+            Object cb = Proxy.newProxyInstance(cbInterface.getClassLoader(),
+                    new Class<?>[]{cbInterface}, new InvocationHandler() {
+                        @Override
+                        public Object invoke(Object proxy, java.lang.reflect.Method method,
+                                             Object[] args) {
+                            if ("onActivityCreated".equals(method.getName())
+                                    && args != null && args.length > 0
+                                    && args[0] instanceof Activity) {
+                                try {
+                                    ((Activity) args[0]).getWindow().setFlags(flagHwAccel, flagHwAccel);
+                                } catch (Exception ignored) {
+                                }
+                            }
+                            return null;
+                        }
+                    });
+            register.invoke(this, cb);
+        } catch (Exception e) {
+            Logu.e("HWAccel", "反射启用硬件加速失败: " + e.getMessage());
         }
     }
 

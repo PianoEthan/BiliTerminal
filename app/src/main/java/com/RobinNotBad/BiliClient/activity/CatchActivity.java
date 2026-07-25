@@ -70,7 +70,8 @@ public class CatchActivity extends BaseActivity {
         });
 
         if (reason_str != null) {
-            reason_str.setSpan(new StyleSpan(Typeface.BOLD), 0, 8, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            int endPos = Math.min(8, reason_str.length());
+            reason_str.setSpan(new StyleSpan(Typeface.BOLD), 0, endPos, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             reason_view.setText(reason_str);
         } else reason_view.setText("未知的崩溃原因");
 
