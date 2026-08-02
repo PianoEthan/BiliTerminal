@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
 }
 
-int betaVer = 0 //如果为0则是正式版
+int betaVer = 1 //如果为0则是正式版
 
 android {
 
@@ -29,7 +29,7 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdk 26
         versionCode 20260722
-        versionName "3.0.4-Qx"
+        versionName "3.1.0-Qx"
 
         if (betaVer) {
             versionName += "-BETA" + betaVer
@@ -46,20 +46,12 @@ android {
     }
 
     signingConfigs {
-        // debug/release 统一使用 testkey（与 qmme 同款）
-        debug {
-            storeFile file('/home/rj/qmme/app/testkey.jks')
-            storePassword 'android'
-            keyAlias 'key'
-            keyPassword 'android'
-        }
         release {
             def localPropsFile = project.rootProject.file("local.properties")
             def hasFormalKey = false
             if (localPropsFile.exists()) {
                 def props = new Properties()
                 props.load(localPropsFile.newDataInputStream())
-                //必须用 containsKey：hasProperty 查的是 Groovy 对象属性而非 Properties 的键，会误返回 false 导致 storeFile 不设置
                 if (props.containsKey("KEY_PATH")) {
                     hasFormalKey = true
                     storeFile file(props.getProperty("KEY_PATH"))
@@ -68,9 +60,8 @@ android {
                     keyPassword props.getProperty("ALIAS_PASSWORD")
                 }
             }
-            // 未配置正式密钥时兜底 testkey，保证 release 也能直接安装
             if (!hasFormalKey) {
-                storeFile file('/home/rj/qmme/app/testkey.jks')
+                storeFile file('./testkey.jks')
                 storePassword 'android'
                 keyAlias 'key'
                 keyPassword 'android'
@@ -89,17 +80,14 @@ android {
             if (localPropsFile.exists()) {
                 def props = new Properties()
                 props.load(localPropsFile.newDataInputStream())
-                //必须用 containsKey：hasProperty 查的是 Groovy 对象属性而非 Properties 的键，会误返回 false 导致 release 不签名
                 if (props.containsKey("KEY_PATH")) {
                     signingConfig signingConfigs.release
                 }
             }
-            // 未配置正式密钥时也始终签名（signingConfigs.release 内部兜底 testkey）
-            signingConfig signingConfigs.release
         }
         debug {
             buildConfigField "boolean", "BETA", String.valueOf(betaVer > 0)
-            signingConfig signingConfigs.debug
+            // signingConfig signingConfigs.release
         }
     }
 

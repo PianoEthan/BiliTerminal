@@ -431,6 +431,17 @@ public class ThemeApplier {
         retintBackground(v, tm.getPalette());
     }
 
+    /**
+     * 对话框内容染色（AlertDialog 等不经扼点的树）。
+     * show 后布局完成即染一次（幂等 tag 保证）。
+     */
+    public static void tintDialog(final android.app.Dialog dialog) {
+        if (dialog == null || dialog.getWindow() == null) return;
+        dialog.getWindow().getDecorView().addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (v.getTag(R.id.theme_applied_gen) == null) applyContent(v);
+        });
+    }
+
     private static void retintBackground(View view, ThemePalette p) {
         // 单色背景跟随色板：
         // - 有彩度 → accent
@@ -453,6 +464,30 @@ public class ThemeApplier {
                 // 灰阶中性表面：透明度<0x60 属分隔/弱化层，用 outline 色保持可见
                 int rgb = alpha < 0x60 ? ThemePalette.withAlpha(p.gray, 0xFF) : ThemePalette.withAlpha(p.surfaceCard, 0xFF);
                 view.setBackgroundColor(ThemePalette.withAlpha(rgb, alpha));
+            }
+        } else if (bg instanceof android.graphics.drawable.StateListDrawable) {
+            // 状态选择器背景（如互动投票芯片：默认态灰阶、按压态粉色）
+            // 逐状态原地 mutate 染色：彩色 → accent；灰阶 → surfaceCard/gray 分档。
+            // getStateCount/getStateDrawable 为 API21+；<21 保持原样。
+            if (android.os.Build.VERSION.SDK_INT >= 21) {
+                android.graphics.drawable.StateListDrawable sld = (android.graphics.drawable.StateListDrawable) bg;
+                int count = sld.getStateCount();
+                for (int i = 0; i < count; i++) {
+                    Drawable state = sld.getStateDrawable(i);
+                    if (state == null) continue;
+                    Drawable.ConstantState cs = state.getConstantState();
+                    int[] c = cs == null ? null : MONO_ICON_CACHE.get(cs);
+                    if (c == null) {
+                        c = classifyDrawable(state);
+                        if (cs != null) MONO_ICON_CACHE.put(cs, c);
+                    }
+                    if (c[0] == ICON_SATURATED) {
+                        ThemeCompat.tintDrawable(state, p.accent);
+                    } else if (c[0] == ICON_GRAYSCALE) {
+                        int rgb = c[1] < 0x60 ? ThemePalette.withAlpha(p.gray, 0xFF) : ThemePalette.withAlpha(p.surfaceCard, 0xFF);
+                        ThemeCompat.tintDrawable(state, ThemePalette.withAlpha(rgb, c[1]));
+                    }
+                }
             }
         } else if (bg instanceof android.graphics.drawable.GradientDrawable
                 || bg instanceof android.graphics.drawable.ShapeDrawable) {

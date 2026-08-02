@@ -319,6 +319,8 @@ public class BangumiInfoFragment extends BaseFragment {
             dialog.dismiss();
         });
         dialog = builder.create();
+        // 主题：对话框内容不经扼点，show 后补染
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.tintDialog(dialog);
 
         return dialog;
     }
@@ -345,6 +347,8 @@ public class BangumiInfoFragment extends BaseFragment {
             dialog.dismiss();
         });
         dialog = builder.create();
+        // 主题：对话框内容不经扼点，show 后补染
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.tintDialog(dialog);
 
         return dialog;
     }
