@@ -40,6 +40,7 @@ public class ShowTextActivity extends BaseActivity {
                     JSONObject jsonObject = new JSONObject(content.substring(extra_start + 14));
                     if (jsonObject.getString("type").equals("video")) {
                         View videoCard = View.inflate(this, R.layout.cell_message_reply, findViewById(R.id.linearLayout));
+                        com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContent(videoCard);
                         MaterialCardView cardView = videoCard.findViewById(R.id.cardView);
                         cardView.setOnClickListener((view) -> BiliTerminal.jumpToVideo(this, jsonObject.optString("content")));
                         TextView title_video = videoCard.findViewById(R.id.content);

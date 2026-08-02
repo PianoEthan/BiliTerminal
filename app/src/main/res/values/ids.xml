@@ -6,4 +6,6 @@
     <item name="theme_applied_gen" type="id" />
     <!-- 主题染色：RecyclerView 子项附着监听已挂载 -->
     <item name="theme_rv_hooked" type="id" />
+    <!-- edge-to-edge：已应用的 insets 记录（幂等 tag） -->
+    <item name="theme_insets_applied" type="id" />
 </resources>

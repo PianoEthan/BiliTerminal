@@ -97,10 +97,56 @@ public class ThemeApplier {
         if (windowBg == null) windowBg = new ColorDrawable(palette.windowBackground);
         activity.getWindow().setBackgroundDrawable(windowBg);
 
+        // edge-to-edge：内容延伸到系统栏，系统栏透明，insets 让位
+        // （Player/Splash 全屏本就无系统栏，不受影响）
+        setupEdgeToEdge(activity, palette, tm.isDark());
+
         // 状态栏跟随强调色
         if (android.os.Build.VERSION.SDK_INT >= 21) {
             try {
                 activity.getWindow().setStatusBarColor(ThemePalette.withAlpha(palette.accent, 0xFF));
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    /** edge-to-edge：decorFitsSystemWindows=false + 透明系统栏 + insets 让位（幂等） */
+    private static void setupEdgeToEdge(final Activity activity, final ThemePalette p, final boolean dark) {
+        if (activity == null || activity.getWindow() == null) return;
+        // 全屏/无状态栏页面跳过（Player/Splash/圆屏）
+        if (android.os.Build.VERSION.SDK_INT >= 16) {
+            int flags = activity.getWindow().getDecorView().getSystemUiVisibility();
+            if ((flags & android.view.View.SYSTEM_UI_FLAG_FULLSCREEN) != 0) return;
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            activity.getWindow().setDecorFitsSystemWindows(false);
+        } else if (android.os.Build.VERSION.SDK_INT >= 21) {
+            activity.getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            activity.getWindow().getDecorView().setSystemUiVisibility(
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE | android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            if (dark) activity.getWindow().getDecorView().setSystemUiVisibility(
+                    activity.getWindow().getDecorView().getSystemUiVisibility()
+                            | android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+        // insets 让位：内容顶部让出状态栏高度，底部让出导航栏（仅 BaseActivity 布局）
+        final View content = activity.findViewById(android.R.id.content);
+        if (content == null) return;
+        if (android.os.Build.VERSION.SDK_INT >= 21) {
+            content.setOnApplyWindowInsetsListener((v, insets) -> {
+                if (v.getTag(R.id.theme_insets_applied) != null) return insets;
+                v.setTag(R.id.theme_insets_applied, Boolean.TRUE);
+                int top = insets.getSystemWindowInsetTop();
+                int bottom = insets.getSystemWindowInsetBottom();
+                v.setPadding(0, top, 0, bottom);
+                return insets;
+            });
+            content.requestApplyInsets();
+        } else {
+            // API21 以下：手动读状态栏高度让位（无 insets API）
+            try {
+                int resId = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+                int top = resId > 0 ? activity.getResources().getDimensionPixelSize(resId) : 0;
+                content.setPadding(0, top, 0, 0);
             } catch (Exception ignored) {
             }
         }
@@ -310,6 +356,8 @@ public class ThemeApplier {
             EditText editText = (EditText) view;
             if (editText.getHintTextColors() != null) editText.setHintTextColor(p.textTransparent);
             if (isThemedTextColor(editText.getCurrentTextColor())) editText.setTextColor(p.textPrimary);
+            // drawableEnd 等复合图标（搜索放大镜等）随主题文字色
+            ThemeCompat.tintCompoundDrawables(editText, p.textPrimary);
             // 光标跟随强调色（API29+ 才有公开 setter）
             if (android.os.Build.VERSION.SDK_INT >= 29) {
                 try {

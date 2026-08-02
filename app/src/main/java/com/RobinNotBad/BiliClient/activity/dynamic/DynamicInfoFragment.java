@@ -78,6 +78,7 @@ public class DynamicInfoFragment extends BaseFragment {
         }
 
         View dynamicView = View.inflate(requireContext(), R.layout.cell_dynamic, scrollView);
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContent(dynamicView);
         DynamicHolder holder = new DynamicHolder(dynamicView, (BaseActivity) getActivity(), false);
         holder.showDynamic(requireContext(), dynamic, false);
         View.OnLongClickListener onDeleteLongClick = DynamicHolder.getDeleteListener(requireActivity(), dynamic);

@@ -257,6 +257,7 @@ public class ThemeManager {
     private synchronized void regenerate() {
         paletteDark = null; // 使深色套缓存失效
         palette = computePalette(dark);
+        ContentTintHelper.clearCache(); // 明暗位/色板变了，内容取色缓存一并失效
     }
 
     /** 按指定明暗计算色板（纯计算；深浅两套始终可独立取得） */

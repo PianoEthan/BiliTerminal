@@ -1718,12 +1718,22 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
     /** 内容动态取色：封面 extra → 播放器进度条强调色（Player 永不 recreate） */
     private void applyContentTint() {
+        // 进度条原生 progressTint（蓝色）会盖掉 drawable 染色：API21+ 用 TintList 接管
+        if (android.os.Build.VERSION.SDK_INT >= 21 && seekbar_progress != null) {
+            com.RobinNotBad.BiliClient.theme.ThemePalette dp = com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
+            seekbar_progress.setProgressTintList(android.content.res.ColorStateList.valueOf(dp.accent));
+            seekbar_progress.setSecondaryProgressTintList(android.content.res.ColorStateList.valueOf(dp.textTransparent));
+        }
         final String cover = getIntent().getStringExtra("cover");
         if (cover == null || cover.isEmpty()) return;
         com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(this, cover, true, tint -> {
             if (isFinishing() || seekbar_progress == null) return;
             seekbar_progress.setAccentColors(tint.accent, tint.container);
             com.RobinNotBad.BiliClient.theme.ThemeCompat.tintSeekBar(seekbar_progress, tint.accent);
+            if (android.os.Build.VERSION.SDK_INT >= 21) {
+                seekbar_progress.setProgressTintList(android.content.res.ColorStateList.valueOf(tint.accent));
+                seekbar_progress.setSecondaryProgressTintList(android.content.res.ColorStateList.valueOf(0xEEFFFFFF));
+            }
         });
     }
 
@@ -2860,6 +2870,8 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
     private TextView createChoiceView(InteractionVideoData.InteractionChoice choice) {
         TextView choiceView = (TextView) LayoutInflater.from(this).inflate(R.layout.cell_interaction_choice, null);
+        // 主题：动态 inflate 不进扼点，补染（播放器永久深色）
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContentForcedDark(choiceView);
         choiceView.setText(choice.option);
         float fontSize = SharedPreferencesUtil.getFloat("player_interaction_choice_size", 17.0f);
         choiceView.setTextSize(fontSize);

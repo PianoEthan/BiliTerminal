@@ -7,6 +7,7 @@
         <item name="android:colorForeground">@color/textwhite</item>
         <item name="colorOnPrimary">@color/textwhite</item>
         <item name="colorPrimary">@color/textwhite</item>
+        <item name="colorAccent">@color/textwhite</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowSwipeToDismiss" tools:ignore="NewApi">true</item>
 

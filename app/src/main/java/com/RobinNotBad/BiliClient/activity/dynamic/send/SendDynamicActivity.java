@@ -67,10 +67,13 @@ public class SendDynamicActivity extends BaseActivity {
             }
             if (forward != null) {
                 View childCard = View.inflate(this, R.layout.cell_dynamic, extraCard);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContent(childCard);
                 DynamicHolder holder = new DynamicHolder(childCard, this, false);
                 holder.showDynamic(this, forward, false);
             } else if (video != null) {
-                VideoCardHolder holder = new VideoCardHolder(LayoutInflater.from(this).inflate(R.layout.cell_video_list, extraCard));
+                View videoCard = LayoutInflater.from(this).inflate(R.layout.cell_video_list, extraCard);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContent(videoCard);
+                VideoCardHolder holder = new VideoCardHolder(videoCard);
                 holder.showVideoCard(video.toCard(), this);
             }
 

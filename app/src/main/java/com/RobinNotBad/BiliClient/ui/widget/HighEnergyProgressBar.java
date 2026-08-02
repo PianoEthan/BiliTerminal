@@ -33,7 +33,8 @@ public class HighEnergyProgressBar extends androidx.appcompat.widget.AppCompatSe
     private void init() {
         linePaint = new Paint();
         linePaint.setAntiAlias(true);
-        linePaint.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().highEnergyLine);
+        // 播放器是永久深色场景：高能曲线取深色套色板，不跟随全局浅色
+        linePaint.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().highEnergyLine);
         linePaint.setStyle(Paint.Style.STROKE);
         linePaint.setStrokeWidth(2f * getContext().getResources().getDisplayMetrics().density); // 2dp线宽
         linePaint.setStrokeCap(Paint.Cap.ROUND);
@@ -41,7 +42,7 @@ public class HighEnergyProgressBar extends androidx.appcompat.widget.AppCompatSe
 
         fillPaint = new Paint();
         fillPaint.setAntiAlias(true);
-        fillPaint.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().highEnergyFill);
+        fillPaint.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().highEnergyFill);
         fillPaint.setStyle(Paint.Style.FILL);
     }
 

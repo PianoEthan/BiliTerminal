@@ -35,6 +35,7 @@
                 android:id="@+id/qrImageBg"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:tag="@id/theme_no_tint"
                 app:cardBackgroundColor="#fff"
                 app:layout_constraintEnd_toStartOf="@+id/guideline34"
                 app:layout_constraintStart_toStartOf="@+id/guideline33"
