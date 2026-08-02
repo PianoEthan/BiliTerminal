@@ -100,8 +100,16 @@ public class PlayerApi {
     }
 
     public static void startGettingUrl(PlayerData playerData) {
+        startGettingUrl(playerData, null);
+    }
+
+    public static void startGettingUrl(PlayerData playerData, String cover) {
         Context context = BiliTerminal.context;
-        context.startActivity(new Intent().setClass(context, JumpToPlayerActivity.class).putExtra("data", playerData).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        Intent intent = new Intent().setClass(context, JumpToPlayerActivity.class)
+                .putExtra("data", playerData)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (cover != null) intent.putExtra("cover", cover);
+        context.startActivity(intent);
     }
 
     public static void startDownloading(VideoInfo videoInfo, int page, int qn) {

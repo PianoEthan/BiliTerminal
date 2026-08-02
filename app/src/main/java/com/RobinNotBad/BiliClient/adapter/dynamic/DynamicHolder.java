@@ -234,7 +234,7 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
         if (!dynamic.userInfo.vip_nickname_color.isEmpty()) {
             username.setTextColor(Color.parseColor(dynamic.userInfo.vip_nickname_color));
         } else {
-            username.setTextColor(0xFFFFFFFF);
+            username.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
         }
         if (pubdate != null)
             pubdate.setText(dynamic.pubTime);
@@ -406,11 +406,11 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
         if (likeCount != null) {
             if (dynamic.stats != null) {
                 if (dynamic.stats.liked) { // 这里，还有下面，一定要加else！否则会导致错乱
-                    likeCount.setTextColor(Color.rgb(0xfe, 0x67, 0x9a));
+                    likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
                     likeCount.setCompoundDrawablesWithIntrinsicBounds(
                             ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null, null);
                 } else {
-                    likeCount.setTextColor(Color.rgb(0xff, 0xff, 0xff));
+                    likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent);
                     likeCount.setCompoundDrawablesWithIntrinsicBounds(
                             ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null, null);
                 }
@@ -426,7 +426,7 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("点赞成功");
                                 likeCount.setText(toWan(++dynamic.stats.like));
-                                likeCount.setTextColor(Color.rgb(0xfe, 0x67, 0x9a));
+                                likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
                                 likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null,
                                         null);
@@ -443,7 +443,7 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("取消成功");
                                 likeCount.setText(toWan(--dynamic.stats.like));
-                                likeCount.setTextColor(Color.rgb(0xff, 0xff, 0xff));
+                                likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent);
                                 likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null,
                                         null);

@@ -376,6 +376,9 @@
             android:label="粉丝勋章"
             android:screenOrientation="locked" />
         <activity
+            android:name=".activity.settings.ThemeSettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.settings.SettingUIActivity"
             android:exported="true"
             android:label="界面设置"

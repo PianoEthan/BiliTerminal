@@ -62,12 +62,17 @@ public class MsgUtil {
     private static void toastInternal(String str, Context context) {
         if (toast != null) toast.cancel();
         toast = Toast.makeText(context, str, Toast.LENGTH_SHORT);
+        // 文字色接色板：默认深色保持系统样式观感（近白文字），自定义主题下不露系统色
+        ((android.widget.TextView) toast.getView().findViewById(android.R.id.message)).setTextColor(
+                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
         toast.show();
     }
 
     private static void toastLongInternal(String str, Context context) {
         if (toast != null) toast.cancel();
         toast = Toast.makeText(context, str, Toast.LENGTH_LONG);
+        ((android.widget.TextView) toast.getView().findViewById(android.R.id.message)).setTextColor(
+                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
         toast.show();
     }
 
@@ -111,8 +116,10 @@ public class MsgUtil {
     public static Snackbar createSnack(View view, CharSequence text, int duration, Action action) {
         Snackbar snackbar;
         snackbar = Snackbar.make(view, text, duration);
-        snackbar.setBackgroundTint(Color.argb(0x85, 0x80, 0x80, 0x80));
-        snackbar.setTextColor(Color.rgb(0xeb, 0xe0, 0xe2));
+        com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+        snackbar.setBackgroundTint(tp.snackBg);
+        snackbar.setTextColor(tp.textPrimary);
+        snackbar.setActionTextColor(tp.accent);
         View snackBarView = snackbar.getView();
         snackBarView.setOnTouchListener((v, event) -> false);
         snackBarView.setPadding(ToolsUtil.dp2px(6), 0, 0, 0);

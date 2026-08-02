@@ -1,0 +1,23 @@
+// Vendored from material-foundation/material-color-utilities (Apache-2.0),
+// commit 03336bf6 (2024-06). The official Java library is not published as
+// a standalone Maven artifact (MDC-Android vendors the same source), so it is
+// kept as a pure-Java Android library module here.
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.google.material.color'
+    compileSdk 33
+    defaultConfig {
+        minSdk 14
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // compile-time annotations used by upstream source; not needed at runtime
+    compileOnly 'com.google.errorprone:error_prone_annotations:2.28.0'
+    compileOnly 'androidx.annotation:annotation:1.7.1'
+}

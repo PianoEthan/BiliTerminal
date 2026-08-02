@@ -54,6 +54,9 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setTheme(R.style.Theme_BiliClient);
         setContentView(R.layout.activity_splash);
+        // 主题扼点（裸 Activity）：闪屏背景是固定深色图，强制按深色色板染文字
+        // （默认主题下观感零差异；浅色模式也不会出现暗字压深图）
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContentForcedDark(findViewById(android.R.id.content));
         Log.e("debug", "进入应用");
 
         splashTextView = findViewById(R.id.splashText);

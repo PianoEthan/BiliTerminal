@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.TooltipCompat;
 import androidx.fragment.app.Fragment;
+import com.RobinNotBad.BiliClient.activity.base.BaseFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -48,7 +49,9 @@ public class EmoteActivity extends BaseActivity {
         ImageView loading = findViewById(R.id.loading);
         TabLayout tabLayout = findViewById(R.id.tl_tab);
         ViewPager viewPager = findViewById(R.id.viewPager);
-        tabLayout.setBackgroundColor(getResources().getColor(R.color.bgblack));
+        tabLayout.setBackgroundColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground);
+        tabLayout.setTabTextColors(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+        tabLayout.setSelectedTabIndicatorColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
         RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -148,7 +151,7 @@ public class EmoteActivity extends BaseActivity {
         }
     }
 
-    public static class EmoteFragment extends Fragment {
+    public static class EmoteFragment extends BaseFragment {
         private EmotePackage emotePackage;
         private RecyclerView recyclerView;
         private boolean hasListener;

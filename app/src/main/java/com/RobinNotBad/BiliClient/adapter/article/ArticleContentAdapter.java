@@ -206,6 +206,7 @@ public class ArticleContentAdapter extends RecyclerView.Adapter<ArticleContentAd
                                     MsgUtil.showMsg("投币成功！");
                                     coinLabel.setText(StringUtil.toWan(++articleInfo.stats.coin));
                                     coin.setImageResource(R.drawable.icon_coin_1);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(coin);
                                 });
                             } else {
                                 String msg = "投币失败：" + result;
@@ -255,10 +256,13 @@ public class ArticleContentAdapter extends RecyclerView.Adapter<ArticleContentAd
                             context.runOnUiThread(() -> {
                                 if (articleInfo.stats.coined != 0)
                                     coin.setImageResource(R.drawable.icon_coin_1);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(coin);
                                 if (articleInfo.stats.liked)
                                     like.setImageResource(R.drawable.icon_like_1);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(like);
                                 if (articleInfo.stats.favoured)
                                     fav.setImageResource(R.drawable.icon_fav_1);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(fav);
                             });
                         }
                     } catch (Exception e) {

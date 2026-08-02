@@ -46,18 +46,34 @@ android {
     }
 
     signingConfigs {
+        // debug/release 统一使用 testkey（与 qmme 同款）
+        debug {
+            storeFile file('/home/rj/qmme/app/testkey.jks')
+            storePassword 'android'
+            keyAlias 'key'
+            keyPassword 'android'
+        }
         release {
             def localPropsFile = project.rootProject.file("local.properties")
+            def hasFormalKey = false
             if (localPropsFile.exists()) {
                 def props = new Properties()
                 props.load(localPropsFile.newDataInputStream())
                 //必须用 containsKey：hasProperty 查的是 Groovy 对象属性而非 Properties 的键，会误返回 false 导致 storeFile 不设置
                 if (props.containsKey("KEY_PATH")) {
+                    hasFormalKey = true
                     storeFile file(props.getProperty("KEY_PATH"))
                     storePassword props.getProperty("KEY_PASSWORD")
                     keyAlias props.getProperty("ALIAS_NAME")
                     keyPassword props.getProperty("ALIAS_PASSWORD")
                 }
+            }
+            // 未配置正式密钥时兜底 testkey，保证 release 也能直接安装
+            if (!hasFormalKey) {
+                storeFile file('/home/rj/qmme/app/testkey.jks')
+                storePassword 'android'
+                keyAlias 'key'
+                keyPassword 'android'
             }
         }
     }
@@ -78,6 +94,8 @@ android {
                     signingConfig signingConfigs.release
                 }
             }
+            // 未配置正式密钥时也始终签名（signingConfigs.release 内部兜底 testkey）
+            signingConfig signingConfigs.release
         }
         debug {
             buildConfigField "boolean", "BETA", String.valueOf(betaVer > 0)
@@ -126,6 +144,7 @@ dependencies {
     implementation project(path: ':ijkplayer-java')
     implementation project(path: ':DanmakuFlameMaster')
     implementation project(path: ':brotlij')
+    implementation project(path: ':material-color-utilities')
     implementation 'androidx.asynclayoutinflater:asynclayoutinflater:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     def multidex_version = "2.0.1"

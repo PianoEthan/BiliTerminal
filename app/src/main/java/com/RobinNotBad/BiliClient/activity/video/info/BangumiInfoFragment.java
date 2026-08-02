@@ -15,12 +15,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.activity.ImageViewerActivity;
+import com.RobinNotBad.BiliClient.activity.base.BaseFragment;
 import com.RobinNotBad.BiliClient.activity.settings.SettingPlayerChooseActivity;
 import com.RobinNotBad.BiliClient.activity.video.JumpToPlayerActivity;
 import com.RobinNotBad.BiliClient.adapter.video.MediaEpisodeAdapter;
@@ -36,7 +36,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BangumiInfoFragment extends Fragment {
+public class BangumiInfoFragment extends BaseFragment {
     private long mediaId;
     private int selectedSection = 0, selectedEpisode = 0;
     private Dialog dialog;
@@ -67,6 +67,7 @@ public class BangumiInfoFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState); // 主题扼点 2（BaseFragment 染色）
         view.setVisibility(View.GONE);
         episodeRecyclerView = rootView.findViewById(R.id.rv_episode_list);
         //拉数据
@@ -111,6 +112,9 @@ public class BangumiInfoFragment extends Fragment {
                 .into(imageMediaCover);
         imageMediaCover.setOnClickListener((view) -> startActivity(new Intent(view.getContext(), ImageViewerActivity.class).putExtra("imageList", new ArrayList<>(List.of(bangumi.info.cover_horizontal)))));
         title.setText(bangumi.info.title);
+
+        //按内容动态取色：番剧封面种子 → 播放按钮/选集芯片临时强调色
+        applyContentTint(rootView, GlideUtil.url(bangumi.info.cover_horizontal));
 
         // 副标题
         if (bangumi.info.subtitle != null && !bangumi.info.subtitle.isEmpty()) {
@@ -253,6 +257,7 @@ public class BangumiInfoFragment extends Fragment {
             Glide.get(requireContext()).clearMemory();
             Intent intent = new Intent(v.getContext(), JumpToPlayerActivity.class);
             intent.putExtra("data", episode.toPlayerData());
+            intent.putExtra("cover", bangumi.info.cover_horizontal);
             startActivity(intent);
         });
         playButton.setOnLongClickListener(v -> {
@@ -263,6 +268,31 @@ public class BangumiInfoFragment extends Fragment {
         onFinishLoad();
 
         refreshReplies();
+    }
+
+    /** 内容动态取色：播放按钮 + 选集芯片 */
+    private void applyContentTint(View root, String coverUrl) {
+        com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(requireContext(), coverUrl, tint -> {
+            if (!isAdded() || getView() == null) return;
+            View view = getView();
+            Button playButton = view.findViewById(R.id.btn_play);
+            if (playButton != null) {
+                com.RobinNotBad.BiliClient.theme.ThemeCompat.tintDrawable(playButton.getBackground(), tint.container);
+                if (playButton.getCurrentTextColor() == 0xFFEBE0E2) playButton.setTextColor(tint.onAccent);
+            }
+            androidx.recyclerview.widget.RecyclerView list = view.findViewById(R.id.rv_episode_list);
+            if (list != null) {
+                for (int i = 0; i < list.getChildCount(); i++) {
+                    View child = list.getChildAt(i);
+                    if (child instanceof com.google.android.material.button.MaterialButton) {
+                        com.google.android.material.button.MaterialButton chip = (com.google.android.material.button.MaterialButton) child;
+                        androidx.core.view.ViewCompat.setBackgroundTintList(chip,
+                                com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tint.container, tint.container));
+                        chip.setTextColor(tint.onAccent);
+                    }
+                }
+            }
+        });
     }
 
     @SuppressLint("SetTextI18n")

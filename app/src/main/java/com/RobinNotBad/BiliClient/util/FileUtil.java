@@ -24,6 +24,11 @@ import java.util.Objects;
 //清除调用我放在了每次刷新推荐页
 
 public class FileUtil {
+    /** 主题安装目录（filesDir/themes/） */
+    public static File getThemesDir(Context context) {
+        return new File(context.getFilesDir(), "themes");
+    }
+
     public static void clearCache(Context context) {
         File cacheDir = context.getCacheDir();
         if (cacheDir.exists() && Objects.requireNonNull(cacheDir.listFiles()).length != 0)

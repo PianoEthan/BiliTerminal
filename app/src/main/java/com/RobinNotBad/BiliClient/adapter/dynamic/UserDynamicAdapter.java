@@ -196,7 +196,7 @@ public class UserDynamicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 lvStr.append("  ").append(vipTypeMap.get(userInfo.vip_role)).append(" ");
                 lvStr.setSpan(
                         new RadiusBackgroundSpan(1, (int) context.getResources().getDimension(R.dimen.card_round),
-                                Color.WHITE, Color.rgb(207, 75, 95)),
+                                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().buttonTint, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent),
                         ("Lv" + userInfo.level).length() + 1, lvStr.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             }
             this.userLevel.setText(lvStr);

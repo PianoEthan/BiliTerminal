@@ -249,7 +249,7 @@ public class StringUtil {
     }
 
     public static void setTopSpan(SpannableStringBuilder spannableString) {
-        spannableString.setSpan(new ForegroundColorSpan(Color.rgb(207, 75, 95)), 0, ReplyApi.TOP_TIP.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        spannableString.setSpan(new ForegroundColorSpan(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent), 0, ReplyApi.TOP_TIP.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 
     public static ImageSpan getLevelBadge(Context context, UserInfo userInfo) {
@@ -323,7 +323,7 @@ public class StringUtil {
         public void updateDrawState(@NonNull TextPaint ds) {
             super.updateDrawState(ds);
             ds.setUnderlineText(false);
-            ds.setColor(Color.rgb(0x66, 0xcc, 0xff));
+            ds.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().link);
         }
     }
 

@@ -14,7 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.Guideline;
-import androidx.fragment.app.Fragment;
+import com.RobinNotBad.BiliClient.activity.base.BaseFragment;
 
 import com.RobinNotBad.BiliClient.BiliTerminal;
 import com.RobinNotBad.BiliClient.R;
@@ -38,7 +38,7 @@ import java.util.TimerTask;
 
 import okhttp3.Response;
 
-public class QRLoginFragment extends Fragment {
+public class QRLoginFragment extends BaseFragment {
     private ImageView qrImageView;
     private TextView scanStat;
     Bitmap QRImage;
@@ -78,6 +78,7 @@ public class QRLoginFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState); // 主题扼点 2（BaseFragment 染色）
         MaterialCardView jump = view.findViewById(R.id.jump);
         jump.setOnClickListener(v -> {
             if (from_setup) startActivity(new Intent(requireContext(), SplashActivity.class));

@@ -48,3 +48,5 @@
 
 # 抛出异常时保留代码行号 
 -keepattributes SourceFile,LineNumberTable
+# material-color-utilities（vendored）防御性规则
+-dontwarn com.google.material.color.**

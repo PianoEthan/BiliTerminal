@@ -93,6 +93,7 @@ public class VideoInfoFragment extends BaseFragment {
             int code = o.getResultCode();
             if (code == RESULT_ADDED) {
                 fav.setImageResource(R.drawable.icon_fav_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(fav);
             } else if (code == RESULT_DELETED) {
                 fav.setImageResource(R.drawable.icon_fav_0);
             }
@@ -253,6 +254,9 @@ public class VideoInfoFragment extends BaseFragment {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(cover);
 
+        //按内容动态取色：封面种子 → 详情页操作按钮/图标临时强调色
+        applyContentTint(rootview, GlideUtil.url(videoInfo.cover));
+
         if (SharedPreferencesUtil.getBoolean("tags_enable", true)) {
             CenterThreadPool.run(() -> {
                 try {
@@ -282,10 +286,12 @@ public class VideoInfoFragment extends BaseFragment {
         //点赞投币收藏
         if (videoInfo.stats.coined != 0)
             coin.setImageResource(R.drawable.icon_coin_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(coin);
         if (videoInfo.stats.liked)
             like.setImageResource(R.drawable.icon_like_1);
         if (videoInfo.stats.favoured)
             fav.setImageResource(R.drawable.icon_fav_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(fav);
 
         //历史上报
         CenterThreadPool.run(() -> {
@@ -393,7 +399,10 @@ public class VideoInfoFragment extends BaseFragment {
                         case 65006:
                             msg = "已经点赞过了喵~";
                             videoInfo.stats.liked = true;
-                            runOnUiThread(() -> like.setImageResource(R.drawable.icon_like_1));
+                            runOnUiThread(() -> {
+                            like.setImageResource(R.drawable.icon_like_1);
+                            com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(like);
+                        });
                             break;
                     }
                     String finalMsg = msg;
@@ -419,6 +428,7 @@ public class VideoInfoFragment extends BaseFragment {
                             MsgUtil.showMsg("投币成功");
                             coinLabel.setText(StringUtil.toWan(++videoInfo.stats.coin));
                             coin.setImageResource(R.drawable.icon_coin_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(coin);
                         });
                     } else if (isAdded()) {
                         String msg = "投币失败：" + result;
@@ -529,8 +539,10 @@ public class VideoInfoFragment extends BaseFragment {
                             int code = LikeCoinFavApi.triple(aid);
                             if (code == 0) {
                                 coin.setImageResource(R.drawable.icon_coin_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(coin);
                                 like.setImageResource(R.drawable.icon_like_1);
                                 fav.setImageResource(R.drawable.icon_fav_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(fav);
                                 MsgUtil.showMsg("三连成功");
                             } else MsgUtil.showMsg("三连失败，错误码：" + code);
                         } catch (Exception e) {
@@ -579,7 +591,7 @@ public class VideoInfoFragment extends BaseFragment {
         if (string == null) return new SpannableString(videoInfo.title);
 
         SpannableString titleStr = new SpannableString(" " + string + " " + videoInfo.title);
-        RadiusBackgroundSpan badgeBG = new RadiusBackgroundSpan(0, (int) getResources().getDimension(R.dimen.card_round), Color.WHITE, Color.rgb(207, 75, 95));
+        RadiusBackgroundSpan badgeBG = new RadiusBackgroundSpan(0, (int) getResources().getDimension(R.dimen.card_round), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().buttonTint, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
         titleStr.setSpan(badgeBG, 0, string.length() + 2, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         return titleStr;
     }
@@ -601,7 +613,7 @@ public class VideoInfoFragment extends BaseFragment {
                 public void updateDrawState(TextPaint ds) {
                     super.updateDrawState(ds);
                     ds.setUnderlineText(false);
-                    ds.setColor(Color.parseColor("#03a9f4"));
+                    ds.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().link);
                 }
             }, old_len, tag_str.length() - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         }
@@ -623,9 +635,11 @@ public class VideoInfoFragment extends BaseFragment {
         Glide.get(getAppContext()).clearMemory();
         //在播放前清除内存缓存，因为手表内存太小了，播放完回来经常把Activity全释放掉
         //...经过测试，还是会释放，但会好很多
-        if (videoInfo.pagenames.size() == 1) PlayerApi.startGettingUrl(playerData);
+        if (videoInfo.pagenames.size() == 1) PlayerApi.startGettingUrl(playerData, videoInfo.cover);
         else
-            startActivity(new Intent(requireContext(), MultiPageActivity.class).putExtra("data", playerData));
+            startActivity(new Intent(requireContext(), MultiPageActivity.class)
+                    .putExtra("data", playerData)
+                    .putExtra("cover", videoInfo.cover));
 
         playerData.timeStamp = 0;
     }
@@ -655,6 +669,41 @@ public class VideoInfoFragment extends BaseFragment {
                 }
             }
         }
+    }
+
+    /** 内容动态取色：详情页操作按钮 + 未点亮图标 */
+    private void applyContentTint(View root, String coverUrl) {
+        com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(getAppContext(), coverUrl, tint -> {
+            if (!isAdded() || getView() == null) return;
+            View view = getView();
+            MaterialButton[] buttons = new MaterialButton[]{
+                    view.findViewById(R.id.play),
+                    view.findViewById(R.id.addWatchlater),
+                    view.findViewById(R.id.download),
+                    view.findViewById(R.id.relay)};
+            for (MaterialButton button : buttons) {
+                if (button == null) continue;
+                androidx.core.view.ViewCompat.setBackgroundTintList(button,
+                        com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tint.container, tint.container));
+                button.setTextColor(tint.onAccent);
+            }
+            tintOutlineIcon(view, R.id.btn_like, tint);
+            tintOutlineIcon(view, R.id.btn_coin, tint);
+            tintOutlineIcon(view, R.id.btn_fav, tint);
+        });
+    }
+
+    /**
+     * 给未点亮图标染临时强调色。状态变更走 setImageResource 换 drawable 实例，
+     * 不会保留这里的 tint，因此无需（也无法可靠地）比较 ConstantState 判重。
+     */
+    private void tintOutlineIcon(View root, int viewId, com.RobinNotBad.BiliClient.theme.ContentTintHelper.ContentTint tint) {
+        ImageView imageView = root.findViewById(viewId);
+        if (imageView == null || imageView.getDrawable() == null) return;
+        imageView.clearColorFilter(); // 全局染色可能设过 textPrimary 滤镜，强调色优先
+        android.graphics.drawable.Drawable tinted =
+                com.RobinNotBad.BiliClient.theme.ThemeCompat.tintDrawable(imageView.getDrawable(), tint.accent);
+        if (tinted != imageView.getDrawable()) imageView.setImageDrawable(tinted); // API<21 包装实例需设回
     }
 
     private void showCover() {

@@ -82,6 +82,14 @@ public class SettingMainActivity extends InstanceActivity {
                 startActivity(intent);
             });
 
+            //主题设置
+            MaterialCardView themeSetting = findViewById(R.id.themeSetting);
+            themeSetting.setOnClickListener(view -> {
+                Intent intent = new Intent();
+                intent.setClass(this, ThemeSettingsActivity.class);
+                startActivity(intent);
+            });
+
             // 菜单设置
             MaterialCardView menuSetting = findViewById(R.id.menuSetting);
             menuSetting.setOnClickListener(view -> startActivity(new Intent(this, SettingMenuActivity.class)));

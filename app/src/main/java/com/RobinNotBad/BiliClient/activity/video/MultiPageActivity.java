@@ -71,7 +71,7 @@ public class MultiPageActivity extends BaseActivity {
                         playerData.timeStamp = 0;
                     }
 
-                    PlayerApi.startGettingUrl(playerData);
+                    PlayerApi.startGettingUrl(playerData, videoInfo.cover);
                     playerData.timeStamp = 0;
                 });
             }

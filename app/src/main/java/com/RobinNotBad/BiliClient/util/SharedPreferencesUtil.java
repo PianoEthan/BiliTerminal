@@ -33,6 +33,13 @@ public class SharedPreferencesUtil {
     public static final String API_RETRY_MAX_TIMES = "api_retry_max_times";
     public static final String PRIVACY_MODE = "privacy_mode";
     public static final String LAB_OPUS_IMAGE_UPLOAD = "lab_opus_image_upload";
+    // 主题系统
+    public static final String THEME_ID = "theme_id";
+    public static final String THEME_DARK = "theme_dark";
+    public static final String THEME_BG_ENABLE = "theme_bg_enable";
+    public static final String THEME_EXTRACT_BG = "theme_extract_bg";
+    public static final String THEME_CONTENT_TINT = "theme_content_tint";
+    public static final String THEME_BLEND = "theme_blend";
 
     public static String cookies = "cookies";
     public static String mid = "mid";

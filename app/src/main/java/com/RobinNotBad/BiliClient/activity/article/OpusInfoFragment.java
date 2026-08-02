@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import com.RobinNotBad.BiliClient.activity.base.BaseFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.RobinNotBad.BiliClient.R;
@@ -23,7 +23,7 @@ import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.RobinNotBad.BiliClient.util.TerminalContext;
 
-public class OpusInfoFragment extends Fragment {
+public class OpusInfoFragment extends BaseFragment {
     long oid;
     RecyclerView recyclerView;
     Opus opus;

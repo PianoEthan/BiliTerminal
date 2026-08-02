@@ -3,7 +3,7 @@
     <style name="Theme.BiliClient" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">@color/bgblack</item>
-        <item name="statusBarBackground">@color/pink</item>
+        <item name="statusBarBackground">@color/textwhite</item>
         <item name="android:colorForeground">@color/textwhite</item>
         <item name="colorOnPrimary">@color/textwhite</item>
         <item name="colorPrimary">@color/textwhite</item>
@@ -35,7 +35,7 @@
         <item name="android:windowSwipeToDismiss" tools:ignore="NewApi">false</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">@color/bgblack</item>
-        <item name="statusBarBackground">@color/pink</item>
+        <item name="statusBarBackground">@color/textwhite</item>
         <item name="colorOnPrimary">@color/textwhite</item>
     </style>
 

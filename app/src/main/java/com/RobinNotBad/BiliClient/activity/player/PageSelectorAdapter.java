@@ -74,11 +74,13 @@ public class PageSelectorAdapter extends RecyclerView.Adapter<PageSelectorAdapte
             pageName.setText("P" + (currentIndex + 1) + " " + pagenames.get(currentIndex));
 
             if (isSelected) {
-                pageName.setTextColor(0xffff6699);
+                pageName.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().accent);
                 itemView.setBackgroundResource(R.drawable.background_card);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintBackground(itemView);
             } else {
-                pageName.setTextColor(0xffebe0e2);
+                pageName.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().textPrimary);
                 itemView.setBackgroundResource(R.drawable.background_card_borderless);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintBackground(itemView);
             }
 
             itemView.setOnClickListener(v -> {

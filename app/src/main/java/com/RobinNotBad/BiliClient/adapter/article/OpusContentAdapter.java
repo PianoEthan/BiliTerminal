@@ -289,6 +289,7 @@ public class OpusContentAdapter extends RecyclerView.Adapter<OpusContentAdapter.
                                     MsgUtil.showMsg("投币成功！");
                                     coinLabel.setText(StringUtil.toWan(++article.stats.coin));
                                     coin.setImageResource(R.drawable.icon_coin_1);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(coin);
                                 });
                             } else {
                                 String msg = "投币失败：" + result;

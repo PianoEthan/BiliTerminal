@@ -68,7 +68,7 @@ public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapte
         holder.itemView.setOnClickListener(view -> {
             if (!adding && position < chooseState.size() && position < fidList.size()) {
                 adding = true;
-                cardView.setStrokeColor(context.getResources().getColor(R.color.low_pink));
+                cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accentLow);
                 cardView.setStrokeWidth(ToolsUtil.dp2px(1f));
 
                 if (chooseState.get(position)) {
@@ -90,7 +90,7 @@ public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapte
                         }
                     });
                 } else {
-                    cardView.setStrokeColor(context.getResources().getColor(R.color.gray));
+                    cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().gray);
                     cardView.setStrokeWidth(ToolsUtil.dp2px(0.1f));
                     CenterThreadPool.run(() -> {
                         try {
@@ -134,10 +134,10 @@ public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapte
 
     private void setCardView(MaterialCardView cardView, boolean bool) {
         if (bool) {
-            cardView.setStrokeColor(context.getResources().getColor(R.color.pink));
+            cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
             cardView.setStrokeWidth(ToolsUtil.dp2px(1));
         } else {
-            cardView.setStrokeColor(context.getResources().getColor(R.color.gray));
+            cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().gray);
             cardView.setStrokeWidth(ToolsUtil.dp2px(0.1f));
         }
     }

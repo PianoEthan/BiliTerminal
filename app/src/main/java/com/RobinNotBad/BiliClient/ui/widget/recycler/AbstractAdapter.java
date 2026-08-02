@@ -32,12 +32,17 @@ public abstract class AbstractAdapter<VH extends BaseHolder> extends RecyclerVie
     @NonNull
     @Override
     public final BaseHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        BaseHolder holder;
         if (viewType == VIEW_TYPE_HEADER) {
-            return new BaseHolder(this.headerView);
+            holder = new BaseHolder(this.headerView);
         } else if (viewType == VIEW_TYPE_FOOTER) {
-            return new BaseHolder(this.footerView);
+            holder = new BaseHolder(this.footerView);
+        } else {
+            holder = doCreateViewHolder(parent, viewType);
         }
-        return doCreateViewHolder(parent, viewType);
+        // 主题扼点 3a：新建 itemView 立即染色（含 header/footer）
+        if (holder.itemView != null) com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContent(holder.itemView);
+        return holder;
     }
 
     @Override
@@ -51,6 +56,8 @@ public abstract class AbstractAdapter<VH extends BaseHolder> extends RecyclerVie
             bindFooterView(holder);
             return;
         }
+        // 主题扼点 3b：generation 过期则重染（rebind 开销≈一次 getTag）
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.refreshIfStale(holder.itemView);
         int realPosition = position - getHeaderViewCount();
         if (realPosition < 0)
             return;

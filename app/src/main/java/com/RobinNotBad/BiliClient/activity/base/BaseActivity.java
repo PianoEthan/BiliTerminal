@@ -34,6 +34,7 @@ import com.RobinNotBad.BiliClient.ui.widget.recycler.CustomLinearManager;
 import com.RobinNotBad.BiliClient.util.AsyncLayoutInflaterX;
 import com.RobinNotBad.BiliClient.util.Logu;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
+import com.RobinNotBad.BiliClient.theme.ThemeApplier;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.RobinNotBad.BiliClient.util.ToolsUtil;
 
@@ -96,6 +97,29 @@ public class BaseActivity extends AppCompatActivity {
         if ((density = SharedPreferencesUtil.getInt("density", -1)) >= 72) {
             setDensity(density);
         }
+
+        // 主题：窗口背景（纯色或背景图+scrim）
+        ThemeApplier.setupWindow(this);
+    }
+
+    // ---------------------------------------------------------------- 主题扼点
+
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+        ThemeApplier.applyContent(findViewById(android.R.id.content));
+    }
+
+    @Override
+    public void setContentView(View view) {
+        super.setContentView(view);
+        ThemeApplier.applyContent(findViewById(android.R.id.content));
+    }
+
+    @Override
+    public void setContentView(View view, android.view.ViewGroup.LayoutParams params) {
+        super.setContentView(view, params);
+        ThemeApplier.applyContent(findViewById(android.R.id.content));
     }
 
     @Override
@@ -177,9 +201,19 @@ public class BaseActivity extends AppCompatActivity {
         super.onStart();
         if (!(this instanceof InstanceActivity)) setTopbarExit();
         setRound();
-        if (eventBusEnabled() && !eventBusInit) {
+        if (!eventBusInit) {
             EventBus.getDefault().register(this);
             eventBusInit = true;
+        }
+        // 主题惰性兜底（仿 DPI 机制）：stop 期间主题变了，回栈时立即重建。
+        // 只有曾被染色（带 generation 标签）的页面才触发，避免未染色页面循环重建。
+        com.RobinNotBad.BiliClient.theme.ThemeManager tm = com.RobinNotBad.BiliClient.theme.ThemeManager.getInstance();
+        if (tm != null && tm.isReady()) {
+            View content = findViewById(android.R.id.content);
+            Object gen = content == null ? null : content.getTag(R.id.theme_applied_gen);
+            if (gen instanceof Integer && ((Integer) gen) != tm.getGeneration()) {
+                recreate();
+            }
         }
     }
 
@@ -204,8 +238,18 @@ public class BaseActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onEvent(SnackEvent event) {
+        if (!eventBusEnabled()) return;
         if (isDestroyed()) return;
         MsgUtil.processSnackEvent(event, getWindow().getDecorView().getRootView());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(com.RobinNotBad.BiliClient.event.ThemeChangedEvent event) {
+        if (isDestroyed() || isFinishing()) return;
+        // 只对前台（started）页面即时重建；已 stop 的栈内页面由 onStart 惰性兜底，
+        // 避免对 stopped Activity 调 recreate() 导致状态异常
+        if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) return;
+        recreate();
     }
 
     protected boolean eventBusEnabled() {

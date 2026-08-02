@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主题染色：标记子树跳过染色 -->
+    <item name="theme_no_tint" type="id" />
+    <!-- 主题染色：记录已应用的 generation（幂等标签） -->
+    <item name="theme_applied_gen" type="id" />
+    <!-- 主题染色：RecyclerView 子项附着监听已挂载 -->
+    <item name="theme_rv_hooked" type="id" />
+</resources>

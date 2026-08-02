@@ -106,11 +106,12 @@ public class PrivateMsgAdapter extends RecyclerView.Adapter<PrivateMsgAdapter.Vi
             }
             if (msg.uid == selfUid) {
                 holder.root.setGravity(Gravity.END);
-                holder.textContentCard.setCardBackgroundColor(context.getResources().getColor(R.color.pink));
+                holder.textContentCard.setCardBackgroundColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
                 holder.textContentCard.setStrokeWidth(0);
             } else {
                 holder.root.setGravity(Gravity.START);
-                holder.textContentCard.setCardBackgroundColor(Color.parseColor("#78242424"));
+                com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+                holder.textContentCard.setCardBackgroundColor(com.RobinNotBad.BiliClient.theme.ThemePalette.withAlpha(tp.surfaceCard, 0x78));
                 holder.textContentCard.setStrokeWidth(1);
             }
 

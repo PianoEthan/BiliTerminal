@@ -301,6 +301,9 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         }
 
         setContentView(R.layout.activity_player);
+        // 播放器是永久深色场景（黑色视频面）：强制按深色色板染色，
+        // 不跟随全局浅色模式，否则浅色暗文字在黑底上不可见
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContentForcedDark(findViewById(android.R.id.content));
         findview();
         if (!getExtras()) {
             finish();
@@ -443,6 +446,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         btn_quality = findViewById(R.id.button_quality);
         btn_viewpoint = findViewById(R.id.viewpoint_btn);
         seekbar_progress = findViewById(R.id.videoprogress);
+        applyContentTint();
         loading_text0 = findViewById(R.id.loading_text0);
         loading_text1 = findViewById(R.id.loading_text1);
         text_title = findViewById(R.id.text_title);
@@ -902,6 +906,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                         mDanmakuView.pause();
                     }
                     btn_control.setImageResource(R.drawable.btn_player_play);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
                     return;
                 }
             }
@@ -920,6 +925,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                     mDanmakuView.pause();
                 }
                 btn_control.setImageResource(R.drawable.btn_player_play);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
                     updateMediaSessionPlaybackState();
                 }
@@ -1078,6 +1084,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         anim_loading.stop();
         isPlaying = true;
         btn_control.setImageResource(R.drawable.btn_player_pause);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
 
         text_speed.setVisibility(layout_top.getVisibility());
         if (isLiveMode)
@@ -1673,6 +1680,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         }
         if (btn_control != null)
             btn_control.setImageResource(R.drawable.btn_player_play);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
             updateMediaSessionPlaybackState();
         }
@@ -1688,6 +1696,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         }
         if (btn_control != null)
             btn_control.setImageResource(R.drawable.btn_player_pause);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
             updateMediaSessionPlaybackState();
         }
@@ -1707,7 +1716,17 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         Logu.v("旋转屏幕结束");
     }
 
-    @Override
+    /** 内容动态取色：封面 extra → 播放器进度条强调色（Player 永不 recreate） */
+    private void applyContentTint() {
+        final String cover = getIntent().getStringExtra("cover");
+        if (cover == null || cover.isEmpty()) return;
+        com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(this, cover, true, tint -> {
+            if (isFinishing() || seekbar_progress == null) return;
+            seekbar_progress.setAccentColors(tint.accent, tint.container);
+            com.RobinNotBad.BiliClient.theme.ThemeCompat.tintSeekBar(seekbar_progress, tint.accent);
+        });
+    }
+
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         Logu.v("onNewIntent");
@@ -2281,8 +2300,8 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
     private void updateAudioOnlyButton() {
         if (btn_audio_only != null) {
-            btn_audio_only
-                    .setImageResource(isAudioOnlyMode ? R.drawable.icon_audio_only_on : R.drawable.icon_audio_only_off);
+            btn_audio_only.setImageResource(isAudioOnlyMode ? R.drawable.icon_audio_only_on : R.drawable.icon_audio_only_off);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_audio_only);
         }
     }
 
@@ -2552,8 +2571,8 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
     private void updateAutoNextButton() {
         if (btn_auto_next != null) {
-            btn_auto_next
-                    .setImageResource(auto_next_enabled ? R.drawable.icon_auto_next_on : R.drawable.icon_auto_next_off);
+            btn_auto_next.setImageResource(auto_next_enabled ? R.drawable.icon_auto_next_on : R.drawable.icon_auto_next_off);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_auto_next);
         }
     }
 
@@ -2811,6 +2830,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 ijkPlayer.pause();
                 isPlaying = false;
                 btn_control.setImageResource(R.drawable.btn_player_play);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
             }
 
             if (interactionChoiceLayout == null) {
@@ -3093,6 +3113,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 ijkPlayer.start();
                 isPlaying = true;
                 btn_control.setImageResource(R.drawable.btn_player_pause);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
             }
         });
     }

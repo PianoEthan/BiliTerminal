@@ -104,6 +104,8 @@ public class JumpToPlayerActivity extends BaseActivity {
         if (isDestroyed()) return;
         if (download == 0) {
             Intent intent = PlayerApi.jumpToPlayer(playerData);
+            String cover = getIntent().getStringExtra("cover");
+            if (cover != null) intent.putExtra("cover", cover);
             launcher.launch(intent);
             setClickExit("等待退出播放后上报进度\n（点击跳过）");
         } else {
