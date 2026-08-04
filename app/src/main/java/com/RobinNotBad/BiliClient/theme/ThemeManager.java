@@ -1,6 +1,7 @@
 package com.RobinNotBad.BiliClient.theme;
 
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.RobinNotBad.BiliClient.event.ThemeChangedEvent;
@@ -111,6 +112,11 @@ public class ThemeManager {
 
     private void load() {
         themeId = SharedPreferencesUtil.getString(SharedPreferencesUtil.THEME_ID, "");
+        // material-color-utilities 需要 API 24+，旧系统直接清掉已保存的主题，回到默认
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N && !TextUtils.isEmpty(themeId)) {
+            themeId = "";
+            SharedPreferencesUtil.putString(SharedPreferencesUtil.THEME_ID, "");
+        }
         dark = SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.THEME_DARK, true);
         blend = SharedPreferencesUtil.getInt(SharedPreferencesUtil.THEME_BLEND, 35);
         bgEnabled = SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.THEME_BG_ENABLE, true);
@@ -262,6 +268,10 @@ public class ThemeManager {
 
     /** 按指定明暗计算色板（纯计算；深浅两套始终可独立取得） */
     private ThemePalette computePalette(boolean darkMode) {
+        // material-color-utilities 用了 java.util.function（API 24+），旧系统无法加载，兜底内置主题
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            return darkMode ? ThemePalette.builtinDark() : ThemePalette.builtinLight();
+        }
         if (TextUtils.isEmpty(themeId) || (preset == null && manifest == null)) {
             return darkMode ? ThemePalette.builtinDark() : ThemePalette.builtinLight();
         }

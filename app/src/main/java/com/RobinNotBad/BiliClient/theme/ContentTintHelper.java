@@ -2,6 +2,7 @@ package com.RobinNotBad.BiliClient.theme;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.LruCache;
 
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
@@ -48,6 +49,8 @@ public class ContentTintHelper {
     }
 
     public static boolean isEnabled() {
+        // material-color-utilities 需要 API 24+，旧系统整体禁用内容取色
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
         return SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.THEME_CONTENT_TINT, true);
     }
 
