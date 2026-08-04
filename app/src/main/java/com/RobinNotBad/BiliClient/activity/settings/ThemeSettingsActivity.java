@@ -45,10 +45,6 @@ public class ThemeSettingsActivity extends BaseActivity {
             adapter = new ThemeListAdapter(this, new ThemeListAdapter.OnRowListener() {
                 @Override
                 public void onSelect(ThemeListAdapter.ThemeRow row) {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                        MsgUtil.showMsg("不支持切换主题");
-                        return;
-                    }
                     ThemeManager.getInstance().setTheme(row.id);
                     MsgUtil.showMsg("已切换主题：" + row.name);
                     refreshList();
