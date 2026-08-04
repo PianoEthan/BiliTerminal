@@ -265,10 +265,15 @@ public class ThemeManager {
         if (TextUtils.isEmpty(themeId) || (preset == null && manifest == null)) {
             return darkMode ? ThemePalette.builtinDark() : ThemePalette.builtinLight();
         }
-        if (preset != null) {
-            return SchemeEngine.generate(preset.seed, darkMode, blend, null);
+        try {
+            if (preset != null) {
+                return SchemeEngine.generate(preset.seed, darkMode, blend, null);
+            }
+            return SchemeEngine.generate(resolveSeed(), darkMode, blend, manifest);
+        } catch (Throwable t) {
+            // material-color-utilities 在个别旧系统上可能加载失败，兜底内置主题保证不崩
+            return darkMode ? ThemePalette.builtinDark() : ThemePalette.builtinLight();
         }
-        return SchemeEngine.generate(resolveSeed(), darkMode, blend, manifest);
     }
 
     /**

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.RobinNotBad.BiliClient.model.ApiResponse;
 import com.RobinNotBad.BiliClient.model.ContentType;
 import com.RobinNotBad.BiliClient.model.Reply;
+import com.RobinNotBad.BiliClient.util.CookieGenerator;
 import com.RobinNotBad.BiliClient.util.GsonUtil;
 import com.RobinNotBad.BiliClient.util.NetWorkUtil;
 import com.RobinNotBad.BiliClient.util.Result;
@@ -24,6 +25,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 public class ReplyApi {
 
@@ -183,6 +188,66 @@ public class ReplyApi {
 
     public static Pair<Integer, Reply> sendDynamicReply(long oid, long root, long parent, String text) throws IOException, JSONException {
         return sendReply(oid, root, parent, text, REPLY_TYPE_DYNAMIC);
+    }
+
+    public static class UploadImageData {
+        @SerializedName("image_url")
+        public String image_url;
+        @SerializedName("image_width")
+        public int image_width;
+        @SerializedName("image_height")
+        public int image_height;
+        @SerializedName("img_size")
+        public long img_size;
+    }
+
+    public static Result<UploadImageData> uploadReplyImage(byte[] imageData, String fileName) {
+        String url = "https://api.bilibili.com/x/dynamic/feed/draw/upload_bfs";
+        String csrf = SharedPreferencesUtil.getString("csrf", "");
+        try {
+            RequestBody fileBody = RequestBody.create(Objects.requireNonNull(MediaType.parse("image/jpeg")), imageData);
+            MultipartBody multipartBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("file_up", fileName, fileBody)
+                    .addFormDataPart("category", "daily")
+                    .addFormDataPart("biz", "new_dyn")
+                    .addFormDataPart("csrf", csrf)
+                    .build();
+
+            okhttp3.Request request = new okhttp3.Request.Builder()
+                    .url(url)
+                    .post(multipartBody)
+                    .addHeader("Cookie", CookieGenerator.getCookieString(true))
+                    .addHeader("Referer", "https://www.bilibili.com/")
+                    .addHeader("Origin", "https://www.bilibili.com")
+                    .addHeader("User-Agent", NetWorkUtil.USER_AGENT_WEB)
+                    .addHeader("Accept", "application/json, text/plain, */*")
+                    .addHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
+                    .build();
+
+            String json = NetWorkUtil.getOkHttpInstance().newCall(request).execute().body().string();
+            ApiResponse<UploadImageData> resp = GsonUtil.fromJson(json, new com.google.gson.reflect.TypeToken<ApiResponse<UploadImageData>>(){}.getType());
+            if (resp == null || resp.code != 0 || resp.data == null)
+                return Result.failure(new Exception("上传图片失败，code=" + (resp == null ? "null" : resp.code)));
+            return Result.success(resp.data);
+        } catch (Exception e) {
+            return Result.failure(e);
+        }
+    }
+
+    public static Pair<Integer, Reply> sendReply(long oid, long root, long parent, String text, int type, String pictures) throws IOException, JSONException {
+        String url = "https://api.bilibili.com/x/v2/reply/add";
+        String arg = "oid=" + oid + "&type=" + type + (root == 0 ? "" : ("&root=" + root + "&parent=" + parent))
+                + "&message=" + java.net.URLEncoder.encode(text, "UTF-8")
+                + (pictures.isEmpty() ? "" : ("&pictures=" + java.net.URLEncoder.encode(pictures, "UTF-8")))
+                + "&jsonp=jsonp&csrf=" + SharedPreferencesUtil.getString("csrf", "");
+        JSONObject result = new JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+        int code = result.optInt("code", -1);
+        JSONObject data = result.optJSONObject("data");
+        JSONObject replyJson = data != null ? data.optJSONObject("reply") : null;
+        Reply replyResult = null;
+        try { if (replyJson != null) replyResult = new Reply(root != 0, replyJson); } catch (Exception ignored) {}
+        return new Pair<>(code, replyResult);
     }
 
     public static int likeReply(long oid, long root, boolean action) throws IOException, JSONException {

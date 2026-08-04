@@ -52,7 +52,7 @@ public class BiliTerminal extends Application {
             SharedPreferencesUtil.sharedPreferences = getSharedPreferences("default", MODE_PRIVATE);
             context = getFitDisplayContext(this);
 
-            // 主题系统：同步初始化（<10ms，失败全兜底内置主题）
+            // 主题系统：同步初始化（<10ms，失败全返回内置主题）
             com.RobinNotBad.BiliClient.theme.ThemeManager.init(this);
 
             ErrorCatch errorCatch = ErrorCatch.getInstance();

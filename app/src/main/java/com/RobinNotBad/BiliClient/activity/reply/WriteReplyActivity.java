@@ -2,9 +2,13 @@ package com.RobinNotBad.BiliClient.activity.reply;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Pair;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -20,9 +24,15 @@ import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.google.android.material.card.MaterialCardView;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +55,22 @@ public class WriteReplyActivity extends BaseActivity {
         Intent data = result.getData();
         if (code == RESULT_OK && data != null && data.hasExtra("text")) {
             editText.append(data.getStringExtra("text"));
+        }
+    });
+
+    final ArrayList<String> imageList = new ArrayList<>();
+    final ArrayList<ReplyApi.UploadImageData> uploadDataList = new ArrayList<>();
+    TextView imageText;
+
+    private final ActivityResultLauncher<Intent> imageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (result) -> {
+        int code = result.getResultCode();
+        Intent data = result.getData();
+        if (code == RESULT_OK && data != null && data.getData() != null) {
+            if (imageList.size() >= 9) {
+                MsgUtil.showMsg("最多只能添加9张图片喵~");
+                return;
+            }
+            addImage(data.getData());
         }
     });
 
@@ -72,6 +98,7 @@ public class WriteReplyActivity extends BaseActivity {
 
         editText = findViewById(R.id.editText);
         MaterialCardView send = findViewById(R.id.send);
+        imageText = findViewById(R.id.imageText);
 
         if (parentSender != null && !parentSender.isEmpty()) {
             editText.setText("回复 @" + parentSender + " :");
@@ -83,14 +110,15 @@ public class WriteReplyActivity extends BaseActivity {
                 if (!sent) {
                     CenterThreadPool.run(() -> {
                         String text = editText.getText().toString();
-                        if (!text.isEmpty()) {
+                        if (!text.isEmpty() || !imageList.isEmpty()) {
                             if (checkKy(text) && dontKyPlease) {
                                 MsgUtil.showDialog("保护措施……", getString(R.string.reply_dont_ky), 15);
                                 dontKyPlease = false;
                                 return;
                             }
                             try {
-                                Pair<Integer, Reply> result = ReplyApi.sendReply(oid, rpid, parent, text, replyType);
+                                String pictures = buildPictures();
+                                Pair<Integer, Reply> result = ReplyApi.sendReply(oid, rpid, parent, text, replyType, pictures);
                                 int resultCode = result.first;
                                 Reply resultReply = result.second;
 
@@ -100,6 +128,11 @@ public class WriteReplyActivity extends BaseActivity {
                                     runOnUiThread(() -> MsgUtil.showMsg("发送成功>w<"));
                                     resultReply.forceDelete = true;
                                     resultReply.pubTime = "刚刚";
+                                    synchronized (uploadDataList) {
+                                        for (ReplyApi.UploadImageData uploadData : uploadDataList) {
+                                            resultReply.pictureList.add(uploadData.image_url);
+                                        }
+                                    }
                                     EventBus.getDefault().post(new ReplyEvent(1, resultReply, pos, oid));
                                     finish();
                                 } else {
@@ -119,6 +152,78 @@ public class WriteReplyActivity extends BaseActivity {
 
         findViewById(R.id.emote).setOnClickListener(view ->
                 emoteLauncher.launch(new Intent(this, EmoteActivity.class).putExtra("from", EmoteApi.BUSINESS_REPLY)));
+
+        findViewById(R.id.image).setOnClickListener(view -> {
+            if (imageList.size() >= 9) {
+                MsgUtil.showMsg("最多只能添加9张图片喵~");
+                return;
+            }
+            Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT);
+            pickIntent.setType("image/*");
+            imageLauncher.launch(pickIntent);
+        });
+    }
+
+    private void addImage(Uri uri) {
+        imageList.add(uri.toString());
+        updateImageText();
+        CenterThreadPool.run(() -> {
+            try {
+                byte[] compressed = compressImage(uri);
+                ReplyApi.UploadImageData data = ReplyApi.uploadReplyImage(compressed, System.currentTimeMillis() + ".jpg").getOrNull();
+                if (data == null) {
+                    runOnUiThread(() -> {
+                        MsgUtil.showMsg("图片上传失败");
+                        imageList.remove(uri.toString());
+                        updateImageText();
+                    });
+                    return;
+                }
+                synchronized (uploadDataList) {
+                    uploadDataList.add(data);
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    MsgUtil.showMsg("图片处理失败");
+                    imageList.remove(uri.toString());
+                    updateImageText();
+                });
+            }
+        });
+    }
+
+    private byte[] compressImage(Uri uri) throws IOException {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        if (inputStream == null) throw new IOException("无法读取图片");
+
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        inputStream.close();
+        if (bitmap == null) throw new IOException("解码图片失败");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+        bitmap.recycle();
+        return outputStream.toByteArray();
+    }
+
+    private String buildPictures() {
+        JsonArray jsonArray = new JsonArray();
+        synchronized (uploadDataList) {
+            for (ReplyApi.UploadImageData data : uploadDataList) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("img_src", data.image_url);
+                jsonObject.addProperty("img_width", data.image_width);
+                jsonObject.addProperty("img_height", data.image_height);
+                jsonObject.addProperty("img_size", data.img_size);
+                jsonArray.add(jsonObject);
+            }
+        }
+        return jsonArray.toString();
+    }
+
+    private void updateImageText() {
+        int count = imageList.size();
+        imageText.setText(count == 0 ? getString(R.string.btn_image) : getString(R.string.btn_image) + "(" + count + ")");
     }
 
     /**

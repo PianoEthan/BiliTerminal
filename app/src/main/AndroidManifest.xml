@@ -343,7 +343,7 @@
             android:exported="true"
             android:label="图片查看"
             android:screenOrientation="locked"
-            android:theme="@style/Theme.NoSwipe" />
+            android:theme="@style/Theme.NoSwipe.AppCompat" />
         <activity
             android:name=".activity.DialogActivity"
             android:exported="false"

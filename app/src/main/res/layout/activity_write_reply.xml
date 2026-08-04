@@ -82,6 +82,25 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/imageText"
+                    android:layout_width="match_parent"
+                    android:layout_height="35sp"
+                    app:drawableEndCompat="@drawable/arrow_forward"
+                    android:layout_marginHorizontal="8dp"
+                    android:gravity="center_vertical"
+                    android:text="@string/btn_image"
+                    android:textAlignment="textEnd"
+                    android:textSize="13sp"
+                    android:visibility="visible"
+                    tools:ignore="RtlCompat" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/send"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
