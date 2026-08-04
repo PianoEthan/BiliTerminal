@@ -182,6 +182,7 @@
     <string name="btn_login_confirm">登录</string>
     <string name="btn_login_refuse">但是我拒绝</string>
     <string name="btn_emote">表情</string>
+    <string name="btn_image">图片</string>
     <string name="btn_send">发送</string>
     <string name="btn_setup_init">哔哩终端，启动！</string>
     <string name="btn_login_tip">你还木有登录哦！点击这里登录</string>
