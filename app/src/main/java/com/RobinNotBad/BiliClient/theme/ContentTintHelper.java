@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 /**
  * 按内容动态取色：封面 URL → Glide 64px 位图 → QuantizerCelebi 提取种子 →
  * Hct 派生临时强调色小色板（accent/onAccent/container/stroke）。
- * 仅染播放器进度条、SeekBar、选择芯片、详情页操作按钮；pref 门控。
+ * 当前只染播放器进度条与高能曲线；pref 门控。
  */
 public class ContentTintHelper {
 
@@ -50,11 +50,6 @@ public class ContentTintHelper {
 
     public static boolean isEnabled() {
         return SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.THEME_CONTENT_TINT, true);
-    }
-
-    /** 异步按 URL 取色；明暗跟随全局设置 */
-    public static void requestTint(final Context context, final String url, final Callback callback) {
-        requestTint(context, url, false, callback);
     }
 
     /**

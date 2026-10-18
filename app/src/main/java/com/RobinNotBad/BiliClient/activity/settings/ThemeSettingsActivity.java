@@ -121,7 +121,7 @@ public class ThemeSettingsActivity extends BaseActivity {
             switchTint.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 SharedPreferencesUtil.putBoolean(SharedPreferencesUtil.THEME_CONTENT_TINT, isChecked);
                 if (!isChecked) ContentTintHelper.clearCache();
-                MsgUtil.showMsg(isChecked ? "已开启内容动态取色" : "已关闭内容动态取色");
+                MsgUtil.showMsg(isChecked ? "已开启播放器封面取色" : "已关闭播放器封面取色");
             });
 
             blendInput = findViewById(R.id.blendInput);

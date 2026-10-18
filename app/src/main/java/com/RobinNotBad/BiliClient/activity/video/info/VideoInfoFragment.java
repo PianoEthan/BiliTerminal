@@ -253,9 +253,6 @@ public class VideoInfoFragment extends BaseFragment {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(cover);
 
-        //按内容动态取色：封面种子 → 详情页操作按钮/图标临时强调色
-        applyContentTint(rootview, GlideUtil.url(videoInfo.cover));
-
         if (SharedPreferencesUtil.getBoolean("tags_enable", true)) {
             CenterThreadPool.run(() -> {
                 try {
@@ -661,30 +658,6 @@ public class VideoInfoFragment extends BaseFragment {
                 }
             }
         }
-    }
-
-    /** 内容动态取色：详情页未点亮图标（按钮不参与，封面主色常把底色压成脏色） */
-    private void applyContentTint(View root, String coverUrl) {
-        com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(getAppContext(), coverUrl, tint -> {
-            if (!isAdded() || getView() == null) return;
-            View view = getView();
-            tintOutlineIcon(view, R.id.btn_like, tint);
-            tintOutlineIcon(view, R.id.btn_coin, tint);
-            tintOutlineIcon(view, R.id.btn_fav, tint);
-        });
-    }
-
-    /**
-     * 给未点亮图标染临时强调色。状态变更走 setImageResource 换 drawable 实例，
-     * 不会保留这里的 tint，因此无需（也无法可靠地）比较 ConstantState 判重。
-     */
-    private void tintOutlineIcon(View root, int viewId, com.RobinNotBad.BiliClient.theme.ContentTintHelper.ContentTint tint) {
-        ImageView imageView = root.findViewById(viewId);
-        if (imageView == null || imageView.getDrawable() == null) return;
-        imageView.clearColorFilter(); // 全局染色可能设过 textPrimary 滤镜，强调色优先
-        android.graphics.drawable.Drawable tinted =
-                com.RobinNotBad.BiliClient.theme.ThemeCompat.tintDrawable(imageView.getDrawable(), tint.accent);
-        if (tinted != imageView.getDrawable()) imageView.setImageDrawable(tinted); // API<21 包装实例需设回
     }
 
     private void showCover() {
