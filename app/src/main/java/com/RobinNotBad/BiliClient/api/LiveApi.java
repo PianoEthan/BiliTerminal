@@ -12,6 +12,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -141,7 +142,7 @@ public class LiveApi {
         String json = NetWorkUtil.getJson(url).toString();
         ApiResponse<LiveRoom> resp = GsonUtil.fromJson(json, new com.google.gson.reflect.TypeToken<ApiResponse<LiveRoom>>(){}.getType());
         if (resp == null || !resp.isSuccess() || resp.data == null) return null;
-        List<LiveRoom> rooms = postProcessRooms(List.of(resp.data));
+        List<LiveRoom> rooms = postProcessRooms(Collections.singletonList(resp.data));
         return !rooms.isEmpty() ? rooms.get(0) : null;
     }
 

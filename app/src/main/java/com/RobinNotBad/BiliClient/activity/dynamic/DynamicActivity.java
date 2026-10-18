@@ -23,6 +23,7 @@ import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +41,16 @@ public class DynamicActivity extends RefreshMainActivity {
     private long offset = 0;
     private boolean firstRefresh = true;
     private String type = "all";
-    private static final Map<String, String> typeNameMap = Map.of(
-            "全部", "all",
-            "视频投稿", "video",
-            "追番", "pgc",
-            "专栏", "article"
-    );
+    private static final Map<String, String> typeNameMap;
+
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("全部", "all");
+        map.put("视频投稿", "video");
+        map.put("追番", "pgc");
+        map.put("专栏", "article");
+        typeNameMap = Collections.unmodifiableMap(map);
+    }
     public final ActivityResultLauncher<Intent> selectTypeLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (result) -> {
         int code = result.getResultCode();
         Intent data = result.getData();

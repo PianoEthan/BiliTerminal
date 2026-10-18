@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.zip.GZIPInputStream;
 
 public class UserInfoApi {
@@ -331,7 +331,7 @@ public class UserInfoApi {
         String url = "https://api.bilibili.com/x/relation/modify?";
         String arg = "fid=" + mid + "&csrf=" + NetWorkUtil.getInfoFromCookie("bili_jct", SharedPreferencesUtil.getString(SharedPreferencesUtil.cookies, ""));
         arg += isFollow ? "&act=1" : "&act=2";
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static void exitLogin() {
@@ -342,7 +342,7 @@ public class UserInfoApi {
         String url = "https://api.bilibili.com/x/v1/contract/add_contract";
         String csrf = NetWorkUtil.getInfoFromCookie("bili_jct", SharedPreferencesUtil.getString(SharedPreferencesUtil.cookies, ""));
         String arg = "aid=&up_mid=" + upMid + "&source=4&scene=105&platform=web&mobi_app=pc&csrf=" + csrf;
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static org.json.JSONObject getMedalWall(long targetId) throws IOException, JSONException {
@@ -355,7 +355,7 @@ public class UserInfoApi {
         String csrf = NetWorkUtil.getInfoFromCookie("bili_jct", SharedPreferencesUtil.getString(SharedPreferencesUtil.cookies, ""));
         String arg = "csrf=" + csrf;
         if (userSign != null) arg += "&user_sign=" + java.net.URLEncoder.encode(userSign, "UTF-8");
-        return new org.json.JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+        return new org.json.JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
     }
 
     // 修改用户资料（昵称/生日/性别/签名）
@@ -518,7 +518,7 @@ public class UserInfoApi {
         Log.e("AvatarUpload", "Cookie: " + cookieStr);
         Log.e("AvatarUpload", "File name: " + fileName + ", Size: " + imageData.length);
 
-        okhttp3.RequestBody fileBody = okhttp3.RequestBody.create(Objects.requireNonNull(MediaType.parse("image/jpeg")), imageData);
+        okhttp3.RequestBody fileBody = okhttp3.RequestBody.create(ObjectsCompat.requireNonNull(MediaType.parse("image/jpeg")), imageData);
         
         okhttp3.MultipartBody multipartBody = new okhttp3.MultipartBody.Builder()
                 .setType(okhttp3.MultipartBody.FORM)

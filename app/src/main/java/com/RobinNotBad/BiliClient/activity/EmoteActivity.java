@@ -36,7 +36,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.concurrent.ExecutionException;
 
 public class EmoteActivity extends BaseActivity {
@@ -95,12 +95,12 @@ public class EmoteActivity extends BaseActivity {
                     CenterThreadPool.run(() -> {
                         for (int i = 0; i < count; i++) {
                             int finalI = i;
-                            Objects.requireNonNull(packages);
+                            ObjectsCompat.requireNonNull(packages);
 
                             runOnUiThread(() -> {
-                                Objects.requireNonNull(tabLayout.getTabAt(finalI)).setText(packages.get(finalI).text);
+                                ObjectsCompat.requireNonNull(tabLayout.getTabAt(finalI)).setText(packages.get(finalI).text);
                                 if (finalI != 0)
-                                    Objects.requireNonNull(tabLayout.getTabAt(finalI)).setTabLabelVisibility(TabLayout.TAB_LABEL_VISIBILITY_UNLABELED);
+                                    ObjectsCompat.requireNonNull(tabLayout.getTabAt(finalI)).setTabLabelVisibility(TabLayout.TAB_LABEL_VISIBILITY_UNLABELED);
                             });
 
                             try {
@@ -108,7 +108,7 @@ public class EmoteActivity extends BaseActivity {
                                         .transition(GlideUtil.getTransitionOptions())
                                         .load(packages.get(finalI).url)
                                         .submit().get();
-                                runOnUiThread(() -> Objects.requireNonNull(tabLayout.getTabAt(finalI)).setIcon(drawable));
+                                runOnUiThread(() -> ObjectsCompat.requireNonNull(tabLayout.getTabAt(finalI)).setIcon(drawable));
                             } catch (ExecutionException e) {
                                 MsgUtil.err("加载表情列表图标时出现错误：", e);
                                 e.printStackTrace();

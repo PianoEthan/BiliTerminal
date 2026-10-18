@@ -23,6 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_marginEnd="3dp"
+
+        android:layout_marginRight="3dp"
         android:layout_marginBottom="3dp"
         android:background="#64555555"
         android:text="共1张图片"

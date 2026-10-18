@@ -5,8 +5,10 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -16,6 +18,7 @@ public class CookieGenerator {
     private static final String CHARSET = "0123456789ABCDEF";
     private static final int[] PCK = {8, 4, 4, 4, 12};
     private static final String[] MP = {"1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","10"};
+    private static final String[] PLAYER_COOKIE_KEYS = {"SESSDATA", "buvid3", "buvid4", "buvid_fp", "b_nut", "bili_ticket", "LIVE_BUVID"};
 
     public static void ensureCookies() {
         try {
@@ -67,6 +70,30 @@ public class CookieGenerator {
         appendCookie(sb, "bili_ticket_expires", SharedPreferencesUtil.getString("bili_ticket_expires", ""));
 
         return sb.toString();
+    }
+
+    public static String getCookieForPlayer() {
+        if (SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.PRIVACY_MODE, false)) return "";
+
+        StringBuilder sb = new StringBuilder();
+        Set<String> added = new HashSet<>();
+        for (String part : getCookieString().split(";")) {
+            String item = part.trim();
+            int separator = item.indexOf('=');
+            if (separator <= 0) continue;
+            String name = item.substring(0, separator).trim();
+            String value = item.substring(separator + 1).trim();
+            if (value.isEmpty() || !isPlayerCookie(name) || !added.add(name)) continue;
+            appendCookie(sb, name, value);
+        }
+        return sb.toString();
+    }
+
+    private static boolean isPlayerCookie(String name) {
+        for (String key : PLAYER_COOKIE_KEYS) {
+            if (key.equals(name)) return true;
+        }
+        return false;
     }
 
     private static void appendCookie(StringBuilder sb, String name, String value) {

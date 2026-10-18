@@ -6,11 +6,12 @@ import android.view.View;
 import com.RobinNotBad.BiliClient.activity.ImageViewerActivity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ImageViewer {
     public static ImageViewer from(String url) {
-        return new ImageViewer(new ArrayList<>(List.of(url)));
+        return new ImageViewer(new ArrayList<>(Collections.singletonList(url)));
     }
 
     public static ImageViewer from(List<String> urls) {

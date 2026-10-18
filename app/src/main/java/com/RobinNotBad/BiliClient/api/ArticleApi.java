@@ -11,7 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.TimeZone;
 
 import okhttp3.Response;
@@ -108,7 +108,7 @@ public class ArticleApi {
      */
     public static int like(long cvid, boolean type) throws IOException {
         String url = "https://api.bilibili.com/x/article/like";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("id", cvid)
                 .put("type", type ? 1 : 2)
                 .put("csrf", SharedPreferencesUtil.getString("csrf", ""))
@@ -133,7 +133,7 @@ public class ArticleApi {
      */
     public static int addCoin(long cvid, long upid, int multiply) throws IOException {
         String url = "https://api.bilibili.com/x/web-interface/coin/add";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("aid", cvid)
                 .put("upid", upid)
                 .put("avtype", 2)
@@ -157,7 +157,7 @@ public class ArticleApi {
      */
     public static int favorite(long cvid) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/article/favorites/add";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("id", cvid)
                 .put("csrf", SharedPreferencesUtil.getString("csrf", ""))
                 .toString(), NetWorkUtil.webHeaders));
@@ -174,7 +174,7 @@ public class ArticleApi {
      */
     public static int delFavorite(long cvid) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/article/favorites/del";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("id", cvid)
                 .put("csrf", SharedPreferencesUtil.getString("csrf", ""))
                 .toString(), NetWorkUtil.webHeaders));

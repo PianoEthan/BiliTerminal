@@ -29,7 +29,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -110,7 +110,7 @@ public class SplashActivity extends Activity {
                         }
                     }
 
-                    Class<? extends InstanceActivity> activityClass = Objects.requireNonNull(MenuActivity.btnNames.get(firstActivity)).second;
+                    Class<? extends InstanceActivity> activityClass = ObjectsCompat.requireNonNull(MenuActivity.btnNames.get(firstActivity)).second;
 
                     Intent intent = new Intent();
                     intent.setClass(SplashActivity.this, (activityClass != null ? activityClass : RecommendActivity.class));
@@ -162,7 +162,7 @@ public class SplashActivity extends Activity {
             JSONObject cookieInfo = CookieRefreshApi.cookieInfo();
             if (cookieInfo.optBoolean("refresh")) {
                 Log.e("Cookies", "需要刷新");
-                if (!Objects.equals(SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""), "")) {
+                if (!ObjectsCompat.equals(SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""), "")) {
                     String correspondPath = CookieRefreshApi.getCorrespondPath(cookieInfo.getLong("timestamp"));
                     Log.e("CorrespondPath", correspondPath);
                     String refreshCsrf = CookieRefreshApi.getRefreshCsrf(correspondPath);

@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.TreeMap;
 
 import okhttp3.HttpUrl;
@@ -73,11 +73,11 @@ public class ConfInfoApi {
 
         String w_rid = ToolsUtil.md5(calc_str);
 
-        return Objects.requireNonNull(HttpUrl.parse(url_query)).newBuilder().addQueryParameter("w_rid", w_rid).addQueryParameter("wts", wts).build().toString();
+        return ObjectsCompat.requireNonNull(HttpUrl.parse(url_query)).newBuilder().addQueryParameter("w_rid", w_rid).addQueryParameter("wts", wts).build().toString();
     }
 
     public static String sortUrlParams(String url) {
-        String encodedParam = Objects.requireNonNull(HttpUrl.parse(url)).encodedQuery();
+        String encodedParam = ObjectsCompat.requireNonNull(HttpUrl.parse(url)).encodedQuery();
         if (encodedParam == null) encodedParam = "";
         // 解析URL参数
         Map<String, String> paramMap = new HashMap<>();

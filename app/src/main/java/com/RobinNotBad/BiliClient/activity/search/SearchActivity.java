@@ -40,7 +40,7 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class SearchActivity extends InstanceActivity {
     private String lastKeyword = "≠~`";
@@ -315,7 +315,7 @@ public class SearchActivity extends InstanceActivity {
                 }
             }
             
-            if (Objects.equals(lastKeyword, str)) {
+            if (ObjectsCompat.equals(lastKeyword, str)) {
                 runOnUiThread(() -> {
                     keywordInput.clearFocus();
                     historyRecyclerview.setVisibility(View.GONE);

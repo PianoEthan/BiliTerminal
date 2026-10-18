@@ -20,6 +20,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:lines="1"
             android:text="@string/pagename_message"
             android:textStyle="bold"
@@ -30,6 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -76,6 +80,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="9dp"
                                 android:layout_marginEnd="8dp"
+
+                                android:layout_marginRight="8dp"
                                 android:layout_marginBottom="9dp"
                                 android:src="@drawable/arrow_forward"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -87,6 +93,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 android:src="@drawable/icon_reply"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -100,6 +108,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:ellipsize="end"
                                 android:lines="1"
                                 android:text="回复我的"
@@ -129,6 +139,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="9dp"
                                 android:layout_marginEnd="8dp"
+
+                                android:layout_marginRight="8dp"
                                 android:layout_marginBottom="9dp"
                                 android:src="@drawable/arrow_forward"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -140,6 +152,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 android:src="@drawable/icon_at"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -153,6 +167,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:ellipsize="end"
                                 android:lines="1"
                                 android:text="\@我"
@@ -182,6 +198,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="9dp"
                                 android:layout_marginEnd="8dp"
+
+                                android:layout_marginRight="8dp"
                                 android:layout_marginBottom="9dp"
                                 android:src="@drawable/arrow_forward"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -193,6 +211,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 android:src="@drawable/icon_reply_like0"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -206,6 +226,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:ellipsize="end"
                                 android:lines="1"
                                 android:text="收到的赞"
@@ -236,6 +258,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="9dp"
                                 android:layout_marginEnd="8dp"
+
+                                android:layout_marginRight="8dp"
                                 android:layout_marginBottom="9dp"
                                 android:src="@drawable/arrow_forward"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -247,6 +271,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 android:src="@drawable/icon_info"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -260,6 +286,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:ellipsize="end"
                                 android:lines="1"
                                 android:text="系统通知"
@@ -289,6 +317,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="9dp"
                                 android:layout_marginEnd="8dp"
+
+                                android:layout_marginRight="8dp"
                                 android:layout_marginBottom="9dp"
                                 android:src="@drawable/arrow_forward"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -300,6 +330,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 android:src="@drawable/icon_setting"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -313,6 +345,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:ellipsize="end"
                                 android:lines="1"
                                 android:text="消息设置"

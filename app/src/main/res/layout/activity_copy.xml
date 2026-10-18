@@ -18,6 +18,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@id/timeText"
             android:layout_toLeftOf="@id/timeText"
             android:lines="1"
@@ -30,6 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -76,6 +80,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="2dp"
+
+                    android:layout_marginRight="2dp"
                     android:hint="@string/hint_start_position"
                     android:text="@string/zero"
                     android:inputType="number"
@@ -100,6 +106,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="2dp"
+
+                    android:layout_marginLeft="2dp"
                     android:hint="@string/hint_end_position"
                     android:text="@string/zero"
                     android:inputType="number"
@@ -120,6 +128,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="1dp"
+
+                    android:layout_marginRight="1dp"
                     android:text="@string/lt"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/begin_right"
@@ -131,7 +141,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="1dp"
+
+                    android:layout_marginLeft="1dp"
                     android:layout_marginEnd="6dp"
+
+                    android:layout_marginRight="6dp"
                     android:text="@string/gt"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@id/begin_left"
@@ -143,6 +157,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="1dp"
+
+                    android:layout_marginRight="1dp"
                     android:text="@string/lt"
                     app:layout_constraintEnd_toStartOf="@+id/end_right"
                     app:layout_constraintStart_toEndOf="@id/begin_right"
@@ -153,6 +169,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="1dp"
+
+                    android:layout_marginLeft="1dp"
                     android:text="@string/gt"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.IBinder;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.util.ObjectsCompat;
 
 import com.RobinNotBad.BiliClient.BiliTerminal;
 import com.RobinNotBad.BiliClient.R;
@@ -39,7 +40,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.Inflater;
@@ -55,7 +55,7 @@ public class DownloadService extends Service {
     public static float percent = -1;
     public static String state;
     public static DownloadSection section;
-    private static long firstDown;
+    private static long firstDown = -1;
 
     final String NOTIFICATION_CHANNEL_ID = "biliterminal_download";
     final int FOREGROUND_ID = 1027;
@@ -129,6 +129,7 @@ public class DownloadService extends Service {
         startForeground(FOREGROUND_ID, statusBuilder.build());
 
         exitCode = ERR_UNKNOWN;
+        started = true;
         startNotifyProgress();
 
         CenterThreadPool.run(() -> {
@@ -447,11 +448,11 @@ public class DownloadService extends Service {
             else if (!file.delete() || !file.createNewFile())
                 return ERR_FILE;
 
-            inputStream = Objects.requireNonNull(response.body()).byteStream();
+            inputStream = ObjectsCompat.requireNonNull(response.body()).byteStream();
             fileOutputStream = new FileOutputStream(file);
             int len;
             byte[] bytes = new byte[1024 * 10];
-            long TotalFileSize = Objects.requireNonNull(response.body()).contentLength();
+            long TotalFileSize = ObjectsCompat.requireNonNull(response.body()).contentLength();
             while ((len = inputStream.read(bytes)) != -1 && started) {
                 fileOutputStream.write(bytes, 0, len);
                 long CompleteFileSize = file.length();
@@ -488,7 +489,7 @@ public class DownloadService extends Service {
                 return ERR_FILE;
 
             Sink sink = Okio.sink(danmakuFile);
-            byte[] decompressBytes = decompress(Objects.requireNonNull(response.body()).bytes());// 调用解压函数进行解压，返回包含解压后数据的byte数组
+            byte[] decompressBytes = decompress(ObjectsCompat.requireNonNull(response.body()).bytes());// 调用解压函数进行解压，返回包含解压后数据的byte数组
             bufferedSink = Okio.buffer(sink);
             bufferedSink.write(decompressBytes);// 将解压后数据写入文件（sink）中
             bufferedSink.close();

@@ -20,6 +20,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@id/timeText"
             android:layout_toLeftOf="@id/timeText"
             android:lines="1"
@@ -32,6 +34,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -68,6 +72,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintHeight_percent="0.6"
@@ -81,6 +87,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+
+                        android:layout_marginLeft="6dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -96,6 +104,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+
+                        android:layout_marginLeft="6dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="支持互动视频、直播弹幕等特色功能 | 长按这里进入设置"
@@ -123,6 +133,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintHeight_percent="0.6"
@@ -136,6 +148,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+
+                        android:layout_marginLeft="6dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -151,6 +165,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+
+                        android:layout_marginLeft="6dp"
                         android:layout_marginBottom="10dp"
                         android:lines="1"
                         android:text="另一个优秀的播放器"
@@ -178,6 +194,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintHeight_percent="0.6"
@@ -191,6 +209,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+
+                        android:layout_marginLeft="6dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -206,6 +226,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+
+                        android:layout_marginLeft="6dp"
                         android:layout_marginBottom="10dp"
                         android:lines="1"
                         android:text="不再推荐使用"

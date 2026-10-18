@@ -12,7 +12,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 import okhttp3.Response;
 
@@ -28,7 +28,7 @@ public class DanmakuApi {
                 + "&mode=" + mode + "&rnd=" + (System.currentTimeMillis() * 1000000) + "&csrf="
                 + SharedPreferencesUtil.getString("csrf", "");
         JSONObject result = new JSONObject(
-                Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+                ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
         Logu.i(result.toString());
         return result.getInt("code"); // https://socialsisteryi.github.io/bilibili-API-collect/docs/danmaku/action.html#%E5%8F%91%E9%80%81%E8%A7%86%E9%A2%91%E5%BC%B9%E5%B9%95
     }
@@ -40,7 +40,7 @@ public class DanmakuApi {
                 + "&mode=" + mode + "&rnd=" + (System.currentTimeMillis() * 1000000) + "&csrf="
                 + SharedPreferencesUtil.getString("csrf", "");
         JSONObject result = new JSONObject(
-                Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+                ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
         Logu.i(result.toString());
         return result.getInt("code"); // https://socialsisteryi.github.io/bilibili-API-collect/docs/danmaku/action.html#%E5%8F%91%E9%80%81%E8%A7%86%E9%A2%91%E5%BC%B9%E5%B9%95
     }
@@ -51,7 +51,7 @@ public class DanmakuApi {
         String arg = "oid=" + cid + "&dmid=" + dmid + "&op=" + op + "&platform=web_player" + "&csrf="
                 + SharedPreferencesUtil.getString("csrf", "");
         JSONObject result = new JSONObject(
-                Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+                ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
         Logu.i(result.toString());
         return result.getInt("code");
     }
@@ -62,7 +62,7 @@ public class DanmakuApi {
         // 文档里就是cid，不是oid
         String arg = "cid=" + cid + "&dmid=" + dmid + "&csrf=" + SharedPreferencesUtil.getString("csrf", "");
         JSONObject result = new JSONObject(
-                Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+                ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
         Logu.i(result.toString());
         return result.getInt("code");
     }
@@ -95,7 +95,7 @@ public class DanmakuApi {
 
         // 发送请求获取 protobuf 数据
         Response response = NetWorkUtil.get(url, NetWorkUtil.webHeaders);
-        byte[] data = Objects.requireNonNull(response.body()).bytes();
+        byte[] data = ObjectsCompat.requireNonNull(response.body()).bytes();
 
         // 解析 protobuf 数据
         DmSegMobileReply reply = ProtobufParser.parseDmSegMobileReply(data);

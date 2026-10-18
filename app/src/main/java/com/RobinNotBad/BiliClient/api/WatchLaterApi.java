@@ -12,7 +12,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class WatchLaterApi {
 
@@ -46,11 +46,11 @@ public class WatchLaterApi {
 
     public static int delete(long aid) throws IOException, JSONException {
         String per = "aid=" + aid + "&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post("https://api.bilibili.com/x/v2/history/toview/del", per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post("https://api.bilibili.com/x/v2/history/toview/del", per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static int add(long aid) throws IOException, JSONException {
         String per = "aid=" + aid + "&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post("https://api.bilibili.com/x/v2/history/toview/add", per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post("https://api.bilibili.com/x/v2/history/toview/add", per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 }

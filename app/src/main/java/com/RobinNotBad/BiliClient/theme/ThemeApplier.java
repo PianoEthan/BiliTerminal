@@ -45,6 +45,7 @@ import java.util.Map;
  * AbstractAdapter 三个扼点上。规则保守——只染"当前等于默认值"的视图，
  * 保护 VIP 粉、业务色等；topbar id 恒染。
  */
+@android.annotation.SuppressLint("RestrictedApi")
 public class ThemeApplier {
 
     /** 默认深色主题的精确值（染色守卫用） */
@@ -560,8 +561,8 @@ public class ThemeApplier {
         } else if (bg instanceof android.graphics.drawable.StateListDrawable) {
             // 状态选择器背景（如互动投票芯片：默认态灰阶、按压态粉色）
             // 逐状态原地 mutate 染色：彩色 → accent；灰阶 → surfaceCard/gray 分档。
-            // getStateCount/getStateDrawable 为 API21+；<21 保持原样。
-            if (android.os.Build.VERSION.SDK_INT >= 21) {
+            // getStateCount/getStateDrawable 为 API29+；<29 保持原样。
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
                 android.graphics.drawable.StateListDrawable sld = (android.graphics.drawable.StateListDrawable) bg;
                 int count = sld.getStateCount();
                 for (int i = 0; i < count; i++) {

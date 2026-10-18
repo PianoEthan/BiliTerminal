@@ -26,6 +26,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@id/timeText"
             android:layout_toLeftOf="@id/timeText"
             android:lines="1"
@@ -38,6 +40,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -58,7 +62,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
+
+            android:layout_marginRight="4dp"
             android:layout_toStartOf="@id/send_btn"
+
+            android:layout_toLeftOf="@id/send_btn"
             android:background="@drawable/background_edittext_privatemsg"
             android:hint="@string/hint_private_message"
             android:maxHeight="128dp"
@@ -76,7 +84,9 @@
             android:layout_height="38dp"
             android:background="@drawable/background_privatemsg_send"
             android:src="@drawable/send"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+
+            android:layout_alignParentRight="true" />
 
     </RelativeLayout>
 </FrameLayout>

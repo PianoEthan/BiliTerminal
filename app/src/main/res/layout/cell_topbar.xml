@@ -10,6 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+
+        android:layout_marginLeft="8dp"
         android:layout_marginVertical="3dp"
         android:text="页面标题"
         android:textStyle="bold"
@@ -22,6 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+
+        android:layout_marginRight="8dp"
         android:layout_marginVertical="3dp"
         android:text="11:45"
         android:textStyle="bold"

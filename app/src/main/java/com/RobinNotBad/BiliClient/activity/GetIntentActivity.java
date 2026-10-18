@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -40,14 +39,22 @@ public class GetIntentActivity extends Activity {
         Uri uri = intent.getData();
         if (uri != null) {
             String host = uri.getHost();
-            Log.e("debug-host", host);
 
-            switch (host) {
+            if (host == null) {
+                MsgUtil.showMsgLong("不支持打开");
+            } else switch (host) {
                 case "video":
-                    BiliTerminal.jumpToVideo(this, Long.parseLong(uri.getLastPathSegment()));
-                    break;
                 case "article":
-                    BiliTerminal.jumpToArticle(this, Long.parseLong(uri.getLastPathSegment()));
+                    String lastPathSegment = uri.getLastPathSegment();
+                    long id;
+                    try {
+                        id = Long.parseLong(lastPathSegment == null ? "" : lastPathSegment);
+                    } catch (NumberFormatException e) {
+                        MsgUtil.showMsgLong("不支持打开：" + uri);
+                        break;
+                    }
+                    if ("video".equals(host)) BiliTerminal.jumpToVideo(this, id);
+                    else BiliTerminal.jumpToArticle(this, id);
                     break;
                 default:
                     MsgUtil.showMsgLong("不支持打开：" + host);

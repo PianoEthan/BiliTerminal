@@ -22,6 +22,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:layout_marginTop="2dp"
         android:singleLine="true"
         android:text="蔡徐坤"
@@ -34,6 +36,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:layout_marginBottom="2dp"
         android:alpha="0.86"
         tools:text="Lv114"
@@ -48,6 +52,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:layout_marginBottom="5dp"
         android:alpha="0.7"
         android:text="2.5万粉丝"
@@ -62,6 +68,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
+
+        android:layout_marginLeft="5dp"
         android:alpha="0.7"
         android:text="查看粉丝勋章"
         android:textSize="12sp"
@@ -78,6 +86,8 @@
         android:layout_width="1dp"
         android:layout_height="0dp"
         android:layout_marginStart="5dp"
+
+        android:layout_marginLeft="5dp"
         android:background="#818C8C8C"
         app:layout_constraintBottom_toBottomOf="@id/userFollowers"
         app:layout_constraintStart_toEndOf="@id/userMedal"
@@ -88,6 +98,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
+
+        android:layout_marginLeft="5dp"
         android:alpha="0.7"
         android:text="91关注"
         android:textSize="12sp"
@@ -283,6 +295,8 @@
         app:strokeWidth="0dp"
         android:insetBottom="0dp"
         android:layout_marginEnd="2dp"
+
+        android:layout_marginRight="2dp"
         android:backgroundTint="#cc262626"
         android:text="关注"
         app:layout_constraintEnd_toStartOf="@+id/msgBtn"
@@ -294,6 +308,8 @@
         android:layout_width="0dp"
         android:layout_height="38dp"
         android:layout_marginStart="2dp"
+
+        android:layout_marginLeft="2dp"
         app:strokeWidth="0dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"

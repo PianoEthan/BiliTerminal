@@ -216,9 +216,6 @@ public class QRLoginFragment extends BaseFragment {
 
                             SharedPreferencesUtil.putBoolean(SharedPreferencesUtil.cookie_refresh, true);
 
-                            Log.d("debug-login-cookies", cookies);
-                            Log.e("debug-refresh-token", SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""));
-
                             InstanceActivity instance = BiliTerminal.getInstanceActivityOnTop();
                             if (instance != null && !instance.isDestroyed()) instance.finish();
 

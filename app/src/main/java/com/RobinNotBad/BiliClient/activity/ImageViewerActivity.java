@@ -37,6 +37,11 @@ public class ImageViewerActivity extends BaseActivity {
         setContentView(R.layout.activity_image_viewer);
         Intent intent = getIntent();
         ArrayList<String> imageList = intent.getStringArrayListExtra("imageList");
+        if (imageList == null || imageList.isEmpty()) {
+            MsgUtil.showMsg("图片列表为空");
+            finish();
+            return;
+        }
 
         PhotoViewpager viewPager = findViewById(R.id.viewPager);
         TextView textView = findViewById(R.id.text_page);

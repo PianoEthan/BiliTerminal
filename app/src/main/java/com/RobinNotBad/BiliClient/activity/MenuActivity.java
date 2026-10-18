@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 //菜单页面
 //2023-07-14
@@ -87,7 +87,7 @@ public class MenuActivity extends BaseActivity {
         if (from != null) {
             Log.d("debug-menu", from);
             if (btnNames.containsKey(from))
-                setPageName(Objects.requireNonNull(btnNames.get(from)).first);
+                setPageName(ObjectsCompat.requireNonNull(btnNames.get(from)).first);
         }
 
         findViewById(R.id.top).setOnClickListener(view -> finish());
@@ -144,7 +144,7 @@ public class MenuActivity extends BaseActivity {
                     materialButton.setText("登录");
                     break;
                 case "dynamic":
-                    String btnText = Objects.requireNonNull(btnNames.get(btn)).first;
+                    String btnText = ObjectsCompat.requireNonNull(btnNames.get(btn)).first;
                     if (btn.equals("dynamic")) {
                         dynamicButton = materialButton;
                         int updateNum = SharedPreferencesUtil.getInt(SharedPreferencesUtil.DYNAMIC_UPDATE_NUM, 0);
@@ -155,7 +155,7 @@ public class MenuActivity extends BaseActivity {
                     materialButton.setText(btnText);
                     break;
                 case "message":
-                    String messageBtnText = Objects.requireNonNull(btnNames.get(btn)).first;
+                    String messageBtnText = ObjectsCompat.requireNonNull(btnNames.get(btn)).first;
                     messageButton = materialButton;
                     int messageUpdateNum = SharedPreferencesUtil.getInt(SharedPreferencesUtil.MESSAGE_UPDATE_NUM, 0);
                     if (messageUpdateNum > 0) {
@@ -164,7 +164,7 @@ public class MenuActivity extends BaseActivity {
                     materialButton.setText(messageBtnText);
                     break;
                 default:
-                    materialButton.setText(Objects.requireNonNull(btnNames.get(btn)).first);
+                    materialButton.setText(ObjectsCompat.requireNonNull(btnNames.get(btn)).first);
                     break;
             }
             materialButton.setOnClickListener(view -> killAndJump(btn));
@@ -201,7 +201,7 @@ public class MenuActivity extends BaseActivity {
         super.onResume();
         Log.e("debug", "MenuActivity onResume in: " + (System.currentTimeMillis() - time));
         if (dynamicButton != null) {
-            String btnText = Objects.requireNonNull(btnNames.get("dynamic")).first;
+            String btnText = ObjectsCompat.requireNonNull(btnNames.get("dynamic")).first;
             int updateNum = SharedPreferencesUtil.getInt(SharedPreferencesUtil.DYNAMIC_UPDATE_NUM, 0);
             if (updateNum > 0) {
                 btnText = btnText + " (" + updateNum + ")";
@@ -209,7 +209,7 @@ public class MenuActivity extends BaseActivity {
             dynamicButton.setText(btnText);
         }
         if (messageButton != null) {
-            String messageBtnText = Objects.requireNonNull(btnNames.get("message")).first;
+            String messageBtnText = ObjectsCompat.requireNonNull(btnNames.get("message")).first;
             int messageUpdateNum = SharedPreferencesUtil.getInt(SharedPreferencesUtil.MESSAGE_UPDATE_NUM, 0);
             if (messageUpdateNum > 0) {
                 messageBtnText = messageBtnText + " (" + messageUpdateNum + ")";
@@ -219,13 +219,13 @@ public class MenuActivity extends BaseActivity {
     }
 
     private void killAndJump(String name) {
-        if (btnNames.containsKey(name) && !Objects.equals(name, from)) {
+        if (btnNames.containsKey(name) && !ObjectsCompat.equals(name, from)) {
             InstanceActivity instance = BiliTerminal.getInstanceActivityOnTop();
             if (instance != null && instance.getLifecycle().getCurrentState() != Lifecycle.State.DESTROYED)
                 instance.finish();
 
             Intent intent = new Intent();
-            intent.setClass(MenuActivity.this, Objects.requireNonNull(btnNames.get(name)).second);
+            intent.setClass(MenuActivity.this, ObjectsCompat.requireNonNull(btnNames.get(name)).second);
             intent.putExtra("from", name);
             startActivity(intent);
             Glide.get(BiliTerminal.context).clearMemory();

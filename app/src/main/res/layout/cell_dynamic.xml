@@ -23,6 +23,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:layout_marginTop="1dp"
         android:singleLine="true"
         android:text="蔡徐坤"
@@ -35,6 +37,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:layout_marginBottom="1dp"
         android:alpha="0.7"
         android:text="11-45-14"
@@ -142,6 +146,8 @@
         android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:layout_marginStart="4dp"
+
+        android:layout_marginLeft="4dp"
         android:textColor="#fff"
         android:gravity="center_vertical"
         android:text="转发"
@@ -157,6 +163,8 @@
         android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:layout_marginStart="4dp"
+
+        android:layout_marginLeft="4dp"
         android:gravity="center_vertical"
         android:textColor="#fff"
         android:text="删除"

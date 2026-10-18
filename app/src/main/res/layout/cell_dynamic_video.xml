@@ -19,8 +19,12 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="5dp"
+
+            android:layout_marginRight="5dp"
             android:adjustViewBounds="true"
             app:layout_constraintBottom_toTopOf="@id/text_upname"
             app:layout_constraintDimensionRatio="16:11"
@@ -56,6 +60,8 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginStart="4dp"
+
+            android:layout_marginLeft="4dp"
             android:layout_marginTop="1dp"
             android:layout_marginBottom="1dp"
             android:adjustViewBounds="true"
@@ -95,7 +101,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+
+            android:layout_marginLeft="4dp"
             android:layout_marginEnd="10dp"
+
+            android:layout_marginRight="10dp"
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:maxLines="3"

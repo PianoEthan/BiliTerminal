@@ -20,6 +20,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@id/timeText"
             android:layout_toLeftOf="@id/timeText"
             android:lines="1"
@@ -32,6 +34,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -88,6 +92,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -99,6 +105,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_player"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -112,6 +120,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -127,6 +137,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="切换播放器、视频清晰度"
@@ -155,6 +167,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -166,6 +180,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_player_settings"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -179,6 +195,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -194,6 +212,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="试试内置播放器的特色功能吧"
@@ -221,6 +241,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -232,6 +254,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_ui"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -245,6 +269,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -260,6 +286,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="界面大小、边距等"
@@ -287,6 +315,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -298,6 +328,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_ui"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -311,6 +343,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -326,6 +360,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="主题、背景图、动态取色"
@@ -354,6 +390,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -365,6 +403,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_menu"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -378,6 +418,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -393,6 +435,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="隐藏菜单内按钮、调整菜单排序"
@@ -421,6 +465,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -432,6 +478,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_creative_center"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -445,6 +493,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -460,6 +510,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="一些特殊适配和特殊需求选项"
@@ -489,6 +541,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -500,6 +554,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_reply"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -513,6 +569,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -528,6 +586,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="关于评论区的一些设置选项"
@@ -557,6 +617,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -568,6 +630,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_settings_videoinfo"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -581,6 +645,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -596,6 +662,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="视频详情页、专栏详情页等相关设置"
@@ -624,6 +692,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -635,6 +705,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_laboratory"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -648,6 +720,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -663,6 +737,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="不保证能用或者用于开发调试的功能"
@@ -690,6 +766,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -701,6 +779,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:adjustViewBounds="true"
                         android:src="@drawable/icon_info"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -714,6 +794,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -729,6 +811,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="版本号、开发团队、联系方式、开源信息"
@@ -756,6 +840,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         android:layout_marginBottom="16dp"
                         android:src="@drawable/arrow_forward"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -767,6 +853,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginTop="10dp"
                         android:ellipsize="end"
                         android:lines="1"
@@ -782,6 +870,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         android:layout_marginBottom="10dp"
                         android:singleLine="true"
                         android:text="查看当前账号的登录信息，用于在另外的哔哩终端中特殊登录"

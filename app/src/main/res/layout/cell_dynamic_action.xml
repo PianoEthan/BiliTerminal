@@ -21,6 +21,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
+
+        android:layout_marginRight="2dp"
         android:text="发动态"
         app:layout_constraintEnd_toStartOf="@id/type"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,6 +33,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
+
+        android:layout_marginLeft="2dp"
         android:text="类型"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/write_dynamic"

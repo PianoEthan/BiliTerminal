@@ -23,7 +23,9 @@
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp" />
 
         <com.RobinNotBad.BiliClient.ui.widget.MarqueeTextView
             android:id="@+id/medalName"
@@ -33,6 +35,8 @@
             app:layout_constraintStart_toEndOf="@id/avatar"
             android:layout_marginTop="2dp"
             android:layout_marginStart="6dp"
+
+            android:layout_marginLeft="6dp"
             app:layout_constraintEnd_toStartOf="@id/targetName"
             android:layout_marginBottom="1dp"
             app:layout_constraintTop_toTopOf="@id/avatar"
@@ -51,8 +55,12 @@
             app:layout_constraintTop_toTopOf="@+id/medalName"
             app:layout_constraintBottom_toBottomOf="@id/medalName"
             android:layout_marginStart="6dp"
+
+            android:layout_marginLeft="6dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="4dp"
+
+            android:layout_marginRight="4dp"
             android:alpha="0.7"
             android:text="主播名称" />
 
@@ -67,6 +75,8 @@
             android:layout_marginTop="1dp"
             app:layout_constraintTop_toBottomOf="@id/medalName"
             android:layout_marginStart="6dp"
+
+            android:layout_marginLeft="6dp"
             android:alpha="0.8"
             android:text="亲密度: 0" />
 
@@ -80,7 +90,11 @@
             app:layout_constraintTop_toTopOf="@+id/intimacy"
             app:layout_constraintBottom_toBottomOf="@id/intimacy"
             android:layout_marginStart="6dp"
+
+            android:layout_marginLeft="6dp"
             android:layout_marginEnd="4dp"
+
+            android:layout_marginRight="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:alpha="0.6"
             android:text="Lv.1" />

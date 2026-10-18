@@ -26,6 +26,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="4dp"
+
+                android:layout_marginRight="4dp"
                 android:layout_weight="0.48"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
@@ -35,6 +37,8 @@
             <TextView
                 android:id="@+id/text_title"
                 android:layout_marginStart="4dp"
+
+                android:layout_marginLeft="4dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -58,6 +62,8 @@
                 android:layout_height="wrap_content"
                 android:alpha="0.5"
                 android:drawableStart="@drawable/icon_play_12"
+
+                android:drawableLeft="@drawable/icon_play_12"
                 android:singleLine="true"
                 android:text="11.4万"
                 android:textSize="11sp"
@@ -71,8 +77,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+
+                android:layout_marginLeft="4dp"
                 android:alpha="0.5"
                 android:drawableStart="@drawable/icon_person"
+
+                android:drawableLeft="@drawable/icon_person"
                 android:singleLine="true"
                 android:text="蔡徐坤"
                 android:textSize="11sp" />

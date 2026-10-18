@@ -138,7 +138,7 @@ public class VideoInfoActivity extends BaseActivity {
         return true;
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC, sticky = true, priority = 1)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true, priority = 1)
     public void onEvent(ReplyEvent event) {
         replyFragment.notifyReplyInserted(event);
     }

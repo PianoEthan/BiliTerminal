@@ -58,39 +58,45 @@ public class LocalListActivity extends InstanceActivity {
 
         CenterThreadPool.run(() -> {
             runOnUiThread(() -> swipeRefreshLayout.setRefreshing(true));
-            scan(FileUtil.getVideoDownloadPath());
-            adapter = new LocalVideoAdapter(this, videoList);
+            ArrayList<LocalVideo> scanned = scan(FileUtil.getVideoDownloadPath());
 
-            adapter.setOnLongClickListener(position -> {
-                long timestamp = System.currentTimeMillis();
-                if (longClickPosition == position && timestamp - longClickTimestamp < 4000) {
-                    File file = new File(FileUtil.getVideoDownloadPath(), videoList.get(position).title);
-                    CenterThreadPool.run(() -> FileUtil.deleteFolder(file));
-                    MsgUtil.showMsg("删除成功");
-                    videoList.remove(position);
-                    adapter.notifyItemRemoved(position + 1);
-                    adapter.notifyItemRangeChanged(position + 1, videoList.size() - position);
-                    longClickPosition = -1;
-                    checkEmpty();
-                } else {
-                    longClickPosition = position;
-                    longClickTimestamp = timestamp;
-                    MsgUtil.showMsg("再次长按删除");
-                }
-            });
             runOnUiThread(() -> {
+                videoList.clear();
+                videoList.addAll(scanned);
+                adapter = new LocalVideoAdapter(this, videoList);
+
+                adapter.setOnLongClickListener(position -> {
+                    long timestamp = System.currentTimeMillis();
+                    if (longClickPosition == position && timestamp - longClickTimestamp < 4000) {
+                        File file = new File(FileUtil.getVideoDownloadPath(), videoList.get(position).title);
+                        CenterThreadPool.run(() -> FileUtil.deleteFolder(file));
+                        MsgUtil.showMsg("删除成功");
+                        videoList.remove(position);
+                        adapter.notifyItemRemoved(position + 1);
+                        adapter.notifyItemRangeChanged(position + 1, videoList.size() - position);
+                        longClickPosition = -1;
+                        checkEmpty();
+                    } else {
+                        longClickPosition = position;
+                        longClickTimestamp = timestamp;
+                        MsgUtil.showMsg("再次长按删除");
+                    }
+                });
+
                 recyclerView.setLayoutManager(getLayoutManager());
                 recyclerView.setAdapter(adapter);
                 swipeRefreshLayout.setRefreshing(false);
+                checkEmpty();
                 started = true;
             });
         });
     }
 
-    private void scan(File folder) {
+    private ArrayList<LocalVideo> scan(File folder) {
+        ArrayList<LocalVideo> result = new ArrayList<>();
         File[] files = folder.listFiles();
         if (files == null)
-            return;
+            return result;
 
         for (File video : files) {
             if (video.isDirectory()) {
@@ -121,7 +127,7 @@ public class LocalListActivity extends InstanceActivity {
                     localVideo.danmakuFileList.add(danmakuFile.toString()); // 单集视频
 
                     localVideo.calcTotalSize();
-                    videoList.add(localVideo);
+                    result.add(localVideo);
                 } else {
                     File[] pages = video.listFiles(); // 分页视频
                     if (pages != null) {
@@ -149,12 +155,12 @@ public class LocalListActivity extends InstanceActivity {
                         }
                         localVideo.calcTotalSize();
                         if (localVideo.videoFileList.size() > 0)
-                            videoList.add(localVideo);
+                            result.add(localVideo);
                     }
                 }
             }
         }
-        checkEmpty();
+        return result;
     }
 
     private void checkEmpty() {
@@ -170,16 +176,18 @@ public class LocalListActivity extends InstanceActivity {
     }
 
     public void refresh() {
-        if (started)
+        if (started) {
+            runOnUiThread(() -> swipeRefreshLayout.setRefreshing(true));
             CenterThreadPool.run(() -> {
-                runOnUiThread(() -> swipeRefreshLayout.setRefreshing(true));
-                int oldSize = videoList.size();
-                videoList.clear();
-                scan(FileUtil.getVideoDownloadPath());
+                ArrayList<LocalVideo> scanned = scan(FileUtil.getVideoDownloadPath());
                 runOnUiThread(() -> {
-                    adapter.notifyItemRangeChanged(1, oldSize);
+                    videoList.clear();
+                    videoList.addAll(scanned);
+                    adapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);
+                    checkEmpty();
                 });
             });
+        }
     }
 }

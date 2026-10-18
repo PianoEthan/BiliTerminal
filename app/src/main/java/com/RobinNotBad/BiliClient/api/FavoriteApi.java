@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class FavoriteApi {
 
@@ -261,7 +261,7 @@ public class FavoriteApi {
         String addFid = fid + strMid.substring(strMid.length() - 2);
         String url = "https://api.bilibili.com/medialist/gateway/coll/resource/deal";
         String per = "rid=" + aid + "&type=2&add_media_ids=" + addFid + "&del_media_ids=&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static int deleteFavorite(long aid, long fid) throws IOException, JSONException {
@@ -269,24 +269,24 @@ public class FavoriteApi {
         String delFid = fid + strMid.substring(strMid.length() - 2);
         String url = "https://api.bilibili.com/medialist/gateway/coll/resource/batch/del";
         String per = "resources=" + aid + ":2&media_id=" + delFid + "&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static int addFolder(String title, String intro, int privacy) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/v3/fav/folder/add";
         String data = new NetWorkUtil.FormData().put("title", title).put("intro", intro != null ? intro : "").put("privacy", privacy).put("csrf", SharedPreferencesUtil.getString("csrf", "")).toString();
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, data, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, data, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static int editFolder(long mediaId, String title, String intro, int privacy) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/v3/fav/folder/edit";
         String data = new NetWorkUtil.FormData().put("media_id", mediaId).put("title", title).put("intro", intro != null ? intro : "").put("privacy", privacy).put("csrf", SharedPreferencesUtil.getString("csrf", "")).toString();
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, data, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, data, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
     public static int deleteFolder(long mediaId) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/v3/fav/folder/del";
         String data = new NetWorkUtil.FormData().put("media_ids", String.valueOf(mediaId)).put("csrf", SharedPreferencesUtil.getString("csrf", "")).toString();
-        return GsonUtil.fromJson(Objects.requireNonNull(NetWorkUtil.post(url, data, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, data, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 }

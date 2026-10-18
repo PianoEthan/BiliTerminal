@@ -32,11 +32,12 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,7 +75,7 @@ public class DynamicApi {
 
     public static long publishTextContent(String content) throws IOException {
         String url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("dynamic_id", 0).put("type", 4).put("rid", 0).put("content", content)
                 .put("csrf", SharedPreferencesUtil.getString("csrf", "")).toString(), NetWorkUtil.webHeaders));
         try {
@@ -102,7 +103,7 @@ public class DynamicApi {
         reqBody = new JSONObject().put("dyn_req", reqBody);
         if (otherArgs != null) for (Map.Entry<String, Object> e : otherArgs.entrySet()) reqBody.put(e.getKey(), e.getValue());
         Logu.v("publishComplex reqBody=" + reqBody);
-        Response resp = Objects.requireNonNull(NetWorkUtil.postJson(url, reqBody.toString()));
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.postJson(url, reqBody.toString()));
         try {
             ResponseBody body = resp.body();
             if (body == null) return -1;
@@ -117,12 +118,12 @@ public class DynamicApi {
 
     public static long relayVideo(String text, Map<String, Long> atUserUid, long aid) throws JSONException, IOException {
         return publishComplex(text == null ? new JSONArray().put(Content.create("", 1, null)) : atUserUid != null ? parseAtContent(text, atUserUid) : new JSONArray().put(Content.create(text, 1, null)),
-                null, null, null, 5, Map.of("web_repost_src", new JSONObject().put("revs_id", new JSONObject().put("dyn_type", 8).put("rid", aid))));
+                null, null, null, 5, Collections.singletonMap("web_repost_src", new JSONObject().put("revs_id", new JSONObject().put("dyn_type", 8).put("rid", aid))));
     }
 
     public static long relayDynamic(String text, long dyid) throws IOException {
         String url = "https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/repost";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("dynamic_id", dyid).put("content", text).put("csrf_token", SharedPreferencesUtil.getString("csrf", "")).toString(), NetWorkUtil.webHeaders));
         try {
             ResponseBody body = resp.body();
@@ -134,7 +135,7 @@ public class DynamicApi {
 
     public static long relayDynamic(String text, Map<String, Long> atUserUid, long dyid) throws JSONException, IOException {
         return publishComplex(text == null ? new JSONArray().put(Content.create("", 1, null)) : atUserUid != null ? parseAtContent(text, atUserUid) : new JSONArray().put(Content.create(text, 1, null)),
-                null, null, null, 4, Map.of("web_repost_src", new JSONObject().put("dyn_id_str", String.valueOf(dyid))));
+                null, null, null, 4, Collections.singletonMap("web_repost_src", new JSONObject().put("dyn_id_str", String.valueOf(dyid))));
     }
 
     public static JSONArray parseAtContent(String content, Map<String, Long> atUserUid) throws JSONException {
@@ -168,7 +169,7 @@ public class DynamicApi {
 
     public static int likeDynamic(long dyid, boolean up) throws IOException {
         String url = "https://api.vc.bilibili.com/dynamic_like/v1/dynamic_like/thumb";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("dynamic_id", dyid).put("up", up ? 1 : 2).put("csrf_token", SharedPreferencesUtil.getString("csrf", "")).toString(), NetWorkUtil.webHeaders));
         try {
             ResponseBody body = resp.body();
@@ -179,7 +180,7 @@ public class DynamicApi {
 
     public static int deleteDynamic(long dyid) throws IOException {
         String url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic";
-        Response resp = Objects.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, new NetWorkUtil.FormData()
                 .put("dynamic_id", dyid).put("csrf_token", SharedPreferencesUtil.getString("csrf", "")).toString(), NetWorkUtil.webHeaders));
         try {
             ResponseBody body = resp.body();

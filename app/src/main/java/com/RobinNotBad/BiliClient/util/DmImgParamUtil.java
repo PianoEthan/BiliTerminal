@@ -6,10 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.Random;
 
 import okhttp3.HttpUrl;
@@ -30,7 +30,7 @@ public class DmImgParamUtil {
     }
 
     public static String getDmImgParamsUrl(String orig_url) {
-        HttpUrl.Builder builder = Objects.requireNonNull(HttpUrl.parse(orig_url)).newBuilder();
+        HttpUrl.Builder builder = ObjectsCompat.requireNonNull(HttpUrl.parse(orig_url)).newBuilder();
         Map<String, String> params = getDmImgParams();
         for (Map.Entry<String, String> entry : params.entrySet()) {
             builder.addQueryParameter(entry.getKey(), entry.getValue());
@@ -110,8 +110,8 @@ public class DmImgParamUtil {
                 .put("p", new JSONArray().put(xyz1[0]).put(xyz1[2]).put(xyz1[1]))
                 .put("s", new JSONArray().put(xyz2[2]).put(xyz2[0]).put(xyz2[1])));
         result.put("ds", ds)
-                .put("wh", new JSONArray(List.of(f114(width, height))))
-                .put("of", new JSONArray(List.of(f514(y, x))));
+                .put("wh", new JSONArray(Collections.singletonList(f114(width, height))))
+                .put("of", new JSONArray(Collections.singletonList(f514(y, x))));
         return result.toString();
     }
 

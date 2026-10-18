@@ -16,7 +16,7 @@ import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.Locale;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class TutorialActivity extends BaseActivity {
 
@@ -29,7 +29,7 @@ public class TutorialActivity extends BaseActivity {
 
             Intent intent = getIntent();
 
-            Tutorial tutorial = Objects.requireNonNull(TutorialHelper.loadTutorial(getResources().getXml(intent.getIntExtra("xml_id", R.xml.tutorial_recommend))));
+            Tutorial tutorial = ObjectsCompat.requireNonNull(TutorialHelper.loadTutorial(getResources().getXml(intent.getIntExtra("xml_id", R.xml.tutorial_recommend))));
 
             ((TextView) findViewById(R.id.text_title)).setText(tutorial.name);
             ((TextView) findViewById(R.id.content)).setText(TutorialHelper.loadText(tutorial.content));

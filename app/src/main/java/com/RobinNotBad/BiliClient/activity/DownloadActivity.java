@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.Inflater;
@@ -124,11 +124,11 @@ public class DownloadActivity extends BaseActivity {
             Response response = NetWorkUtil.get(url,
                     no_bili_headers ? AppInfoApi.customHeaders : NetWorkUtil.webHeaders);
             if (!file.exists()) file.createNewFile();
-            InputStream inputStream = Objects.requireNonNull(response.body()).byteStream();
+            InputStream inputStream = ObjectsCompat.requireNonNull(response.body()).byteStream();
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             int len;
             byte[] bytes = new byte[1024 * 10];
-            long TotalFileSize = Objects.requireNonNull(response.body()).contentLength();
+            long TotalFileSize = ObjectsCompat.requireNonNull(response.body()).contentLength();
             while ((len = inputStream.read(bytes)) != -1) {
                 fileOutputStream.write(bytes, 0, len);
                 long CompleteFileSize = file.length();
@@ -165,7 +165,7 @@ public class DownloadActivity extends BaseActivity {
             try {
                 if (!danmakuFile.exists()) danmakuFile.createNewFile();
                 Sink sink = Okio.sink(danmakuFile);
-                byte[] decompressBytes = decompress(Objects.requireNonNull(response.body()).bytes());//调用解压函数进行解压，返回包含解压后数据的byte数组
+                byte[] decompressBytes = decompress(ObjectsCompat.requireNonNull(response.body()).bytes());//调用解压函数进行解压，返回包含解压后数据的byte数组
                 bufferedSink = Okio.buffer(sink);
                 bufferedSink.write(decompressBytes);//将解压后数据写入文件（sink）中
                 bufferedSink.close();

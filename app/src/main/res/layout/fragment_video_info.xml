@@ -33,10 +33,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignEnd="@id/img_cover"
+
+                android:layout_alignRight="@id/img_cover"
                 android:layout_alignBottom="@id/img_cover"
                 android:alpha="0.9"
                 android:lines="1"
                 android:paddingEnd="4dp"
+
+                android:paddingRight="4dp"
                 android:paddingBottom="2dp"
                 android:shadowColor="@color/bgblack"
                 android:shadowDx="3"
@@ -106,8 +110,10 @@
                 android:layout_height="35sp"
                 android:layout_marginHorizontal="8dp"
                 android:drawableEnd="@drawable/arrow_forward"
+
+                android:drawableRight="@drawable/arrow_forward"
                 android:ellipsize="end"
-                android:gravity="center_vertical"
+                android:gravity="center_vertical|start"
                 android:singleLine="true"
                 android:text="合集 · 纳西妲"
                 android:textAlignment="textStart"
@@ -126,6 +132,8 @@
                 android:layout_height="wrap_content"
                 android:alpha="0.5"
                 android:drawableStart="@drawable/icon_play_16"
+
+                android:drawableLeft="@drawable/icon_play_16"
                 android:drawablePadding="1dp"
                 android:text="114514"
                 android:textColor="#fff"
@@ -136,8 +144,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+
+                android:layout_marginLeft="4dp"
                 android:alpha="0.5"
                 android:drawableStart="@drawable/icon_danmaku"
+
+                android:drawableLeft="@drawable/icon_danmaku"
                 android:drawablePadding="1dp"
                 android:text="1919"
                 android:textSize="12sp" />
@@ -151,6 +163,8 @@
             android:layout_marginTop="4dp"
             android:alpha="0.5"
             android:drawableStart="@drawable/icon_time"
+
+            android:drawableLeft="@drawable/icon_time"
             android:drawablePadding="1dp"
             android:text="9999-13-32 25:61"
             android:textSize="12sp" />
@@ -162,6 +176,8 @@
             android:layout_marginTop="4dp"
             android:alpha="0.5"
             android:drawableStart="@drawable/icon_bv"
+
+            android:drawableLeft="@drawable/icon_bv"
             android:drawablePadding="1dp"
             android:text="BV114514"
             android:textSize="12sp" />
@@ -294,6 +310,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="2dp"
+
+                android:layout_marginRight="2dp"
                 android:layout_weight="0.5"
                 android:text="稍后再看" />
 
@@ -302,6 +320,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
+
+                android:layout_marginLeft="2dp"
                 android:layout_weight="0.5"
                 android:text="缓存" />
         </LinearLayout>

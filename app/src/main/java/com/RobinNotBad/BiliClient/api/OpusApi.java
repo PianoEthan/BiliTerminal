@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -179,7 +179,7 @@ public class OpusApi {
         } catch (JSONException ignored) {
             return -1;
         }
-        Response resp = Objects.requireNonNull(NetWorkUtil.postJson(url, payload.toString(), NetWorkUtil.webHeaders));
+        Response resp = ObjectsCompat.requireNonNull(NetWorkUtil.postJson(url, payload.toString(), NetWorkUtil.webHeaders));
         try {
             assert resp.body() != null;
             JSONObject respBody = new JSONObject(resp.body().string());

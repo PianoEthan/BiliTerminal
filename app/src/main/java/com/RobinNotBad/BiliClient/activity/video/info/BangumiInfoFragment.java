@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +35,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 public class BangumiInfoFragment extends BaseFragment {
     private long mediaId;
@@ -110,7 +111,7 @@ public class BangumiInfoFragment extends BaseFragment {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .placeholder(R.mipmap.placeholder)
                 .into(imageMediaCover);
-        imageMediaCover.setOnClickListener((view) -> startActivity(new Intent(view.getContext(), ImageViewerActivity.class).putExtra("imageList", new ArrayList<>(List.of(bangumi.info.cover_horizontal)))));
+        imageMediaCover.setOnClickListener((view) -> startActivity(new Intent(view.getContext(), ImageViewerActivity.class).putExtra("imageList", new ArrayList<>(Collections.singletonList(bangumi.info.cover_horizontal)))));
         title.setText(bangumi.info.title);
 
         //按内容动态取色：番剧封面种子 → 播放按钮/选集芯片临时强调色
@@ -177,7 +178,7 @@ public class BangumiInfoFragment extends BaseFragment {
 
         // 标签
         if (bangumi.info.styles != null && !bangumi.info.styles.isEmpty()) {
-            String styleText = "标签：" + String.join(" ", bangumi.info.styles);
+            String styleText = "标签：" + TextUtils.join(" ", bangumi.info.styles);
             styles.setText(styleText);
             styles.setVisibility(View.VISIBLE);
         } else {

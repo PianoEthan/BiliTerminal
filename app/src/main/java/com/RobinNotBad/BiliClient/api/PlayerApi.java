@@ -22,6 +22,7 @@ import com.RobinNotBad.BiliClient.model.Subtitle;
 import com.RobinNotBad.BiliClient.model.SubtitleLink;
 import com.RobinNotBad.BiliClient.model.VideoInfo;
 import com.RobinNotBad.BiliClient.service.DownloadService;
+import com.RobinNotBad.BiliClient.util.CookieGenerator;
 import com.RobinNotBad.BiliClient.util.FileUtil;
 import com.RobinNotBad.BiliClient.util.GsonUtil;
 import com.RobinNotBad.BiliClient.util.Logu;
@@ -214,14 +215,14 @@ public class PlayerApi {
                 break;
             case "mtvPlayer":
                 intent.setClassName(context.getString(R.string.player_package_mtv), "com.xinxiangshicheng.wearbiliplayer.cn.player.PlayerActivity");
-                intent.setAction(Intent.ACTION_VIEW).putExtra("cookie", SharedPreferencesUtil.getString("cookies", "")).putExtra("mode", playerData.isLocal() ? "2" : "0").putExtra("url", playerData.videoUrl).putExtra("danmaku", playerData.danmakuUrl).putExtra("title", playerData.title).putExtra("live_mode", playerData.isLive());
+                intent.setAction(Intent.ACTION_VIEW).putExtra("cookie", CookieGenerator.getCookieForPlayer()).putExtra("mode", playerData.isLocal() ? "2" : "0").putExtra("url", playerData.videoUrl).putExtra("danmaku", playerData.danmakuUrl).putExtra("title", playerData.title).putExtra("live_mode", playerData.isLive());
                 break;
             case "aliangPlayer":
                 intent.setClassName(context.getString(R.string.player_package_aliang), "com.aliangmaker.media.PlayVideoActivity");
                 intent.putExtra("name", playerData.title).putExtra("danmaku", playerData.danmakuUrl).putExtra("live_mode", playerData.isLive());
                 intent.setData(Uri.parse(playerData.videoUrl));
                 if (!playerData.isLocal()) {
-                    Map<String, String> headers = new HashMap<>(); headers.put("Cookie", SharedPreferencesUtil.getString("cookies", "")); headers.put("Referer", "https://www.bilibili.com/");
+                    Map<String, String> headers = new HashMap<>(); headers.put("Cookie", CookieGenerator.getCookieForPlayer()); headers.put("Referer", "https://www.bilibili.com/");
                     intent.putExtra("cookie", (Serializable) headers).putExtra("agent", NetWorkUtil.USER_AGENT_WEB).putExtra("progress", playerData.progress * 1000L);
                 }
                 intent.setAction(Intent.ACTION_VIEW);

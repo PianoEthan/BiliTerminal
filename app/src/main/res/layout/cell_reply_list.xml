@@ -22,6 +22,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
+
+        android:layout_marginLeft="4dp"
         android:textSize="13sp"
         android:text="蔡徐坤"
         app:layout_constraintBottom_toTopOf="@+id/replyPubDate"
@@ -34,6 +36,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
+
+        android:layout_marginLeft="4dp"
         android:alpha="0.7"
         android:text="11-45-14"
         android:textSize="11sp"
@@ -71,6 +75,8 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:adjustViewBounds="true"
         android:alpha="0.7"
         android:scaleType="centerInside"
@@ -88,6 +94,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
+
+        android:layout_marginLeft="6dp"
         android:alpha="0.75"
         android:gravity="center_vertical"
         android:text="删除"
@@ -118,6 +126,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
+
+        android:layout_marginRight="2dp"
         android:layout_marginBottom="2dp"
         android:background="#64555555"
         android:text="共1张图片"
@@ -134,8 +144,12 @@
         android:background="@drawable/background_grey_cardview"
         android:gravity="center"
         android:paddingStart="12dp"
+
+        android:paddingLeft="12dp"
         android:paddingTop="5dp"
         android:paddingEnd="12dp"
+
+        android:paddingRight="12dp"
         android:paddingBottom="5dp"
         android:text=" UP主觉得很赞"
         android:textSize="11sp"
@@ -194,8 +208,12 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginStart="9dp"
+
+        android:layout_marginLeft="9dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="9dp"
+
+        android:layout_marginRight="9dp"
         android:layout_marginBottom="2dp"
         android:background="#318C8C8C"
         app:layout_constraintBottom_toBottomOf="parent"

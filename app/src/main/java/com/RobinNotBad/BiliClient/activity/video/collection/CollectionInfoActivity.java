@@ -35,7 +35,7 @@ import com.bumptech.glide.request.RequestOptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class CollectionInfoActivity extends RefreshListActivity {
     private Collection collection = null;
@@ -65,7 +65,7 @@ public class CollectionInfoActivity extends RefreshListActivity {
                     for (Collection.Episode episode : episodes) {
                         pos++;
                         if (episode.aid == from_aid) {
-                            Objects.requireNonNull(recyclerView.getLayoutManager()).scrollToPosition(--pos);
+                            ObjectsCompat.requireNonNull(recyclerView.getLayoutManager()).scrollToPosition(--pos);
                         }
                     }
                 }

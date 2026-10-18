@@ -14,7 +14,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class BangumiApi {
 
@@ -329,7 +329,7 @@ public class BangumiApi {
     }
 
     public static ArrayList<Bangumi.Section> getSections(long season_id) throws IOException, JSONException {
-        String json = new String(Objects.requireNonNull(Objects.requireNonNull(NetWorkUtil.get("https://api.bilibili.com/pgc/web/season/section?season_id=" + season_id)).body()).bytes());
+        String json = new String(ObjectsCompat.requireNonNull(ObjectsCompat.requireNonNull(NetWorkUtil.get("https://api.bilibili.com/pgc/web/season/section?season_id=" + season_id)).body()).bytes());
         SectionData data = GsonUtil.fromJson(json, SectionData.class);
         ArrayList<Bangumi.Section> sectionList = new ArrayList<>();
         if (data == null || data.result == null) return sectionList;

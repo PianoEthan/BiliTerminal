@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.core.util.ObjectsCompat;
+
 import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.activity.article.OpusInfoActivity;
 import com.RobinNotBad.BiliClient.activity.base.BaseActivity;
@@ -25,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -75,9 +76,9 @@ public class TestActivity extends BaseActivity {
                 String result;
                 if (sw_post.isChecked()) {
                     String data = input_data.getText().toString();
-                    result = Objects.requireNonNull(NetWorkUtil.post(url, data).body()).string();
+                    result = ObjectsCompat.requireNonNull(NetWorkUtil.post(url, data).body()).string();
                 } else {
-                    result = Objects.requireNonNull(NetWorkUtil.get(url).body()).string();
+                    result = ObjectsCompat.requireNonNull(NetWorkUtil.get(url).body()).string();
                 }
 
                 runOnUiThread(() -> {

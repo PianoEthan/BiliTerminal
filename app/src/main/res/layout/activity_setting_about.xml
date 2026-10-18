@@ -18,6 +18,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@id/timeText"
             android:layout_toLeftOf="@id/timeText"
             android:lines="1"
@@ -30,6 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -86,7 +90,9 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0.5"
                     android:layout_width="0dp"
-                    android:layout_marginEnd="2dp">
+                    android:layout_marginEnd="2dp"
+
+                    android:layout_marginRight="2dp">
 
                     <TextView
                         android:layout_height="match_parent"
@@ -106,7 +112,9 @@
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
                     android:layout_weight="0.5"
-                    android:layout_marginStart="2dp">
+                    android:layout_marginStart="2dp"
+
+                    android:layout_marginLeft="2dp">
 
                     <TextView
                         android:layout_height="match_parent"
@@ -277,6 +285,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -289,6 +299,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:ellipsize="end"
@@ -303,6 +315,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -333,6 +347,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -345,6 +361,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:ellipsize="end"
@@ -359,6 +377,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -397,6 +417,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -409,6 +431,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:ellipsize="end"
@@ -423,6 +447,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -453,6 +479,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -465,6 +493,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:ellipsize="end"
@@ -479,6 +509,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -509,6 +541,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -521,6 +555,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:singleLine="true"
@@ -534,6 +570,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -565,6 +603,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -577,6 +617,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:ellipsize="end"
@@ -591,6 +633,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -622,6 +666,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_marginStart="8dp"
+
+                                android:layout_marginLeft="8dp"
                                 android:adjustViewBounds="true"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1:1"
@@ -634,6 +680,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="2dp"
                                 android:layout_marginBottom="1dp"
                                 android:ellipsize="end"
@@ -648,6 +696,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
+
+                                android:layout_marginLeft="6dp"
                                 android:layout_marginTop="1dp"
                                 android:layout_marginBottom="2dp"
                                 android:alpha="0.7"
@@ -766,7 +816,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="35sp"
                     android:layout_marginHorizontal="8dp"
-                    android:gravity="center_vertical"
+                    android:gravity="center_vertical|start"
                     android:text="开源图标的信息"
                     android:textAlignment="textStart"
                     android:textSize="13sp"

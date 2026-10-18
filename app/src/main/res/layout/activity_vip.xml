@@ -20,6 +20,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginVertical="3dp"
             android:layout_marginStart="8dp"
+
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@id/timeText"
             android:layout_toLeftOf="@id/timeText"
             android:lines="1"
@@ -32,6 +34,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+
+            android:layout_marginRight="8dp"
             android:layout_marginVertical="3dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -85,6 +89,8 @@
                         android:layout_width="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
@@ -102,6 +108,8 @@
                         app:layout_constraintEnd_toStartOf="@+id/vipStatus"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:lines="1"
@@ -124,6 +132,8 @@
                         android:layout_width="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
@@ -141,6 +151,8 @@
                         app:layout_constraintEnd_toStartOf="@+id/vipType"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:lines="1"
@@ -163,6 +175,8 @@
                         android:layout_width="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
@@ -180,6 +194,8 @@
                         app:layout_constraintEnd_toStartOf="@+id/vipDueDate"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:lines="1"
@@ -202,6 +218,8 @@
                         android:layout_width="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
@@ -219,6 +237,8 @@
                         app:layout_constraintEnd_toStartOf="@+id/level"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:lines="1"
@@ -241,6 +261,8 @@
                         android:layout_width="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
@@ -258,6 +280,8 @@
                         app:layout_constraintEnd_toStartOf="@+id/exp"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:lines="1"
@@ -280,6 +304,8 @@
                         android:layout_width="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
+
+                        android:layout_marginRight="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
@@ -297,6 +323,8 @@
                         app:layout_constraintEnd_toStartOf="@+id/bindPhone"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="8dp"
+
+                        android:layout_marginLeft="8dp"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:lines="1"

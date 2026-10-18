@@ -26,7 +26,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.Random;
 
 import javax.crypto.Mac;
@@ -61,7 +61,7 @@ public class CookiesApi {
     public static int activeCookieInfo() throws JSONException, IOException {
         String url = "https://api.bilibili.com/x/internal/gaia-gateway/ExClimbWuzhi";
         //NetWorkUtil.postJson(url, genCookiePayload().toString(), genWebHeaders());    //b站自己请求两次，所以我也请求两次（？）
-        return new JSONObject(Objects.requireNonNull(NetWorkUtil.postJson(url, genCookiePayload(), genWebHeaders()).body()).string()).getInt("code");
+        return new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.postJson(url, genCookiePayload(), genWebHeaders()).body()).string()).getInt("code");
     }
 
     /*
@@ -117,7 +117,7 @@ public class CookiesApi {
         long ts = System.currentTimeMillis() / 1000;
         String o = hmacSha256("XgwSnGZ1p", "ts" + ts);
         String url = "https://api.bilibili.com/bapis/bilibili.api.ticket.v1.Ticket/GenWebTicket";
-        JSONObject result = new JSONObject(Objects.requireNonNull(NetWorkUtil.postJson(url + new NetWorkUtil.FormData()
+        JSONObject result = new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.postJson(url + new NetWorkUtil.FormData()
                         .setUrlParam(true)
                         .put("key_id", "ec02")
                         .put("hexsign", o)

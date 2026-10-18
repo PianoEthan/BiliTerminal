@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 import java.util.concurrent.ExecutionException;
 
 import okhttp3.Response;
@@ -234,7 +234,7 @@ public class PrivateMsgApi {
                         + "&msg[receiver_id]=" + receiverUid
                         + "&msg[timestamp]=" + timestamp;
 
-        JSONObject result = new JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, per, NetWorkUtil.webHeaders).body()).string());
+        JSONObject result = new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, per, NetWorkUtil.webHeaders).body()).string());
 
         Log.e("debug-发送私信", result.toString());
         Log.e("debug-发送私信", NetWorkUtil.webHeaders.toString());

@@ -26,7 +26,7 @@ import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 //视频下评论页面，评论详情见ReplyInfoActivity
 //部分通用代码在VideoReplyAdapter内
@@ -205,7 +205,7 @@ public class ReplyFragment extends RefreshListFragment {
         if (replyEvent.getOid() != aid) return;
         Reply reply = replyEvent.getMessage();
         if (reply.root == 0) {
-            LinearLayoutManager layoutManager = (LinearLayoutManager) Objects.requireNonNull(recyclerView.getLayoutManager());
+            LinearLayoutManager layoutManager = (LinearLayoutManager) ObjectsCompat.requireNonNull(recyclerView.getLayoutManager());
             int pos = layoutManager.findFirstCompletelyVisibleItemPosition();
             pos = Math.max(pos, 0);
             replyList.add(pos, reply);

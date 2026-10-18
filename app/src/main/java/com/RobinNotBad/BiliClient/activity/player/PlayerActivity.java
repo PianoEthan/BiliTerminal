@@ -44,6 +44,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.ObjectsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -91,7 +92,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Pattern;
@@ -255,7 +255,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
         isLiveMode = intent.getBooleanExtra("live_mode", false);
         isOnlineVideo = video_url.contains("http");
-        hasDanmaku = !danmaku_url.equals("");
+        hasDanmaku = danmaku_url != null && !danmaku_url.isEmpty();
 
         if (intent.hasExtra("pagenames") && intent.hasExtra("cids")) {
             pagenames = intent.getStringArrayListExtra("pagenames");
@@ -978,7 +978,8 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
     @Override
     public void onPrepared(IMediaPlayer mediaPlayer) {
         if (destroyed) {
-            ijkPlayer.release();
+            if (ijkPlayer != null)
+                ijkPlayer.release();
             return;
         }
 
@@ -1356,7 +1357,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
     }
 
     private void downdanmu() {
-        if (danmaku_url.isEmpty())
+        if (danmaku_url == null || danmaku_url.isEmpty())
             return;
 
         boolean useNewApi = SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.NEW_DANMAKU_API, true);
@@ -1376,7 +1377,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 if (!danmakuFile.exists())
                     danmakuFile.createNewFile();
                 Sink sink = Okio.sink(danmakuFile);
-                byte[] decompressBytes = decompress(Objects.requireNonNull(response.body()).bytes());// 调用解压函数进行解压，返回包含解压后数据的byte数组
+                byte[] decompressBytes = decompress(ObjectsCompat.requireNonNull(response.body()).bytes());// 调用解压函数进行解压，返回包含解压后数据的byte数组
                 bufferedSink = Okio.buffer(sink);
                 bufferedSink.write(decompressBytes);// 将解压后数据写入文件（sink）中
                 bufferedSink.close();
@@ -1678,9 +1679,10 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 mDanmakuView.pause();
             }
         }
-        if (btn_control != null)
+        if (btn_control != null) {
             btn_control.setImageResource(R.drawable.btn_player_play);
-                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
             updateMediaSessionPlaybackState();
         }
@@ -1694,9 +1696,10 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 mDanmakuView.resume();
             }
         }
-        if (btn_control != null)
+        if (btn_control != null) {
             btn_control.setImageResource(R.drawable.btn_player_pause);
-                    com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.retintImage(btn_control);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
             updateMediaSessionPlaybackState();
         }
@@ -1769,45 +1772,43 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
     @Override
     protected void onDestroy() {
-        if (!isFinishing()) {
-            super.onDestroy();
-            return; // 貌似有些设备启动activity会先调用一下onDestroy，头大…… 不super还会报错
+        if (!destroyed) {
+            destroyed = true;
+
+            Logu.v("结束");
+            if (eventBusInit) {
+                EventBus.getDefault().unregister(this);
+                eventBusInit = false;
+            }
+
+            cancelAllTimers();
+
+            if (mDanmakuView != null) {
+                mDanmakuView.release();
+                mDanmakuView = null;
+            }
+            if (ijkPlayer != null) {
+                ijkPlayer.release();
+                ijkPlayer = null;
+            }
+
+            if (isOnlineVideo && danmakuFile != null && danmakuFile.exists())
+                danmakuFile.delete();
+
+            if (liveWebSocket != null) {
+                liveWebSocket.close(1000, "");
+                liveWebSocket = null;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
+                ((MediaSession) mediaSession).release();
+                mediaSession = null;
+            }
+
+            setRequestedOrientation(SharedPreferencesUtil.getBoolean("ui_landscape", false)
+                    ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                    : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-
-        Logu.v("结束");
-        if (eventBusInit) {
-            EventBus.getDefault().unregister(this);
-            eventBusInit = false;
-        }
-        destroyed = true;
-
-        cancelAllTimers();
-
-        if (mDanmakuView != null) {
-            mDanmakuView.release();
-            mDanmakuView = null;
-        }
-        if (ijkPlayer != null) {
-            ijkPlayer.release();
-            ijkPlayer = null;
-        }
-
-        if (isOnlineVideo && danmakuFile != null && danmakuFile.exists())
-            danmakuFile.delete();
-
-        if (liveWebSocket != null) {
-            liveWebSocket.close(1000, "");
-            liveWebSocket = null;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
-            ((MediaSession) mediaSession).release();
-            mediaSession = null;
-        }
-
-        setRequestedOrientation(SharedPreferencesUtil.getBoolean("ui_landscape", false)
-                ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         super.onDestroy();
     }
@@ -1832,9 +1833,12 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         if (mainHandler != null) {
             mainHandler.removeCallbacksAndMessages(null);
         }
-        layout_control.removeCallbacks(hidecon);
-        text_volume.removeCallbacks(hideVolume);
-        seekbar_progress.removeCallbacks(progressbarEnable);
+        if (layout_control != null)
+            layout_control.removeCallbacks(hidecon);
+        if (text_volume != null)
+            text_volume.removeCallbacks(hideVolume);
+        if (seekbar_progress != null)
+            seekbar_progress.removeCallbacks(progressbarEnable);
     }
 
     OkHttpClient okHttpClient;
@@ -1856,7 +1860,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                     }
                 };
                 Response response = NetWorkUtil.get(ConfInfoApi.signWBI(url), mHeaders);
-                JSONObject data = new JSONObject(Objects.requireNonNull(response.body()).string())
+                JSONObject data = new JSONObject(ObjectsCompat.requireNonNull(response.body()).string())
                         .getJSONObject("data");
                 JSONObject host = data.getJSONArray("host_list").getJSONObject(0);
 

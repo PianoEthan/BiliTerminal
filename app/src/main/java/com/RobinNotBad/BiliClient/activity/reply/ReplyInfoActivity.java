@@ -11,6 +11,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.ObjectsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -33,7 +34,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Future;
 
 //评论详细信息
@@ -222,10 +222,10 @@ public class ReplyInfoActivity extends BaseActivity {
         return true;
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC, sticky = true, priority = 1)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true, priority = 1)
     public void onEvent(ReplyEvent event) {
         if (event.getOid() != oid) return;
-        LinearLayoutManager layoutManager = (LinearLayoutManager) Objects.requireNonNull(recyclerView.getLayoutManager());
+        LinearLayoutManager layoutManager = (LinearLayoutManager) ObjectsCompat.requireNonNull(recyclerView.getLayoutManager());
         int pos = layoutManager.findFirstCompletelyVisibleItemPosition();
         pos--;
         if (pos <= 0) {

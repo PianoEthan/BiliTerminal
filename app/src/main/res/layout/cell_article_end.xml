@@ -10,6 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/activity_padding_horizontal"
+
+        android:layout_marginLeft="@dimen/activity_padding_horizontal"
         android:adjustViewBounds="true"
         android:alpha="0.5"
         android:src="@drawable/icon_play_12"
@@ -22,6 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
+
+        android:layout_marginLeft="2dp"
         android:layout_marginTop="6dp"
         android:alpha="0.5"
         android:text="114514"
@@ -35,6 +39,8 @@
         android:layout_width="wrap_content"
         android:adjustViewBounds="true"
         android:layout_marginStart="@dimen/activity_padding_horizontal"
+
+        android:layout_marginLeft="@dimen/activity_padding_horizontal"
         android:src="@drawable/icon_time"
         android:alpha="0.5"
         app:layout_constraintTop_toBottomOf="@+id/timeText"
@@ -46,8 +52,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
+
+        android:layout_marginLeft="2dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="6dp"
+
+        android:layout_marginRight="6dp"
         android:alpha="0.5"
         android:lines="1"
         android:text="9999-13-32 25:61"
@@ -62,6 +72,8 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
+
+        android:layout_marginLeft="8dp"
         android:adjustViewBounds="true"
         android:alpha="0.5"
         android:src="@drawable/icon_cv"
@@ -74,7 +86,11 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
+
+        android:layout_marginLeft="2dp"
         android:layout_marginEnd="6dp"
+
+        android:layout_marginRight="6dp"
         android:alpha="0.5"
         android:lines="1"
         android:text="CV114514"

@@ -24,7 +24,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -173,7 +173,7 @@ public class ReplyApi {
         String url = "https://api.bilibili.com/x/v2/reply/add";
         String arg = "oid=" + oid + "&type=" + type + (root == 0 ? "" : ("&root=" + root + "&parent=" + parent))
                 + "&message=" + text + "&jsonp=jsonp&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        JSONObject result = new JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+        JSONObject result = new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
         int code = result.optInt("code", -1);
         JSONObject data = result.optJSONObject("data");
         JSONObject replyJson = data != null ? data.optJSONObject("reply") : null;
@@ -205,7 +205,7 @@ public class ReplyApi {
         String url = "https://api.bilibili.com/x/dynamic/feed/draw/upload_bfs";
         String csrf = SharedPreferencesUtil.getString("csrf", "");
         try {
-            RequestBody fileBody = RequestBody.create(Objects.requireNonNull(MediaType.parse("image/jpeg")), imageData);
+            RequestBody fileBody = RequestBody.create(ObjectsCompat.requireNonNull(MediaType.parse("image/jpeg")), imageData);
             MultipartBody multipartBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("file_up", fileName, fileBody)
@@ -241,7 +241,7 @@ public class ReplyApi {
                 + "&message=" + java.net.URLEncoder.encode(text, "UTF-8")
                 + (pictures.isEmpty() ? "" : ("&pictures=" + java.net.URLEncoder.encode(pictures, "UTF-8")))
                 + "&jsonp=jsonp&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        JSONObject result = new JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
+        JSONObject result = new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string());
         int code = result.optInt("code", -1);
         JSONObject data = result.optJSONObject("data");
         JSONObject replyJson = data != null ? data.optJSONObject("reply") : null;
@@ -253,13 +253,13 @@ public class ReplyApi {
     public static int likeReply(long oid, long root, boolean action) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/v2/reply/action";
         String arg = "oid=" + oid + "&type=1&rpid=" + root + "&action=" + (action ? "1" : "0") + "&jsonp=jsonp&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        return new JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string()).optInt("code", -1);
+        return new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, arg, NetWorkUtil.webHeaders).body()).string()).optInt("code", -1);
     }
 
     public static int deleteReply(long oid, long rpid, int type) throws IOException, JSONException {
         String url = "https://api.bilibili.com/x/v2/reply/del";
         String reqBody = new NetWorkUtil.FormData().put("type", type).put("oid", oid).put("rpid", rpid).put("csrf", SharedPreferencesUtil.getString("csrf", "")).toString();
-        return new JSONObject(Objects.requireNonNull(NetWorkUtil.post(url, reqBody, NetWorkUtil.webHeaders).body()).string()).optInt("code", -1);
+        return new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post(url, reqBody, NetWorkUtil.webHeaders).body()).string()).optInt("code", -1);
     }
 
     public static long getReplyCount(long oid, int type) throws IOException, JSONException {

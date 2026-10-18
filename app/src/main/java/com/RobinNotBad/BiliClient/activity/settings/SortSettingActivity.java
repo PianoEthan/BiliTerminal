@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 public class SortSettingActivity extends BaseActivity {
 
@@ -55,7 +55,7 @@ public class SortSettingActivity extends BaseActivity {
                     }
                     break;
                 } else {
-                    String displayText = Objects.requireNonNull(MenuActivity.btnNames.get(name)).first;
+                    String displayText = ObjectsCompat.requireNonNull(MenuActivity.btnNames.get(name)).first;
                     data.add(displayText);
                     displayKeyMap.put(displayText, name);
                 }
@@ -202,7 +202,7 @@ public class SortSettingActivity extends BaseActivity {
         public void clearView(RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
             // 恢复显示
             // 这里不能用if判断，因为GridLayoutManager是LinearLayoutManager的子类，改用switch，类型推导有区别
-            switch (Objects.requireNonNull(recyclerView.getLayoutManager()).getClass().getSimpleName()) {
+            switch (ObjectsCompat.requireNonNull(recyclerView.getLayoutManager()).getClass().getSimpleName()) {
                 case "GridLayoutManager":
                 case "LinearLayoutManager":
                     ViewCompat.animate(viewHolder.itemView).setDuration(200).scaleX(1F).scaleY(1F).start();

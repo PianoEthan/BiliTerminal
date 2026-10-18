@@ -16,7 +16,7 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Objects;
+import androidx.core.util.ObjectsCompat;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.OAEPParameterSpec;
@@ -56,7 +56,7 @@ public class CookieRefreshApi {
     }
 
     public static String getRefreshCsrf(String CorrespondPath) throws IOException {
-        if (Objects.equals(CorrespondPath, "")) return "";
+        if (ObjectsCompat.equals(CorrespondPath, "")) return "";
         String url = "https://www.bilibili.com/correspond/1/" + CorrespondPath;
         Response response = NetWorkUtil.get(url);
         if (response.body() != null) {
@@ -69,8 +69,8 @@ public class CookieRefreshApi {
 
     public static boolean refreshCookie(String RefreshCsrf) throws JSONException, IOException {
         //必须的参数不能为空
-        if (Objects.equals(RefreshCsrf, "")) return false;
-        if (Objects.equals(SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""), ""))
+        if (ObjectsCompat.equals(RefreshCsrf, "")) return false;
+        if (ObjectsCompat.equals(SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""), ""))
             return false;
 
         String cookies_old = SharedPreferencesUtil.getString(SharedPreferencesUtil.cookies, "");
@@ -79,7 +79,7 @@ public class CookieRefreshApi {
         String url = "https://passport.bilibili.com/x/passport-login/web/cookie/refresh";
         String args = "csrf=" + NetWorkUtil.getInfoFromCookie("bili_jct", SharedPreferencesUtil.getString(SharedPreferencesUtil.cookies, "")) + "&refresh_csrf=" + RefreshCsrf + "&source=main_web&refresh_token=" + SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, "");
         Response response = NetWorkUtil.post(url, args, NetWorkUtil.webHeaders);
-        JSONObject result = new JSONObject(Objects.requireNonNull(response.body()).string());
+        JSONObject result = new JSONObject(ObjectsCompat.requireNonNull(response.body()).string());
         if (result.getInt("code") == 0) {
             String refreshToken_new = result.getJSONObject("data").getString("refresh_token");
             Logu.v("新的RefreshToken", refreshToken_new);
@@ -89,7 +89,7 @@ public class CookieRefreshApi {
 
 
             //使老的Cookie失效
-            int confirmCode = new JSONObject(Objects.requireNonNull(NetWorkUtil.post("https://passport.bilibili.com/x/passport-login/web/confirm/refresh", "csrf=" + NetWorkUtil.getInfoFromCookie("bili_jct", cookies_new) + "&refresh_token=" + SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""), NetWorkUtil.webHeaders).body()).string()).getInt("code");
+            int confirmCode = new JSONObject(ObjectsCompat.requireNonNull(NetWorkUtil.post("https://passport.bilibili.com/x/passport-login/web/confirm/refresh", "csrf=" + NetWorkUtil.getInfoFromCookie("bili_jct", cookies_new) + "&refresh_token=" + SharedPreferencesUtil.getString(SharedPreferencesUtil.refresh_token, ""), NetWorkUtil.webHeaders).body()).string()).getInt("code");
             if (confirmCode != 0) { //必须要等确认更新Cookie成功，不然就无法完成Cookie的刷新
                 Logu.e("Cookie刷新失败", "确认刷新时返回:" + confirmCode);
                 SharedPreferencesUtil.putString(SharedPreferencesUtil.cookies, cookies_old);
