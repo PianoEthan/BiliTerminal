@@ -114,9 +114,6 @@ public class BangumiInfoFragment extends BaseFragment {
         imageMediaCover.setOnClickListener((view) -> startActivity(new Intent(view.getContext(), ImageViewerActivity.class).putExtra("imageList", new ArrayList<>(Collections.singletonList(bangumi.info.cover_horizontal)))));
         title.setText(bangumi.info.title);
 
-        //按内容动态取色：番剧封面种子 → 播放按钮/选集芯片临时强调色
-        applyContentTint(rootView, GlideUtil.url(bangumi.info.cover_horizontal));
-
         // 副标题
         if (bangumi.info.subtitle != null && !bangumi.info.subtitle.isEmpty()) {
             subtitle.setText(bangumi.info.subtitle);
@@ -269,31 +266,6 @@ public class BangumiInfoFragment extends BaseFragment {
         onFinishLoad();
 
         refreshReplies();
-    }
-
-    /** 内容动态取色：播放按钮 + 选集芯片 */
-    private void applyContentTint(View root, String coverUrl) {
-        com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(requireContext(), coverUrl, tint -> {
-            if (!isAdded() || getView() == null) return;
-            View view = getView();
-            Button playButton = view.findViewById(R.id.btn_play);
-            if (playButton != null) {
-                com.RobinNotBad.BiliClient.theme.ThemeCompat.tintDrawable(playButton.getBackground(), tint.container);
-                if (playButton.getCurrentTextColor() == 0xFFEBE0E2) playButton.setTextColor(tint.onAccent);
-            }
-            androidx.recyclerview.widget.RecyclerView list = view.findViewById(R.id.rv_episode_list);
-            if (list != null) {
-                for (int i = 0; i < list.getChildCount(); i++) {
-                    View child = list.getChildAt(i);
-                    if (child instanceof com.google.android.material.button.MaterialButton) {
-                        com.google.android.material.button.MaterialButton chip = (com.google.android.material.button.MaterialButton) child;
-                        androidx.core.view.ViewCompat.setBackgroundTintList(chip,
-                                com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tint.container, tint.container));
-                        chip.setTextColor(tint.onAccent);
-                    }
-                }
-            }
-        });
     }
 
     @SuppressLint("SetTextI18n")

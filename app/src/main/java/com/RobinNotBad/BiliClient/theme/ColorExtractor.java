@@ -26,9 +26,7 @@ public class ColorExtractor {
             int[] pixels = new int[w * h];
             bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
             Map<Integer, Integer> counts = QuantizerCelebi.quantize(pixels, 128);
-            if (counts == null || counts.isEmpty()) return 0;
             List<Integer> ranked = Score.score(counts, 4);
-            if (ranked == null || ranked.isEmpty()) return 0;
             return ranked.get(0);
         } catch (Exception e) {
             return 0;

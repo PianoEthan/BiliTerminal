@@ -1,9 +1,6 @@
 package com.RobinNotBad.BiliClient.theme.model;
 
-import android.graphics.Color;
 import android.text.TextUtils;
-
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -59,8 +56,8 @@ public class ThemeManifest {
         public String image_light;
     }
 
-    public boolean isValid() {
-        return format == FORMAT && id != null && !id.isEmpty();
+    public boolean isInvalid() {
+        return format != FORMAT || id == null || id.isEmpty();
     }
 
     public String getDisplayName() {
@@ -85,10 +82,4 @@ public class ThemeManifest {
         }
     }
 
-    /** 取覆盖表中的色值，并同时支持 3/6/8 位 hex */
-    public Integer getOverrideColor(String token) {
-        if (colors == null || colors.override == null) return null;
-        String hex = colors.override.get(token);
-        return parseColor(hex);
-    }
 }

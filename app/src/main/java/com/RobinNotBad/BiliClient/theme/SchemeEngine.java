@@ -1,7 +1,5 @@
 package com.RobinNotBad.BiliClient.theme;
 
-import android.util.Log;
-
 import com.RobinNotBad.BiliClient.theme.model.ThemeManifest;
 import com.google.material.color.blend.Blend;
 import com.google.material.color.dynamiccolor.DynamicScheme;
@@ -119,12 +117,4 @@ public class SchemeEngine {
                 highEnergyLine, highEnergyFill, buttonTint, selectedText, textSecondary);
     }
 
-    /** 从色值取 HCT hue/chroma（日志兜底） */
-    public static void logSeed(int seed) {
-        try {
-            Hct hct = Hct.fromInt(seed);
-            Log.d(TAG, "seed=" + Integer.toHexString(seed) + " hct=" + hct.getHue() + "," + hct.getChroma() + "," + hct.getTone());
-        } catch (Exception ignored) {
-        }
-    }
 }

@@ -78,8 +78,4 @@ public class ThemeCompat {
         }
     }
 
-    /** 把 ARGB 转成主题色并保留 alpha（覆盖用） */
-    public static int withAlpha(int argb, int alpha) {
-        return ThemePalette.withAlpha(argb, alpha);
-    }
 }

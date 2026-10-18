@@ -663,22 +663,11 @@ public class VideoInfoFragment extends BaseFragment {
         }
     }
 
-    /** 内容动态取色：详情页操作按钮 + 未点亮图标 */
+    /** 内容动态取色：详情页未点亮图标（按钮不参与，封面主色常把底色压成脏色） */
     private void applyContentTint(View root, String coverUrl) {
         com.RobinNotBad.BiliClient.theme.ContentTintHelper.requestTint(getAppContext(), coverUrl, tint -> {
             if (!isAdded() || getView() == null) return;
             View view = getView();
-            MaterialButton[] buttons = new MaterialButton[]{
-                    view.findViewById(R.id.play),
-                    view.findViewById(R.id.addWatchlater),
-                    view.findViewById(R.id.download),
-                    view.findViewById(R.id.relay)};
-            for (MaterialButton button : buttons) {
-                if (button == null) continue;
-                androidx.core.view.ViewCompat.setBackgroundTintList(button,
-                        com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tint.container, tint.container));
-                button.setTextColor(tint.onAccent);
-            }
             tintOutlineIcon(view, R.id.btn_like, tint);
             tintOutlineIcon(view, R.id.btn_coin, tint);
             tintOutlineIcon(view, R.id.btn_fav, tint);

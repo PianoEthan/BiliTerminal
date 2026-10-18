@@ -2,6 +2,7 @@ package com.RobinNotBad.BiliClient.theme;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.util.LruCache;
 
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
@@ -41,7 +42,7 @@ public class ContentTintHelper {
     private static final LruCache<String, Integer> SEED_CACHE = new LruCache<>(64);
     /** key = seed 与明暗位组合：同一种子在深/浅模式下派生的色板不同，不可共用 */
     private static final LruCache<Long, ContentTint> TINT_CACHE = new LruCache<>(32);
-    private static volatile ContentTint activeTint;
+
 
     private static long tintKey(int seed, boolean dark) {
         return (((long) seed) << 1) | (dark ? 1L : 0L);
@@ -49,11 +50,6 @@ public class ContentTintHelper {
 
     public static boolean isEnabled() {
         return SharedPreferencesUtil.getBoolean(SharedPreferencesUtil.THEME_CONTENT_TINT, true);
-    }
-
-    /** 最近一次成功计算的强调色（主线程读） */
-    public static ContentTint activeTint() {
-        return activeTint;
     }
 
     /** 异步按 URL 取色；明暗跟随全局设置 */
@@ -89,15 +85,14 @@ public class ContentTintHelper {
                 bitmap = future.get(8, java.util.concurrent.TimeUnit.SECONDS);
                 if (bitmap != null) seed = ColorExtractor.extractFromBitmap(bitmap);
             } catch (Exception e) {
-                seed = 0;
+                //seed = 0; // unnecessary
+                Log.d("ContextTintHelper","requestTint failed:",e);
             } finally {
                 if (bitmap != null) bitmap.recycle();
             }
             if (seed == 0) return;
-            final int finalSeed = seed;
             SEED_CACHE.put(url, seed);
             final ContentTint tint = buildTint(seed, dark);
-            activeTint = tint;
             CenterThreadPool.runOnUiThread(() -> {
                 if (callback != null) callback.onTint(tint);
             });
@@ -128,22 +123,6 @@ public class ContentTintHelper {
     public static void clearCache() {
         SEED_CACHE.evictAll();
         TINT_CACHE.evictAll();
-        activeTint = null;
     }
 
-    /** 详情页操作按钮临时强调色（兜底 ThemeManager 色板） */
-    public static int buttonAccent(Context context) {
-        ContentTint tint = activeTint();
-        return tint != null ? tint.accent : com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent;
-    }
-
-    public static int buttonContainer(Context context) {
-        ContentTint tint = activeTint();
-        return tint != null ? tint.container : com.RobinNotBad.BiliClient.theme.ThemeManager.palette().surfaceCard;
-    }
-
-    public static int buttonOnAccent(Context context) {
-        ContentTint tint = activeTint();
-        return tint != null ? tint.onAccent : com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selectedText;
-    }
 }

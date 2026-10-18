@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -57,12 +56,12 @@ public class BThemeInstaller {
 
     /** 校验过 id 后的主题目录；id 不合法返回 null */
     public static File getThemeDir(Context context, String id) {
-        if (!isValidId(id)) return null;
+        if (isInvalidId(id)) return null;
         return new File(getThemesDir(context), id);
     }
 
-    public static boolean isValidId(String id) {
-        return id != null && id.matches("^[a-zA-Z0-9._-]{1,64}$");
+    public static boolean isInvalidId(String id) {
+        return id == null || !id.matches("^[a-zA-Z0-9._-]{1,64}$");
     }
 
     // ------------------------------------------------------------ 查询
@@ -75,7 +74,7 @@ public class BThemeInstaller {
         String content = FileUtil.readString(json);
         if (TextUtils.isEmpty(content)) return null;
         ThemeManifest manifest = GsonUtil.fromJson(content, ThemeManifest.class);
-        if (manifest == null || !manifest.isValid() || !id.equals(manifest.id)) return null;
+        if (manifest == null || manifest.isInvalid() || !id.equals(manifest.id)) return null;
         return new InstalledTheme(id, manifest, dir);
     }
 
@@ -101,14 +100,14 @@ public class BThemeInstaller {
         try {
             // 1. 流 → cache 临时文件（整体 ≤8MB）
             tmpFile = File.createTempFile("btheme", ".zip", context.getCacheDir());
-            long total = copyCapped(input, tmpFile, MAX_PACKAGE_BYTES);
+            long total = copyCapped(input, tmpFile);
             if (total > MAX_PACKAGE_BYTES) {
                 result.error = ERR_TOO_BIG;
                 return result;
             }
 
             ZipInputStream zis = new ZipInputStream(new java.io.FileInputStream(tmpFile));
-            ThemeManifest manifest = null;
+            ThemeManifest manifest;
             byte[] themeJson = null;
             String themeJsonName = null;
 
@@ -144,17 +143,18 @@ public class BThemeInstaller {
             }
 
             // 2. 解析 + format/id 校验
+            @SuppressWarnings("CharsetObjectCanBeUsed") // fails on old Android versions
             String json = new String(themeJson, "UTF-8");
             manifest = GsonUtil.fromJson(json, ThemeManifest.class);
             if (manifest == null || manifest.format > ThemeManifest.FORMAT) {
                 result.error = ERR_FORMAT;
                 return result;
             }
-            if (manifest == null || !manifest.isValid()) {
+            if (manifest.isInvalid()) {
                 result.error = ERR_BAD_JSON;
                 return result;
             }
-            if (!isValidId(manifest.id)) {
+            if (isInvalidId(manifest.id)) {
                 result.error = ERR_BAD_ID;
                 return result;
             }
@@ -194,11 +194,13 @@ public class BThemeInstaller {
                 result.error = "主题安装失败";
                 return result;
             }
-            FileUtil.deleteFolder(finalDir);
-            if (!tmpDir.renameTo(finalDir)) {
-                FileUtil.deleteFolder(tmpDir);
-                result.error = "主题安装失败";
-                return result;
+            if (finalDir != null) {
+                FileUtil.deleteFolder(finalDir);
+                if (!tmpDir.renameTo(finalDir)) {
+                    FileUtil.deleteFolder(tmpDir);
+                    result.error = "主题安装失败";
+                    return result;
+                }
             }
             result.theme = new InstalledTheme(manifest.id, manifest, finalDir);
             result.ok = true;
@@ -207,7 +209,8 @@ public class BThemeInstaller {
             result.error = "主题安装失败：" + e.getMessage();
             return result;
         } finally {
-            if (tmpFile != null) tmpFile.delete();
+            if (tmpFile != null) //noinspection ResultOfMethodCallIgnored
+                tmpFile.delete();
         }
     }
 
@@ -239,7 +242,7 @@ public class BThemeInstaller {
     }
 
     /** 拷贝流到文件并限制总量；返回实际字节数 */
-    private static long copyCapped(InputStream in, File file, long cap) throws IOException {
+    private static long copyCapped(InputStream in, File file) throws IOException {
         FileOutputStream out = new FileOutputStream(file);
         byte[] buffer = new byte[8192];
         long total = 0;
@@ -247,7 +250,7 @@ public class BThemeInstaller {
         try {
             while ((n = in.read(buffer)) != -1) {
                 total += n;
-                if (total > cap) break;
+                if (total > (long) MAX_PACKAGE_BYTES) break;
                 out.write(buffer, 0, n);
             }
         } finally {
@@ -257,11 +260,8 @@ public class BThemeInstaller {
     }
 
     private static void writeFile(File file, byte[] data) throws IOException {
-        FileOutputStream out = new FileOutputStream(file);
-        try {
+        try (FileOutputStream out = new FileOutputStream(file)) {
             out.write(data);
-        } finally {
-            out.close();
         }
     }
 }

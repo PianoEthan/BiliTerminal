@@ -192,11 +192,6 @@ public class ThemeManager {
         return palette;
     }
 
-    /** 是否自定义主题 */
-    public boolean isCustom() {
-        return !TextUtils.isEmpty(themeId);
-    }
-
     // ------------------------------------------------------------ 变更
 
     public synchronized void setTheme(String id) {

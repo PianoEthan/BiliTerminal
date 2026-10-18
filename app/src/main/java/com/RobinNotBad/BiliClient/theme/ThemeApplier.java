@@ -1,21 +1,28 @@
 package com.RobinNotBad.BiliClient.theme;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,6 +35,8 @@ import android.widget.TextView;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.theme.model.ThemeManifest;
@@ -71,13 +80,29 @@ public class ThemeApplier {
         File bgFile = tm.getActiveBackgroundFile();
         if (bgFile != null) {
             // onCreate 阶段 decor 尚未布局，用屏幕真实尺寸做解码目标
-            android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+            int dw = 0;
+            int dh = 0;
             try {
-                activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                // use new api to get props we need
+                if (Build.VERSION.SDK_INT >= 30) {
+                    WindowMetrics windowMetrics = activity.getWindowManager().getCurrentWindowMetrics();
+                    Insets insets = windowMetrics.getWindowInsets().getInsets(
+                            WindowInsets.Type.navigationBars() | WindowInsets.Type.displayCutout()
+                    );
+                    dw = windowMetrics.getBounds().width() - insets.left - insets.right;
+                    dh = windowMetrics.getBounds().height() - insets.top - insets.bottom;
+                } else {
+                    android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+                    //noinspection deprecation
+                    activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    dw = metrics.widthPixels;
+                    dh = metrics.heightPixels;
+                }
+
             } catch (Exception ignored) {
             }
-            int dw = Math.max(1, metrics.widthPixels);
-            int dh = Math.max(1, metrics.heightPixels);
+            dw = Math.max(1, dw);
+            dh = Math.max(1, dh);
             Bitmap bitmap = decodeBackground(bgFile, dw, dh);
             if (bitmap != null) {
                 Drawable bg = buildBackgroundDrawable(bitmap, dw, dh, tm.getBackgroundFit(), palette.windowBackground);
@@ -101,7 +126,7 @@ public class ThemeApplier {
 
         // edge-to-edge：内容延伸到系统栏，系统栏透明，insets 让位
         // （Player/Splash 全屏本就无系统栏，不受影响）
-        setupEdgeToEdge(activity, palette, tm.isDark());
+        setupEdgeToEdge(activity, tm.isDark());
 
         // 状态栏跟随强调色
         if (android.os.Build.VERSION.SDK_INT >= 21) {
@@ -113,22 +138,22 @@ public class ThemeApplier {
     }
 
     /** edge-to-edge：decorFitsSystemWindows=false + 透明系统栏 + insets 让位（幂等） */
-    private static void setupEdgeToEdge(final Activity activity, final ThemePalette p, final boolean dark) {
+    @SuppressWarnings("deprecation")
+    private static void setupEdgeToEdge(final Activity activity, final boolean dark) {
         if (activity == null || activity.getWindow() == null) return;
         // 全屏/无状态栏页面跳过（Player/Splash/圆屏）
-        if (android.os.Build.VERSION.SDK_INT >= 16) {
-            int flags = activity.getWindow().getDecorView().getSystemUiVisibility();
-            if ((flags & android.view.View.SYSTEM_UI_FLAG_FULLSCREEN) != 0) return;
-        }
+        if (isStatusBarHidden(activity)) return;
         if (android.os.Build.VERSION.SDK_INT >= 30) {
             activity.getWindow().setDecorFitsSystemWindows(false);
         } else if (android.os.Build.VERSION.SDK_INT >= 21) {
             activity.getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
             activity.getWindow().getDecorView().setSystemUiVisibility(
                     android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE | android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            if (dark) activity.getWindow().getDecorView().setSystemUiVisibility(
-                    activity.getWindow().getDecorView().getSystemUiVisibility()
-                            | android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            if (dark && Build.VERSION.SDK_INT >= 23) {
+                activity.getWindow().getDecorView().setSystemUiVisibility(
+                        activity.getWindow().getDecorView().getSystemUiVisibility()
+                                | android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            }
         }
         // insets 让位：内容顶部让出状态栏高度，底部让出导航栏（仅 BaseActivity 布局）
         final View content = activity.findViewById(android.R.id.content);
@@ -147,6 +172,7 @@ public class ThemeApplier {
         } else {
             // API21 以下：手动读状态栏高度让位（无 insets API）
             try {
+                @SuppressLint({"InternalInsetResource", "DiscouragedApi"})
                 int resId = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
                 int top = resId > 0 ? activity.getResources().getDimensionPixelSize(resId) : 0;
                 content.setPadding(content.getPaddingLeft(), content.getPaddingTop() + top,
@@ -154,6 +180,32 @@ public class ThemeApplier {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    /**
+     * 状态栏是否隐藏。主题的 android:windowFullscreen 由 generateLayout 合进窗口 flags，
+     * 而 setupWindow 跑在 setContentView 之前，所以必须先取 decor 逼出这次生成；
+     * 漏判时窗口已被框架让出状态栏，再按 insets 加一次 padding 就双重下移。
+     */
+    @SuppressWarnings("deprecation")
+    private static boolean isStatusBarHidden(Activity activity) {
+        Window window = activity.getWindow();
+        View decor = window.getDecorView();
+        if (Build.VERSION.SDK_INT >= 21) {
+            WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(decor);
+            if (insets != null) {
+                return !insets.isVisible(WindowInsetsCompat.Type.statusBars());
+            }
+        }
+        if ((window.getAttributes().flags
+                & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0) {
+            return true;
+        }
+        if (Build.VERSION.SDK_INT >= 16) {
+            return (decor.getSystemUiVisibility()
+                    & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0;
+        }
+        return false;
     }
 
     /** 解码（≤2x 屏幕尺寸采样；RGB_565；SoftReference 缓存） */
@@ -186,25 +238,26 @@ public class ThemeApplier {
         int bw = src.getWidth();
         int bh = src.getHeight();
 
-        if ("tile".equals(mode)) {
-            BitmapDrawable tile = new BitmapDrawable(res, src);
-            tile.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-            tile.setGravity(Gravity.FILL);
-            return tile;
-        }
-        if ("fitXY".equals(mode)) {
-            Bitmap scaled = Bitmap.createScaledBitmap(src, dw, dh, true);
-            return new BitmapDrawable(res, scaled);
-        }
-        if ("centerInside".equals(mode)) {
-            float scale = Math.min((float) dw / bw, (float) dh / bh);
-            int nw = Math.max(1, Math.round(bw * scale));
-            int nh = Math.max(1, Math.round(bh * scale));
-            Bitmap scaled = Bitmap.createScaledBitmap(src, nw, nh, true);
-            BitmapDrawable bd = new BitmapDrawable(res, scaled);
-            bd.setGravity(Gravity.CENTER);
-            return new LayerDrawable(new Drawable[]{
-                    new ColorDrawable(fallbackColor), bd});
+        switch (mode) {
+            case "tile":
+                BitmapDrawable tile = new BitmapDrawable(res, src);
+                tile.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+                tile.setGravity(Gravity.FILL);
+                return tile;
+            case "fitXY": {
+                Bitmap scaled = Bitmap.createScaledBitmap(src, dw, dh, true);
+                return new BitmapDrawable(res, scaled);
+            }
+            case "centerInside": {
+                float scale = Math.min((float) dw / bw, (float) dh / bh);
+                int nw = Math.max(1, Math.round(bw * scale));
+                int nh = Math.max(1, Math.round(bh * scale));
+                Bitmap scaled = Bitmap.createScaledBitmap(src, nw, nh, true);
+                BitmapDrawable bd = new BitmapDrawable(res, scaled);
+                bd.setGravity(Gravity.CENTER);
+                return new LayerDrawable(new Drawable[]{
+                        new ColorDrawable(fallbackColor), bd});
+            }
         }
         // centerCrop（默认）
         float scale = Math.max((float) dw / bw, (float) dh / bh);
@@ -311,6 +364,7 @@ public class ThemeApplier {
         return color == DEFAULT_TEXT || nearWhiteNeutral(color);
     }
 
+    @SuppressWarnings("ConstantValue")
     private static void tintView(View view, ThemePalette p) {
 
         // 单色 shape 背景跟随色板（含布局内联 hex 的 ColorDrawable）：
@@ -387,6 +441,7 @@ public class ThemeApplier {
             return;
         }
         if (view instanceof Switch) {
+            @SuppressLint("UseSwitchCompatOrMaterialCode")
             Switch sw = (Switch) view;
             // getThumbDrawable 为 API23+；<23 跳过拇指染色（布局里的 <Switch>
             // 通常已被 AppCompat 替换为 SwitchCompat 走上面的分支）
@@ -486,13 +541,6 @@ public class ThemeApplier {
 
     private static final int ICON_SKIP = 0, ICON_NEUTRAL = 1, ICON_SATURATED = 2, ICON_GRAYSCALE = 3;
 
-    /**
-     * 单色图标随主题：
-     * - 近白中性色（菜单/设置/BV/箭头等 #ebe0e2 图标集）→ textPrimary；
-     * - 单色有彩度（历史粉色箭头/点亮态、蓝色开关态等）→ accent（全应用去粉后
-     *   默认主题里这些图标随中性强调色渲染）；
-     * - 多色图标（播放器灰白控制钮、黑白会员标、粉白文章角标）与照片一律跳过。
-     */
     /**
      * 给 ImageView 换图后按色板重染（状态切换专用，如点赞/收藏/投币/播放控制）。
      * setImageResource 换出的新 drawable 不带之前染色；此处直接按当前色板补染，
@@ -674,10 +722,8 @@ public class ThemeApplier {
     /** API&lt;21 wrap 会产生新实例，必须设回视图 */
     private static void setTintedBackground(View view, Drawable original, int color) {
         Drawable tinted = ThemeCompat.tintDrawable(original, color);
-        if (tinted != null && tinted != original) {
-            if (android.os.Build.VERSION.SDK_INT >= 16) view.setBackground(tinted);
-            else view.setBackgroundDrawable(tinted);
-        }
+        if (tinted != null && tinted != original)
+            ViewCompat.setBackground(view, tinted);
     }
 
     private static void applyTintedBackgroundState(Drawable state, int color) {
@@ -687,6 +733,7 @@ public class ThemeApplier {
     private static void tintButton(Button button, ThemePalette p) {
         android.content.res.ColorStateList tint = null;
         if (button instanceof MaterialButton) {
+            //noinspection RedundantCast
             tint = ((MaterialButton) button).getBackgroundTintList();
         }
         if (tint == null && button instanceof AppCompatButton) {
