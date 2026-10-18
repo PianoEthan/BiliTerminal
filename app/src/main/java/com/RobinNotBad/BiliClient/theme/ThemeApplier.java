@@ -139,7 +139,8 @@ public class ThemeApplier {
                 v.setTag(R.id.theme_insets_applied, Boolean.TRUE);
                 int top = insets.getSystemWindowInsetTop();
                 int bottom = insets.getSystemWindowInsetBottom();
-                v.setPadding(0, top, 0, bottom);
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop() + top,
+                        v.getPaddingRight(), v.getPaddingBottom() + bottom);
                 return insets;
             });
             content.requestApplyInsets();
@@ -148,7 +149,8 @@ public class ThemeApplier {
             try {
                 int resId = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
                 int top = resId > 0 ? activity.getResources().getDimensionPixelSize(resId) : 0;
-                content.setPadding(0, top, 0, 0);
+                content.setPadding(content.getPaddingLeft(), content.getPaddingTop() + top,
+                        content.getPaddingRight(), content.getPaddingBottom());
             } catch (Exception ignored) {
             }
         }

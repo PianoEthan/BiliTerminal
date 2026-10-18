@@ -85,8 +85,13 @@ public class BaseActivity extends AppCompatActivity {
                 paddingB += scrH * 0.03;
             window_width = scrW - paddingH * 2;
             window_height = scrH - paddingT - paddingB;
-            View rootView = this.getWindow().getDecorView().getRootView();
-            rootView.setPadding(paddingH, paddingT, paddingH, paddingB);
+            View decorView = this.getWindow().getDecorView();
+            View contentView = decorView.findViewById(android.R.id.content);
+            if (contentView != null) {
+                contentView.setPadding(paddingH, paddingT, paddingH, paddingB);
+            } else {
+                decorView.setPadding(paddingH, paddingT, paddingH, paddingB);
+            }
         } else {
             window_width = scrW;
             window_height = scrH;
