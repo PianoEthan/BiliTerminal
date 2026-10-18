@@ -29,7 +29,7 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdk 26
         versionCode 20261018
-        versionName "3.1.0-Qx"
+        versionName "3.1.1-Qx"
 
         if (betaVer) {
             versionName += "-BETA" + betaVer
