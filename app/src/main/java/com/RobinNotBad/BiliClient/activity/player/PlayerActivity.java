@@ -196,7 +196,7 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
     private boolean screen_landscape, screen_round;
 
-    public String online_number = "0";
+    public volatile String online_number = "0";
 
     private long aid, cid, mid;
 
@@ -1517,8 +1517,14 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
     }
 
     public void addDanmaku(String text, int color, int textSize, int type, int backgroundColor) {
+        if (destroyed || text == null) return;
+        // 直播弹幕回调在 OkHttp 线程，切主线程后再投递；重入时会再查一次 destroyed
+        if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
+            runOnUiThread(() -> addDanmaku(text, color, textSize, type, backgroundColor));
+            return;
+        }
         BaseDanmaku danmaku = mContext.mDanmakuFactory.createDanmaku(type);
-        if (text == null || danmaku == null || ijkPlayer == null)
+        if (danmaku == null || ijkPlayer == null || mDanmakuView == null)
             return;
         danmaku.text = text;
         danmaku.padding = 5;
@@ -1783,6 +1789,13 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
             cancelAllTimers();
 
+            // WebSocket 必须先于弹幕面/播放器释放：close() 只是发起关闭握手，回调可能
+            // 落在 mDanmakuView 置空之后；cancel() 立即拆本地连接，不留这个窗口
+            if (liveWebSocket != null) {
+                liveWebSocket.cancel();
+                liveWebSocket = null;
+            }
+
             if (mDanmakuView != null) {
                 mDanmakuView.release();
                 mDanmakuView = null;
@@ -1794,11 +1807,6 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
 
             if (isOnlineVideo && danmakuFile != null && danmakuFile.exists())
                 danmakuFile.delete();
-
-            if (liveWebSocket != null) {
-                liveWebSocket.close(1000, "");
-                liveWebSocket = null;
-            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mediaSession != null) {
                 ((MediaSession) mediaSession).release();
@@ -1841,7 +1849,8 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
             seekbar_progress.removeCallbacks(progressbarEnable);
     }
 
-    OkHttpClient okHttpClient;
+    // 进程内共用一个 client：每次重连都 new 会各自留下 dispatcher 线程池与连接池
+    private static final OkHttpClient okHttpClient = new OkHttpClient();
 
     private void danmuSocketConnect() {
         CenterThreadPool.run(() -> {
@@ -1867,7 +1876,6 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 url = "wss://" + host.getString("host") + ":" + host.getInt("wss_port") + "/sub";
                 Logu.v("连接WebSocket", url);
 
-                okHttpClient = new OkHttpClient();
                 Request request = new Request.Builder()
                         .url(url)
                         .header("Cookie", CookieGenerator.getCookieString(true))
@@ -1882,7 +1890,6 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
                 listener.playerActivity = this;
 
                 liveWebSocket = okHttpClient.newWebSocket(request, listener);
-                // okHttpClient.dispatcher().executorService().shutdown();
             } catch (Exception e) {
                 MsgUtil.showMsg("直播弹幕连接失败");
                 e.printStackTrace();
