@@ -53,16 +53,14 @@ public class FileUtil {
                 if (ObjectsCompat.requireNonNull(file.listFiles()).length != 0)
                     deleteFolder(file);    //如果子文件夹不是空的，继续扫描下去，实现套娃效果
             }
-            Log.e("debug", file.toString());
         }
         folder.delete();
     }
 
     public static String readString(File file) {
         if (file == null || !file.exists() || !file.canRead() || !file.isFile()) return null;
-        try {
+        try (FileInputStream inputStream = new FileInputStream(file)) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            FileInputStream inputStream = new FileInputStream(file);
             FileChannel channel = inputStream.getChannel();
             ByteBuffer buffer = ByteBuffer.allocate(1 << 13);
             int i;
