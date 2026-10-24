@@ -92,7 +92,7 @@ public class VideoInfoFragment extends BaseFragment {
         public void onActivityResult(ActivityResult o) {
             int code = o.getResultCode();
             if (code == RESULT_ADDED) {
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_1);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true);
             } else if (code == RESULT_DELETED) {
                 com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_0);
             }
@@ -281,11 +281,11 @@ public class VideoInfoFragment extends BaseFragment {
 
         //点赞投币收藏
         if (videoInfo.stats.coined != 0)
-            com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin, R.drawable.icon_coin_1);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, R.drawable.icon_coin_1, true);
         if (videoInfo.stats.liked)
-            com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like, R.drawable.icon_like_1);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, R.drawable.icon_like_1, true);
         if (videoInfo.stats.favoured)
-            com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_1);
+            com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true);
 
         //历史上报
         CenterThreadPool.run(() -> {
@@ -382,8 +382,7 @@ public class VideoInfoFragment extends BaseFragment {
                         if (videoInfo.stats.liked)
                             likeLabel.setText(StringUtil.toWan(++videoInfo.stats.like));
                         else likeLabel.setText(StringUtil.toWan(--videoInfo.stats.like));
-                        com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like,
-                                videoInfo.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0);
+                        com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, videoInfo.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0, videoInfo.stats.liked);
                     });
                 } else if (isAdded()) {
                     String msg = "操作失败：" + result;
@@ -394,7 +393,7 @@ public class VideoInfoFragment extends BaseFragment {
                         case 65006:
                             msg = "已经点赞过了喵~";
                             videoInfo.stats.liked = true;
-                            runOnUiThread(() -> com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like, R.drawable.icon_like_1));
+                            runOnUiThread(() -> com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, R.drawable.icon_like_1, true));
                             break;
                     }
                     String finalMsg = msg;
@@ -419,7 +418,7 @@ public class VideoInfoFragment extends BaseFragment {
                         runOnUiThread(() -> {
                             MsgUtil.showMsg("投币成功");
                             coinLabel.setText(StringUtil.toWan(++videoInfo.stats.coin));
-                            com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin, R.drawable.icon_coin_1);
+                            com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, R.drawable.icon_coin_1, true);
                         });
                     } else if (isAdded()) {
                         String msg = "投币失败：" + result;
@@ -529,9 +528,12 @@ public class VideoInfoFragment extends BaseFragment {
                         try {
                             int code = LikeCoinFavApi.triple(aid);
                             if (code == 0) {
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin, R.drawable.icon_coin_1);
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like, R.drawable.icon_like_1);
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_1);
+                                // 图标是 ImageView，改前就落在这个工作线程上直接动视图
+                                runOnUiThread(() -> {
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, R.drawable.icon_coin_1, true);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, R.drawable.icon_like_1, true);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true);
+                                });
                                 MsgUtil.showMsg("三连成功");
                             } else MsgUtil.showMsg("三连失败，错误码：" + code);
                         } catch (Exception e) {
@@ -580,7 +582,7 @@ public class VideoInfoFragment extends BaseFragment {
         if (string == null) return new SpannableString(videoInfo.title);
 
         SpannableString titleStr = new SpannableString(" " + string + " " + videoInfo.title);
-        RadiusBackgroundSpan badgeBG = new RadiusBackgroundSpan(0, (int) getResources().getDimension(R.dimen.card_round), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().buttonTint, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+        RadiusBackgroundSpan badgeBG = new RadiusBackgroundSpan(0, (int) getResources().getDimension(R.dimen.card_round), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
         titleStr.setSpan(badgeBG, 0, string.length() + 2, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         return titleStr;
     }

@@ -110,13 +110,14 @@ public class ViewPointAdapter extends RecyclerView.Adapter<ViewPointAdapter.View
             
             boolean isCurrent = currentPosition >= viewPoint.from && currentPosition < viewPoint.to;
             
-            com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+            // 播放器恒为深色场景（整棵树走 applyContentForcedDark），取深色套才不会在浅色主题下把芯片染成白底
+            com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
             if (isCurrent) {
                 button.setTextColor(tp.buttonTint);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selectedText, tp.selectedText));
+                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selected));
             } else {
                 button.setTextColor(tp.selectedText);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint, tp.buttonTint));
+                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint));
             }
             
             button.setOnClickListener(v -> {

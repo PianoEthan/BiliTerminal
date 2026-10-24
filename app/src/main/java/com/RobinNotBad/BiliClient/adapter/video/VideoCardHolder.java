@@ -72,13 +72,13 @@ public class VideoCardHolder extends RecyclerView.ViewHolder {
         switch (videoCard.type) {
             case "live":
                 SpannableString sstr_live = new SpannableString("[直播]" + StringUtil.htmlToString(videoCard.title));
-                sstr_live.setSpan(new ForegroundColorSpan(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent), 0, 4,
+                sstr_live.setSpan(new ForegroundColorSpan(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected), 0, 4,
                         Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 title.setText(sstr_live);
                 break;
             case "series":
                 SpannableString sstr_series = new SpannableString("[系列]" + StringUtil.htmlToString(videoCard.title));
-                sstr_series.setSpan(new ForegroundColorSpan(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent), 0, 4,
+                sstr_series.setSpan(new ForegroundColorSpan(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected), 0, 4,
                         Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 title.setText(sstr_series);
                 break;

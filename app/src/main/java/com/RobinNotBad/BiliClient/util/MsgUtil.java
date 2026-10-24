@@ -62,17 +62,29 @@ public class MsgUtil {
     private static void toastInternal(String str, Context context) {
         if (toast != null) toast.cancel();
         toast = Toast.makeText(context, str, Toast.LENGTH_SHORT);
-        // 文字色接色板：默认深色保持系统样式观感（近白文字），自定义主题下不露系统色
-        ((android.widget.TextView) toast.getView().findViewById(android.R.id.message)).setTextColor(
-                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+        tintToastMessage(toast);
         toast.show();
+    }
+
+    /**
+     * toast 文字接色板：默认深色保持系统样式观感（近白文字），自定义主题下不露系统色。
+     * 拿不到 message 控件就整条跳过——getView()/findViewById(android.R.id.message) 是 API30
+     * 起的废弃路径，部分 ROM 已经不暴露这个 TextView，为一次提示把它变成崩溃不划算。
+     */
+    private static void tintToastMessage(Toast toast) {
+        android.view.View toastView = toast.getView();
+        if (toastView == null) return;
+        android.view.View message = toastView.findViewById(android.R.id.message);
+        if (message instanceof android.widget.TextView) {
+            ((android.widget.TextView) message).setTextColor(
+                    com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+        }
     }
 
     private static void toastLongInternal(String str, Context context) {
         if (toast != null) toast.cancel();
         toast = Toast.makeText(context, str, Toast.LENGTH_LONG);
-        ((android.widget.TextView) toast.getView().findViewById(android.R.id.message)).setTextColor(
-                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+        tintToastMessage(toast);
         toast.show();
     }
 

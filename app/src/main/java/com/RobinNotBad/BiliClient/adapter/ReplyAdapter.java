@@ -163,7 +163,7 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 name_str.append(" UP ");
                 name_str.append(reply.sender.name);
                 name_str.setSpan(
-                        new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().buttonTint, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent),
+                        new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected),
                         0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 name_str.setSpan(new RelativeSizeSpan(0.8f), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             } else
@@ -206,13 +206,13 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             replyHolder.likeCount.setText(toWan(reply.likeCount));
 
             if (reply.liked) {
-                replyHolder.likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null, null);
                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
-                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
             } else {
-                replyHolder.likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null, null);
                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
@@ -240,7 +240,7 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                         if (child.sender.mid == up_mid) {
                             childMsg.append(" UP ");
                             childMsg.append(child.sender.name);
-                            childMsg.setSpan(new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().buttonTint, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            childMsg.setSpan(new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                             childMsg.setSpan(new RelativeSizeSpan(0.8f), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         } else
                             childMsg.append(child.sender.name);
@@ -328,12 +328,12 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("点赞成功");
                                 replyHolder.likeCount.setText(toWan(++reply.likeCount));
-                                replyHolder.likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null,
                                         null);
                                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
-                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
                             });
                         } else
                             ((Activity) context).runOnUiThread(() -> MsgUtil.showMsg("点赞失败"));
@@ -349,7 +349,7 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("取消成功");
                                 replyHolder.likeCount.setText(toWan(--reply.likeCount));
-                                replyHolder.likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null,
                                         null);

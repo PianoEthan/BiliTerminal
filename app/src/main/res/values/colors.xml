@@ -9,4 +9,5 @@
     <color name="low_pink">#99FB8799</color>
     <color name="light_green">#bfb</color>
     <color name="link">#66ccff</color>
+    <color name="danger">#FF5722</color>
 </resources>

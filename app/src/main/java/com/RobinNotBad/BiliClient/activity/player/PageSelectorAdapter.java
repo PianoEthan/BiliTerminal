@@ -74,13 +74,17 @@ public class PageSelectorAdapter extends RecyclerView.Adapter<PageSelectorAdapte
             pageName.setText("P" + (currentIndex + 1) + " " + pagenames.get(currentIndex));
 
             if (isSelected) {
-                pageName.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().accent);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(pageName,
+                        com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().selected,
+                        com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark());
                 itemView.setBackgroundResource(R.drawable.background_card);
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintBackground(itemView);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintBackgroundForcedDark(itemView);
             } else {
-                pageName.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().textPrimary);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(pageName,
+                        com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark().textPrimary,
+                        com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark());
                 itemView.setBackgroundResource(R.drawable.background_card_borderless);
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintBackground(itemView);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.retintBackgroundForcedDark(itemView);
             }
 
             itemView.setOnClickListener(v -> {

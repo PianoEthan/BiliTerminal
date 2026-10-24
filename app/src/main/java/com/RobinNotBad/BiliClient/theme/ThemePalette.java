@@ -2,8 +2,8 @@ package com.RobinNotBad.BiliClient.theme;
 
 /**
  * 预解析的 ARGB 令牌集。
- * 默认深色 = 现状精确色值（逐像素不变）；浅色为最佳努力反演（新观感）。
- * 所有字段不可变，生成主题由 SchemeEngine 产出。
+ * 默认深色 = 装饰色中性化、语义色（danger/selected/link/success）保留历史彩色；
+ * 浅色为最佳努力反演（新观感）。所有字段不可变，生成主题由 SchemeEngine 产出。
  */
 public class ThemePalette {
 
@@ -24,11 +24,29 @@ public class ThemePalette {
     public final int selectedText;
     /** 次级文字（说明/计数/时间戳等中灰文字） */
     public final int textSecondary;
+    /** 警示语义色（删除等破坏性操作），不随装饰强调色褪掉 */
+    public final int danger;
+    /** 选中/已反馈状态色（已赞、当前项），与未选中态靠色相而非亮度区分 */
+    public final int selected;
+
+    /** 语义令牌的兜底值 = 主题系统之前的历史原值 */
+    public static final int DEFAULT_DANGER = 0xFFFF5722;
+    public static final int DEFAULT_SELECTED = 0xFFFB7299;
 
     public ThemePalette(int textPrimary, int textTransparent, int ripple, int windowBackground,
                         int accent, int gray, int accentLow, int success, int link,
                         int surfaceCard, int snackBg, int highEnergyLine, int highEnergyFill,
                         int buttonTint, int selectedText, int textSecondary) {
+        this(textPrimary, textTransparent, ripple, windowBackground, accent, gray, accentLow,
+                success, link, surfaceCard, snackBg, highEnergyLine, highEnergyFill,
+                buttonTint, selectedText, textSecondary, DEFAULT_DANGER, DEFAULT_SELECTED);
+    }
+
+    public ThemePalette(int textPrimary, int textTransparent, int ripple, int windowBackground,
+                        int accent, int gray, int accentLow, int success, int link,
+                        int surfaceCard, int snackBg, int highEnergyLine, int highEnergyFill,
+                        int buttonTint, int selectedText, int textSecondary,
+                        int danger, int selected) {
         this.textPrimary = textPrimary;
         this.textTransparent = textTransparent;
         this.ripple = ripple;
@@ -45,11 +63,22 @@ public class ThemePalette {
         this.buttonTint = buttonTint;
         this.selectedText = selectedText;
         this.textSecondary = textSecondary;
+        this.danger = danger;
+        this.selected = selected;
+    }
+
+    /** 复制法写回语义令牌（其余令牌原样带走） */
+    public ThemePalette withSemantic(int danger, int selected) {
+        return new ThemePalette(textPrimary, textTransparent, ripple, windowBackground,
+                accent, gray, accentLow, success, link, surfaceCard, snackBg,
+                highEnergyLine, highEnergyFill, buttonTint, selectedText, textSecondary,
+                danger, selected);
     }
 
     /**
-     * 内置默认深色：单色中性设计（无粉色）。
-     * 文字/表面沿用现状色值；强调色族为中性近白，不携带彩色倾向。
+     * 内置默认深色：装饰强调色为单色中性（无粉色）。
+     * 文字/表面沿用现状色值；danger/selected 保留历史彩色原值，
+     * 因为它们承载警示与选中状态语义，中性化会让反馈读不出来。
      */
     public static ThemePalette builtinDark() {
         return new ThemePalette(
@@ -68,7 +97,9 @@ public class ThemePalette {
                 0x33EAEAEA, // highEnergyFill
                 0xCC262626, // buttonTint
                 0xFFEBE0E2, // selectedText
-                0xFFA3A3A3  // textSecondary（中灰说明文字）
+                0xFFA3A3A3, // textSecondary（中灰说明文字）
+                DEFAULT_DANGER,   // danger   <- 历史警示橙
+                DEFAULT_SELECTED  // selected <- 历史 @color/pink 选中粉
         );
     }
 
@@ -90,7 +121,9 @@ public class ThemePalette {
                 0x331F1B1B, // highEnergyFill
                 0xFFFFFFFF, // buttonTint
                 0xFF1F1B1B, // selectedText
-                0xFF5C5C5C  // textSecondary
+                0xFF5C5C5C, // textSecondary
+                0xFFC62828, // danger   （白底可读的警示红）
+                0xFFC2185B  // selected （白底可读的选中粉）
         );
     }
 

@@ -57,6 +57,11 @@ public class ThemeCompat {
                 new int[]{checked, checked, normal});
     }
 
+    /** 按压态由底色自动派生（见 TintRules.pressedVariant），调用点不必再写两遍同色 */
+    public static ColorStateList pressedStateList(int base) {
+        return pressedStateList(base, TintRules.pressedVariant(base));
+    }
+
     /** 按下/默认双态 ColorStateList */
     public static ColorStateList pressedStateList(int normal, int pressed) {
         return new ColorStateList(

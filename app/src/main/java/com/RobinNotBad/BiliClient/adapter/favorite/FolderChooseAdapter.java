@@ -134,7 +134,7 @@ public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapte
 
     private void setCardView(MaterialCardView cardView, boolean bool) {
         if (bool) {
-            cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+            cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
             cardView.setStrokeWidth(ToolsUtil.dp2px(1));
         } else {
             cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().gray);

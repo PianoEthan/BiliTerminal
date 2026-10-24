@@ -1,6 +1,5 @@
 package com.RobinNotBad.BiliClient.theme.model;
 
-import android.text.TextUtils;
 import java.util.Map;
 
 /**
@@ -61,13 +60,13 @@ public class ThemeManifest {
     }
 
     public String getDisplayName() {
-        if (meta != null && !TextUtils.isEmpty(meta.name)) return meta.name;
+        if (meta != null && meta.name != null && !meta.name.isEmpty()) return meta.name;
         return id;
     }
 
     /** 解析 ARGB 色值；失败返回 null */
     public static Integer parseColor(String hex) {
-        if (TextUtils.isEmpty(hex)) return null;
+        if (hex == null || hex.isEmpty()) return null;
         try {
             String s = hex.trim();
             if (s.startsWith("#")) s = s.substring(1);

@@ -79,13 +79,14 @@ public class SubtitleAdapter extends RecyclerView.Adapter<SubtitleAdapter.Holder
             if (currentIndex < 0 || list == null || currentIndex >= list.length)
                 return;
             button.setText(list[currentIndex].lang);
-            com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+            // 播放器恒为深色场景（整棵树走 applyContentForcedDark），取深色套才不会在浅色主题下把芯片染成白底
+            com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
             if (isSelected) {
                 button.setTextColor(tp.buttonTint);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selectedText, tp.selectedText));
+                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selected));
             } else {
                 button.setTextColor(tp.selectedText);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint, tp.buttonTint));
+                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint));
             }
             button.setOnClickListener(v -> {
                 setSelectedItemIndex(currentIndex);

@@ -50,7 +50,8 @@ theme_json = {
     "preview": "preview.png",
     "colors": {"mode": "auto", "seed": "#008080",
                "source": {"image": "background.png", "fallback": "#008080"},
-               "contrast": 0.0, "blend": 40, "override": {"link": "#00E5FF"}},
+               "contrast": 0.0, "blend": 40,
+               "override": {"link": "#00E5FF", "danger": "#FF5252", "selected": "#64FFDA"}},
     "background": {"image": "background.png", "fit": "centerCrop",
                    "scrim": 0.5, "scrimColor": "#000000"},
 }

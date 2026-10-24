@@ -109,7 +109,12 @@ public class ContentTintHelper {
             TINT_CACHE.put(tintKey(seed, dark), tint);
             return tint;
         } catch (Exception e) {
-            com.RobinNotBad.BiliClient.theme.ThemePalette fb = com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
+            // 兜底也得按 dark 取套：正路四档 tone 都跟着 dark，只有这里原先恒取深色套。
+            // 今天唯一调用点 PlayerActivity:1747 传 forceDark=true 所以是行为等价的陷阱，
+            // 但下一个浅色调用点会直接拿到深色卡底 + 近白文字。
+            com.RobinNotBad.BiliClient.theme.ThemePalette fb = dark
+                    ? com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark()
+                    : com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
             return new ContentTint(fb.accent, fb.selectedText, fb.surfaceCard, fb.accent);
         }
     }

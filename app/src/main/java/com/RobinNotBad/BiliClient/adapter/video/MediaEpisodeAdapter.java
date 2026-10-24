@@ -92,10 +92,10 @@ public class MediaEpisodeAdapter extends RecyclerView.Adapter<MediaEpisodeAdapte
             com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
             if (isSelected) {
                 button.setTextColor(tp.buttonTint);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selectedText, tp.selectedText));
+                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selected));
             } else {
                 button.setTextColor(tp.selectedText);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint, tp.buttonTint));
+                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint));
             }
             button.setOnClickListener(v -> {
                 setSelectedItemIndex(currentIndex);

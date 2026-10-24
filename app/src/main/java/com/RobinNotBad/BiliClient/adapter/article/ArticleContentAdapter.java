@@ -180,8 +180,7 @@ public class ArticleContentAdapter extends RecyclerView.Adapter<ArticleContentAd
                                     likeLabel.setText(StringUtil.toWan(++articleInfo.stats.like));
                                 else
                                     likeLabel.setText(StringUtil.toWan(--articleInfo.stats.like));
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like,
-                                        articleInfo.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, articleInfo.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0, articleInfo.stats.liked);
                             });
                         } else {
                             context.runOnUiThread(() -> MsgUtil.showMsg("操作失败：" + result));
@@ -205,7 +204,7 @@ public class ArticleContentAdapter extends RecyclerView.Adapter<ArticleContentAd
                                 context.runOnUiThread(() -> {
                                     MsgUtil.showMsg("投币成功！");
                                     coinLabel.setText(StringUtil.toWan(++articleInfo.stats.coin));
-                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin, R.drawable.icon_coin_1);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, R.drawable.icon_coin_1, true);
                                 });
                             } else {
                                 String msg = "投币失败：" + result;
@@ -232,7 +231,7 @@ public class ArticleContentAdapter extends RecyclerView.Adapter<ArticleContentAd
                             }
                         } else {
                             if (ArticleApi.favorite(articleInfo.id) == 0) {
-                                context.runOnUiThread(() -> com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_1));
+                                context.runOnUiThread(() -> com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true));
                                 articleInfo.stats.favorite++;
                             }
                         }
@@ -254,11 +253,11 @@ public class ArticleContentAdapter extends RecyclerView.Adapter<ArticleContentAd
                             articleInfo.stats.coin_limit = 1;
                             context.runOnUiThread(() -> {
                                 if (articleInfo.stats.coined != 0)
-                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin, R.drawable.icon_coin_1);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, R.drawable.icon_coin_1, true);
                                 if (articleInfo.stats.liked)
-                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like, R.drawable.icon_like_1);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, R.drawable.icon_like_1, true);
                                 if (articleInfo.stats.favoured)
-                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_1);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true);
                             });
                         }
                     } catch (Exception e) {

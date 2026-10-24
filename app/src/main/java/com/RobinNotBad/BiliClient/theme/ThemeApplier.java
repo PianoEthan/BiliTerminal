@@ -52,17 +52,10 @@ import java.util.Map;
 /**
  * 视图树染色器：挂在 BaseActivity.setContentView / BaseFragment.onViewCreated /
  * AbstractAdapter 三个扼点上。规则保守——只染"当前等于默认值"的视图，
- * 保护 VIP 粉、业务色等；topbar id 恒染。
+ * 保护 VIP 粉、业务色等；topbar id 恒染。颜色判定本身在 TintRules（纯函数，可单测）。
  */
 @android.annotation.SuppressLint("RestrictedApi")
 public class ThemeApplier {
-
-    /** 默认深色主题的精确值（染色守卫用） */
-    private static final int DEFAULT_TEXT = 0xFFEBE0E2;
-    private static final int DEFAULT_TEXT_TRANSPARENT = 0x50FEFEFE;
-    private static final int DEFAULT_BUTTON_BG = 0xCC262626;
-    /** 用户页关注/私信等按钮的另一档默认灰 */
-    private static final int DEFAULT_BUTTON_BG_ALT = 0xDD262626;
 
     /** 背景图解码缓存：key=文件路径+采样，SoftReference 防内存压力 */
     private static final Map<String, SoftReference<Bitmap>> BG_CACHE = new HashMap<>();
@@ -345,25 +338,6 @@ public class ThemeApplier {
         });
     }
 
-    /** 近白中性色（亮度高且通道差小）；文字守卫与图标单色判定共用 */
-    private static boolean nearWhiteNeutral(int color) {
-        if ((color >>> 24) < 0x40) return false;
-        int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
-        int max = Math.max(r, Math.max(g, b));
-        int min = Math.min(r, Math.min(g, b));
-        return min >= 0xB8 && (max - min) <= 0x2F;
-    }
-
-    /**
-     * 判断文字色是否属于"默认文字色族"（可随主题重染）：
-     * 精确等于现状默认值，或近似白色的中性色（布局里大量硬编码 #fff/#FFFFFFFF/
-     * #DDDDDD/#99ffffff 等）。业务色（VIP 粉 #fb7299、链接蓝 #66ccff、浅绿 #bfb）
-     * 通道差大，不会被误染。
-     */
-    private static boolean isThemedTextColor(int color) {
-        return color == DEFAULT_TEXT || nearWhiteNeutral(color);
-    }
-
     @SuppressWarnings("ConstantValue")
     private static void tintView(View view, ThemePalette p) {
 
@@ -376,11 +350,15 @@ public class ThemeApplier {
             MaterialCardView card = (MaterialCardView) view;
             int cardBg = card.getCardBackgroundColor().getDefaultColor();
             // bind 已写成强调色/当前表面色（如私信气泡）则不覆盖，只收默认灰/近白
-            if (!sameRgb(cardBg, p.accent) && !sameRgb(cardBg, p.surfaceCard)
-                    && (isDefaultSurface(cardBg) || nearWhiteNeutral(cardBg))) {
+            if (!TintRules.sameRgb(cardBg, p.accent) && !TintRules.sameRgb(cardBg, p.surfaceCard)
+                    && (TintRules.isDefaultSurface(cardBg) || TintRules.nearWhiteNeutral(cardBg))) {
                 card.setCardBackgroundColor(p.surfaceCard);
             }
-            card.setStrokeColor(p.gray);
+            // 描边只收"历史默认灰"：适配器/bind 显式写好的选中态（selected、accentLow 等）
+            // 已是色板令牌，再覆盖一次就会把刚 setChecked 的颜色打回 gray
+            int stroke = card.getStrokeColor();
+            if (TintRules.isDefaultStroke(stroke) && !TintRules.isPaletteToken(stroke, p))
+                card.setStrokeColor(p.gray);
             return;
         }
         if (view instanceof androidx.swiperefreshlayout.widget.SwipeRefreshLayout) {
@@ -392,6 +370,12 @@ public class ThemeApplier {
         }
         if (view instanceof CircularProgressIndicator) {
             ((CircularProgressIndicator) view).setIndicatorColor(p.accent);
+            return;
+        }
+        // 分支必须按「子类在前」排列：SeekBar 是 ProgressBar、Switch/RadioButton 是 Button，
+        // 放在后面会永远被父类分支截走（历史顺序就是这两处被截，选中态色板分支整段不执行）
+        if (view instanceof SeekBar) {
+            ThemeCompat.tintSeekBar((SeekBar) view, p.accent);
             return;
         }
         if (view instanceof ProgressBar) {
@@ -410,14 +394,64 @@ public class ThemeApplier {
             tintButton((AppCompatButton) view, p);
             return;
         }
+        // 复合按钮（SwitchCompat/Switch/RadioButton 都是 Button 的子类）必须在
+        // instanceof Button 之前判定，否则会被父类分支截走
+        if (view instanceof SwitchCompat) {
+            SwitchCompat sw = (SwitchCompat) view;
+            // checked 档必须走选中令牌：accent 与 unchecked 的 textPrimary 在默认深色下同档，
+            // 开关会看起来"开和关一个样"
+            sw.setThumbTintList(ThemeCompat.checkedStateList(p.textPrimary, p.selected));
+            sw.setTrackTintList(ThemeCompat.checkedStateList(p.ripple,
+                    ThemePalette.withAlpha(p.selected, 0x99)));
+            if (TintRules.isThemedTextColor(sw.getCurrentTextColor())) sw.setTextColor(p.textPrimary);
+            return;
+        }
+        if (view instanceof Switch) {
+            @SuppressLint("UseSwitchCompatOrMaterialCode")
+            Switch sw = (Switch) view;
+            // setThumbTintList/setTrackTintList 为 API23+（getThumbDrawable 其实 API16 就有，
+            // 但拿它整体套一色会让开/关两个状态同色，与下面 RadioButton 分支同一个坑），
+            // 所以与 SwitchCompat 分支走同一条 checkedStateList 语义
+            if (android.os.Build.VERSION.SDK_INT >= 23) {
+                sw.setThumbTintList(ThemeCompat.checkedStateList(p.textPrimary, p.selected));
+                sw.setTrackTintList(ThemeCompat.checkedStateList(p.ripple,
+                        ThemePalette.withAlpha(p.selected, 0x99)));
+            }
+            if (TintRules.isThemedTextColor(sw.getCurrentTextColor())) sw.setTextColor(p.textPrimary);
+            return;
+        }
+        if (view instanceof AppCompatRadioButton) {
+            AppCompatRadioButton radio = (AppCompatRadioButton) view;
+            radio.setSupportButtonTintList(ThemeCompat.checkedStateList(p.ripple, p.selected));
+            if (TintRules.isThemedTextColor(radio.getCurrentTextColor())) radio.setTextColor(p.textPrimary);
+            return;
+        }
+        if (view instanceof RadioButton) {
+            RadioButton radio = (RadioButton) view;
+            // setButtonTintList 为 API21+；与上面的 AppCompatRadioButton 分支同一条语义
+            // （未选 ripple / 选中 selected）。这里不能退回 tintDrawable 整体套色：
+            // button drawable 同时含未选环与选中点，套一色会让两个状态同色。
+            // 布局里的 <RadioButton> 在 AppCompat 宿主下会被换成 AppCompatRadioButton，
+            // 本分支只覆盖代码里 new RadioButton 的路径（当前全仓没有）。
+            if (android.os.Build.VERSION.SDK_INT >= 21)
+                radio.setButtonTintList(ThemeCompat.checkedStateList(p.ripple, p.selected));
+            if (TintRules.isThemedTextColor(radio.getCurrentTextColor())) radio.setTextColor(p.textPrimary);
+            return;
+        }
         if (view instanceof Button) {
             tintButton((Button) view, p);
             return;
         }
         if (view instanceof EditText) {
             EditText editText = (EditText) view;
-            if (editText.getHintTextColors() != null) editText.setHintTextColor(p.textTransparent);
-            if (isThemedTextColor(editText.getCurrentTextColor())) editText.setTextColor(p.textPrimary);
+            android.content.res.ColorStateList hintColors = editText.getHintTextColors();
+            if (hintColors != null) {
+                int hint = hintColors.getDefaultColor();
+                // 只染默认文字色族的 hint，并保留原 alpha 档（规则在 TintRules.hintTextColor）
+                if (TintRules.isThemedTextColor(hint))
+                    editText.setHintTextColor(TintRules.hintTextColor(hint, p));
+            }
+            if (TintRules.isThemedTextColor(editText.getCurrentTextColor())) editText.setTextColor(p.textPrimary);
             // drawableEnd 等复合图标（搜索放大镜等）随主题文字色
             ThemeCompat.tintCompoundDrawables(editText, p.textPrimary);
             // 光标跟随强调色（API29+ 才有公开 setter）
@@ -433,42 +467,6 @@ public class ThemeApplier {
             }
             return;
         }
-        if (view instanceof SwitchCompat) {
-            SwitchCompat sw = (SwitchCompat) view;
-            sw.setThumbTintList(ThemeCompat.checkedStateList(p.textPrimary, p.accent));
-            sw.setTrackTintList(ThemeCompat.checkedStateList(p.ripple, p.accentLow));
-            if (isThemedTextColor(sw.getCurrentTextColor())) sw.setTextColor(p.textPrimary);
-            return;
-        }
-        if (view instanceof Switch) {
-            @SuppressLint("UseSwitchCompatOrMaterialCode")
-            Switch sw = (Switch) view;
-            // getThumbDrawable 为 API23+；<23 跳过拇指染色（布局里的 <Switch>
-            // 通常已被 AppCompat 替换为 SwitchCompat 走上面的分支）
-            if (android.os.Build.VERSION.SDK_INT >= 23)
-                ThemeCompat.tintDrawable(sw.getThumbDrawable(), p.accent);
-            if (isThemedTextColor(sw.getCurrentTextColor())) sw.setTextColor(p.textPrimary);
-            return;
-        }
-        if (view instanceof AppCompatRadioButton) {
-            AppCompatRadioButton radio = (AppCompatRadioButton) view;
-            radio.setSupportButtonTintList(ThemeCompat.checkedStateList(p.ripple, p.accent));
-            if (isThemedTextColor(radio.getCurrentTextColor())) radio.setTextColor(p.textPrimary);
-            return;
-        }
-        if (view instanceof RadioButton) {
-            RadioButton radio = (RadioButton) view;
-            // getButtonDrawable 为 API23+；AppCompat 注入的 RadioButton 走上面的
-            // AppCompatRadioButton 分支（setSupportButtonTintList，全版本安全）
-            if (android.os.Build.VERSION.SDK_INT >= 23)
-                ThemeCompat.tintDrawable(radio.getButtonDrawable(), p.accent);
-            if (isThemedTextColor(radio.getCurrentTextColor())) radio.setTextColor(p.textPrimary);
-            return;
-        }
-        if (view instanceof SeekBar) {
-            ThemeCompat.tintSeekBar((SeekBar) view, p.accent);
-            return;
-        }
         if (view instanceof ImageView) {
             tintIconIfMonochrome((ImageView) view, p);
             return;
@@ -477,69 +475,49 @@ public class ThemeApplier {
             TextView textView = (TextView) view;
             int color = textView.getCurrentTextColor();
             int id = textView.getId();
+            int semantic = semanticTag(textView);
+            int textToken = TintRules.semanticTextToken(semantic);
+            int iconToken = TintRules.semanticIconToken(semantic);
+            if (iconToken != TintRules.SEM_NONE) {
+                ThemeCompat.tintCompoundDrawables(textView, TintRules.semanticColor(iconToken, p));
+            }
+            if (textToken != TintRules.SEM_NONE) {
+                // 文字色由代码写定（已赞、当前分P 这类），按当前色板重放，不再走字面量启发式
+                textView.setTextColor(TintRules.semanticColor(textToken, p));
+                return;
+            }
             if (id == R.id.pageName || id == R.id.timeText) {
                 textView.setTextColor(p.textPrimary);
                 ThemeCompat.tintCompoundDrawables(textView, p.textPrimary);
-            } else if (color == DEFAULT_TEXT_TRANSPARENT) {
+            } else if (color == TintRules.DEFAULT_TEXT_TRANSPARENT) {
                 // 半透明默认值须先于启发式判断（0x50FEFEFE 也满足"近白"）
                 textView.setTextColor(p.textTransparent);
             } else if (color == 0xFF66CCFF) { // @color/link
                 textView.setTextColor(p.link);
-            } else if (isHistoricPink(color)) {
-                // 历史写死的各档粉色/警示橙（@color/pink、点赞数、删除收藏夹等）统一收编为强调色
+            } else if (TintRules.isDanger(color)) {
+                // 历史写死的警示橙（删除收藏夹等）→ 警示令牌，不随强调色中性化褪掉
+                textView.setTextColor(p.danger);
+                ThemeCompat.tintCompoundDrawables(textView, p.danger);
+            } else if (TintRules.isDecorPink(color)) {
+                // 历史写死的各档装饰粉（@color/pink、点赞数等）统一收编为强调色
                 textView.setTextColor(p.accent);
                 ThemeCompat.tintCompoundDrawables(textView, p.accent);
-            } else if (isThemedTextColor(color)) {
+            } else if (TintRules.isThemedTextColor(color)) {
                 textView.setTextColor(p.textPrimary);
                 ThemeCompat.tintCompoundDrawables(textView, p.textPrimary);
-            } else if (isNeutralGrayText(color)) {
+            } else if (TintRules.isNeutralGrayText(color)) {
                 // 中灰说明文字（#999/#AAA/#a2a2a2 族）→ 次级文字令牌
                 textView.setTextColor(p.textSecondary);
             }
         }
     }
 
-    /** 中灰中性文字（说明/计数/时间戳层级） */
-    private static boolean isNeutralGrayText(int color) {
-        if ((color >>> 24) < 0xA0) return false;
-        int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
-        int max = Math.max(r, Math.max(g, b));
-        int min = Math.min(r, Math.min(g, b));
-        return max - min <= 0x2F && min >= 0x50 && max < 0xC0;
-    }
-
-    private static boolean sameRgb(int a, int b) {
-        return (a & 0x00FFFFFF) == (b & 0x00FFFFFF);
-    }
-
-    /** 默认卡片/按钮深灰底（#cc262626 / #dd262626 及同族） */
-    private static boolean isDefaultSurface(int color) {
-        if (color == DEFAULT_BUTTON_BG || color == DEFAULT_BUTTON_BG_ALT) return true;
-        int alpha = color >>> 24;
-        if (alpha < 0x60) return false;
-        int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
-        int max = Math.max(r, Math.max(g, b));
-        int min = Math.min(r, Math.min(g, b));
-        return max - min <= 0x2F && max <= 0x40;
-    }
-
-    private static boolean isSaturatedColor(int color) {
-        int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
-        return Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) >= 0x30;
-    }
-
-    private static boolean isHistoricPink(int color) {
-        return color == 0xFBFB8787 || color == 0xFFFE679A || color == 0xFFFB7299
-                || color == 0xFFFF6699 || color == 0xFFFF5722
-                || color == 0xFEF05D8E || color == 0xFFF05D8E
-                || color == 0xFBFB8799;
-    }
-
-    /** 染色判定缓存：int[]{kind, 代表alpha}；kind：0=跳过 1=近白中性 2=有彩度 3=灰阶中性 */
+    /** 采样分类缓存：int[]{kind, 代表alpha, 档数, 主导亮度档}，形状见 TintRules.classifySample */
     private static final android.util.LruCache<Drawable.ConstantState, int[]> MONO_ICON_CACHE =
             new android.util.LruCache<>(128);
 
-    private static final int ICON_SKIP = 0, ICON_NEUTRAL = 1, ICON_SATURATED = 2, ICON_GRAYSCALE = 3;
+    /** 采样失败只报第一次（见 classifyDrawable 的 catch） */
+    private static boolean SAMPLING_FAILURE_LOGGED = false;
 
     /**
      * 给 ImageView 换图后按色板重染（状态切换专用，如点赞/收藏/投币/播放控制）。
@@ -560,18 +538,82 @@ public class ThemeApplier {
         retintImage(iv);
     }
 
+    /**
+     * 播放器控制栏的 mipmap PNG 状态图标专用：位图被 tintIconIfMonochrome 的
+     * BitmapDrawable 守卫挡在外面（Glide 头像/封面也走那条守卫，不能删），
+     * 所以这里按调用点已知的语义显式染色。实测这 8 张图都是单色字形
+     * （黑像素只是 alpha&lt;128 的抗锯齿边缘），SRC_IN 不会糊掉细节。
+     * active=true 取选中令牌（原本是写死的蓝 #4A90E2），false 取文字色。
+     * 播放器恒为深色场景，取深色套色板，与分 P 列表、高能曲线一致。
+     */
+    public static void setStateImage(ImageView iv, int resId, boolean active) {
+        if (iv == null) return;
+        iv.setImageResource(resId);
+        ThemePalette p = ThemeManager.paletteDark();
+        int token = active ? TintRules.SEM_SELECTED : TintRules.SEM_TEXT_PRIMARY;
+        iv.setColorFilter(TintRules.semanticColor(token, p),
+                android.graphics.PorterDuff.Mode.SRC_IN);
+        iv.setTag(R.id.theme_semantic, TintRules.semanticWithIcon(0, token));
+    }
+
+    /**
+     * 已赞/已币/已收藏这类**状态图标**必须点名染色（激活=选中令牌，未激活=文字色）：
+     * 它们的历史 fillColor 是饱和粉 #fb8799，通用彩度分支会把饱和色一律收成 accent，
+     * 默认深色主题下就压成 #EAEAEA，和未选中态的 #EBE0E2 同一个档，等于看不出三连过没有。
+     */
+    public static void setStateIcon(ImageView iv, int resId, boolean active) {
+        if (iv == null) return;
+        iv.setImageResource(resId);
+        ThemePalette p = ThemeManager.palette();
+        int token = active ? TintRules.SEM_SELECTED : TintRules.SEM_TEXT_PRIMARY;
+        iv.setColorFilter(TintRules.semanticColor(token, p),
+                android.graphics.PorterDuff.Mode.SRC_IN);
+        iv.setTag(R.id.theme_semantic, TintRules.semanticWithIcon(0, token));
+    }
+
     /** TextView 换复合图标后按指定色重染（评论/动态点赞态） */
     public static void retintCompound(TextView tv, int color) {
         if (tv == null) return;
         ThemeCompat.tintCompoundDrawables(tv, color);
+        int token = TintRules.semanticToken(color, ThemeManager.palette());
+        tv.setTag(R.id.theme_semantic, TintRules.semanticWithIcon(semanticTag(tv), token));
     }
 
-    /** 换背景后按色板重染（状态切换专用，如分 P 选中底） */
-    public static void retintBackground(View v) {
+    /**
+     * 代码写定的文字语义色（已赞计数、当前分P 等）。必须记令牌而不是只 setTextColor：
+     * RecyclerView 先 bind 后 attach，attach 钩子跑树级染色时，默认深色的 selected
+     * 与历史装饰粉 #FB7299 同值，会被「装饰粉→accent」规则原地吃掉。
+     */
+    public static void setSemanticText(TextView tv, int color, ThemePalette p) {
+        if (tv == null) return;
+        tv.setTextColor(color);
+        int token = TintRules.semanticToken(color, p);
+        tv.setTag(R.id.theme_semantic, TintRules.semanticWithText(semanticTag(tv), token));
+    }
+
+    private static int semanticTag(View view) {
+        Object tag = view.getTag(R.id.theme_semantic);
+        return tag instanceof Integer ? (Integer) tag : 0;
+    }
+
+    /**
+     * 播放器专用：换图后按**深色套**补染。播放器是永久深色场景（树级入口就是
+     * `applyContentForcedDark`），补染若跟随浅色套，浅色模式下 textPrimary=#1F1B1B
+     * 的近黑图标会画在黑底控制栏上——批 5 补上这批调用点时就是把这条漏了。
+     */
+    public static void retintImageForcedDark(ImageView iv) {
+        if (iv == null) return;
+        ThemeManager tm = ThemeManager.getInstance();
+        if (tm == null) return;
+        tintIconIfMonochrome(iv, tm.getPaletteDark());
+    }
+
+    /** 换背景后按**深色套**重染（播放器分 P 行的选中底），理由同 retintImageForcedDark */
+    public static void retintBackgroundForcedDark(View v) {
         if (v == null) return;
         ThemeManager tm = ThemeManager.getInstance();
         if (tm == null) return;
-        retintBackground(v, tm.getPalette());
+        retintBackground(v, tm.getPaletteDark());
     }
 
     /**
@@ -588,25 +630,21 @@ public class ThemeApplier {
     private static void retintBackground(View view, ThemePalette p) {
         // 单色背景跟随色板：
         // - 有彩度 → accent
-        // - 灰阶：实心（alpha≥0x60）→ surfaceCard 的 RGB + 原透明度；
-        //          弱化/分隔（alpha<0x60）→ gray 令牌的 RGB（M3 outline 色，
-        //          默认值 #8C8C8C 与现状一致）——避免深色主题下分隔线隐形；
-        // - 纯黑半透明压暗蒙层（照片 scrim）功能性强，保持原样。
+        // - 灰阶按源亮度分档（见 TintRules.backgroundTier）：实心深灰 → surfaceCard 的 RGB、
+        //          中灰弱化/分隔 → gray 令牌的 RGB，两者都只换 RGB、保留原 alpha
+        //          （内置深色 gray = #70707070，与 colors.xml 一致）；
+        // - 近白与纯黑半透明压暗蒙层（照片 scrim）功能性强，保持原样。
         Drawable bg = view.getBackground();
         if (bg instanceof android.graphics.drawable.ColorDrawable) {
             // 布局里内联 hex 背景（分隔线/评论框/动态图底/用户页等）
             int c = ((android.graphics.drawable.ColorDrawable) bg).getColor();
             int alpha = c >>> 24;
-            int r = (c >> 16) & 0xFF, g = (c >> 8) & 0xFF, b = c & 0xFF;
-            int hi = Math.max(r, Math.max(g, b));
-            int lo = Math.min(r, Math.min(g, b));
-            if (hi - lo >= 0x30) { // 有彩度单色（本地视频绿徽等）
+            int tier = TintRules.backgroundTier(c);
+            if (tier == TintRules.BG_SATURATED) { // 有彩度单色（本地视频绿徽等）
                 view.setBackgroundColor(p.accent);
-            } else if (!(r >= 0xB8 && g >= 0xB8 && b >= 0xB8 && hi - lo <= 0x2F)
-                    && !(hi <= 0x18 && alpha < 0xF0)) {
-                // 灰阶中性表面：透明度<0x60 属分隔/弱化层，用 outline 色保持可见
-                int rgb = alpha < 0x60 ? ThemePalette.withAlpha(p.gray, 0xFF) : ThemePalette.withAlpha(p.surfaceCard, 0xFF);
-                view.setBackgroundColor(ThemePalette.withAlpha(rgb, alpha));
+            } else if (tier == TintRules.BG_SURFACE || tier == TintRules.BG_DIVIDER) {
+                int token = tier == TintRules.BG_DIVIDER ? p.gray : p.surfaceCard;
+                view.setBackgroundColor(TintRules.applyAlpha(token, alpha));
             }
         } else if (bg instanceof android.graphics.drawable.StateListDrawable) {
             // 状态选择器背景（如互动投票芯片：默认态灰阶、按压态粉色）
@@ -618,17 +656,14 @@ public class ThemeApplier {
                 for (int i = 0; i < count; i++) {
                     Drawable state = sld.getStateDrawable(i);
                     if (state == null) continue;
-                    Drawable.ConstantState cs = state.getConstantState();
-                    int[] c = cs == null ? null : MONO_ICON_CACHE.get(cs);
-                    if (c == null) {
-                        c = classifyDrawable(state);
-                        if (cs != null) MONO_ICON_CACHE.put(cs, c);
-                    }
-                    if (c[0] == ICON_SATURATED) {
+                    int[] c = classifyCached(state);
+                    if (c == null) continue;
+                    if (c[0] == TintRules.ICON_SATURATED) {
                         applyTintedBackgroundState(state, p.accent);
-                    } else if (c[0] == ICON_GRAYSCALE) {
-                        int rgb = c[1] < 0x60 ? ThemePalette.withAlpha(p.gray, 0xFF) : ThemePalette.withAlpha(p.surfaceCard, 0xFF);
-                        applyTintedBackgroundState(state, ThemePalette.withAlpha(rgb, c[1]));
+                    } else if (c[0] == TintRules.ICON_GRAYSCALE
+                            && !(c[2] > 1 && TintRules.preserveMultiTierGrayscale(p))) {
+                        applyTintedBackgroundState(state,
+                                TintRules.tintColor(TintRules.grayScaleSurface(c[3], p), c[1]));
                     }
                 }
             }
@@ -636,22 +671,30 @@ public class ThemeApplier {
                 || bg instanceof android.graphics.drawable.ShapeDrawable) {
             Drawable.ConstantState cs = bg.getConstantState();
             if (cs != null) {
-                int[] c = MONO_ICON_CACHE.get(cs);
-                if (c == null) {
-                    c = classifyDrawable(bg);
-                    MONO_ICON_CACHE.put(cs, c);
-                }
-                if (c[0] == ICON_SATURATED) {
+                int[] c = classifyCached(bg);
+                if (c == null) return;
+                if (c[0] == TintRules.ICON_SATURATED) {
                     setTintedBackground(view, bg, p.accent);
-                } else if (c[0] == ICON_GRAYSCALE) {
-                    int rgb = c[1] < 0x60 ? ThemePalette.withAlpha(p.gray, 0xFF) : ThemePalette.withAlpha(p.surfaceCard, 0xFF);
-                    setTintedBackground(view, bg, ThemePalette.withAlpha(rgb, c[1]));
+                } else if (c[0] == TintRules.ICON_GRAYSCALE
+                        && !(c[2] > 1 && TintRules.preserveMultiTierGrayscale(p))) {
+                    // 深色主题下两档灰阶（solid+stroke）保持原样：GradientDrawable 没有公开的
+                    // 描边取色口，整张套一色就等于把描边抹进填充里。浅色主题表面色是亮的，
+                    // 不跟随会留下深灰框，所以那里照常压平染色。
+                    setTintedBackground(view, bg,
+                            TintRules.tintColor(TintRules.grayScaleSurface(c[3], p), c[1]));
                 }
             }
         }
     }
 
     private static void tintIconIfMonochrome(ImageView iv, ThemePalette p) {
+        int iconToken = TintRules.semanticIconToken(semanticTag(iv));
+        if (iconToken != TintRules.SEM_NONE) {
+            // setStateIcon/setStateImage 写定的状态色：按当前色板重放，别压成 accent
+            iv.setColorFilter(TintRules.semanticColor(iconToken, p),
+                    android.graphics.PorterDuff.Mode.SRC_IN);
+            return;
+        }
         Drawable d = iv.getDrawable();
         if (d == null || d instanceof BitmapDrawable) return;
         int w = d.getIntrinsicWidth();
@@ -659,14 +702,11 @@ public class ThemeApplier {
         if (w <= 0 || h <= 0 || w > 192 || h > 192) return; // 过大者不是图标
         Drawable.ConstantState cs = d.getConstantState();
         if (cs == null) return;
-        int[] c = MONO_ICON_CACHE.get(cs);
-        if (c == null) {
-            c = classifyDrawable(d);
-            MONO_ICON_CACHE.put(cs, c);
-        }
-        if (c[0] == ICON_NEUTRAL) {
+        int[] c = classifyCached(d);
+        if (c == null) return;
+        if (c[0] == TintRules.ICON_NEUTRAL) {
             iv.setColorFilter(p.textPrimary, android.graphics.PorterDuff.Mode.SRC_IN);
-        } else if (c[0] == ICON_SATURATED) {
+        } else if (c[0] == TintRules.ICON_SATURATED) {
             iv.setColorFilter(p.accent, android.graphics.PorterDuff.Mode.SRC_IN);
         }
     }
@@ -675,48 +715,53 @@ public class ThemeApplier {
      * 缩至 16px 绘制采样分类 drawable：
      * 多色 → 跳过；近白中性 → 1（文字色）；有彩度单色 → 2（强调色）；
      * 灰阶中性 → 3（表面色，保留代表 alpha）；纯黑半透明压暗蒙层 → 跳过。
+     * 结果 int[]{kind, 代表alpha, 档数, 主导亮度档}。
      */
     private static int[] classifyDrawable(Drawable d) {
-        Bitmap bmp = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
-        Rect orig = d.copyBounds();
+        Bitmap bmp = null;
+        Rect orig = null;
         try {
+            bmp = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
+            orig = d.copyBounds();
             Canvas canvas = new Canvas(bmp);
             d.setBounds(0, 0, 16, 16);
             d.draw(canvas);
-            int rMin = 255, gMin = 255, bMin = 255, rMax = 0, gMax = 0, bMax = 0, aMin = 255;
-            boolean any = false;
+            // 统计口在 TintRules.SampleStats：代表 alpha 取主体众数而不是抗锯齿边缘的最小值，
+            // 否则 #dd262626 这类圆角 shape 会被当成半透明蒙层压黑（热评卡 #0c0c0c）。
+            TintRules.SampleStats stats = new TintRules.SampleStats();
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
-                    int px = bmp.getPixel(x, y);
-                    int a = px >>> 24;
-                    if (a < 0x40) continue;
-                    any = true;
-                    if (a < aMin) aMin = a;
-                    int r = (px >> 16) & 0xFF, g = (px >> 8) & 0xFF, b = px & 0xFF;
-                    if (r < rMin) rMin = r;
-                    if (g < gMin) gMin = g;
-                    if (b < bMin) bMin = b;
-                    if (r > rMax) rMax = r;
-                    if (g > gMax) gMax = g;
-                    if (b > bMax) bMax = b;
+                    stats.add(bmp.getPixel(x, y));
                 }
             }
-            if (!any) return new int[]{ICON_SKIP, 0};
-            int hi = Math.max(rMax, Math.max(gMax, bMax));
-            int lo = Math.min(rMin, Math.min(gMin, bMin));
-            boolean mono = rMax - rMin <= 0x30 && gMax - gMin <= 0x30 && bMax - bMin <= 0x30;
-            if (!mono) return new int[]{ICON_SKIP, aMin}; // 多色不碰
-            if (rMin >= 0xB8 && gMin >= 0xB8 && bMin >= 0xB8 && hi - lo <= 0x2F)
-                return new int[]{ICON_NEUTRAL, aMin};
-            if (hi - lo >= 0x30) return new int[]{ICON_SATURATED, aMin}; // 有彩度的单色
-            if (hi <= 0x18 && aMin < 0xF0) return new int[]{ICON_SKIP, aMin}; // 压暗蒙层
-            return new int[]{ICON_GRAYSCALE, aMin};
+            return stats.classify();
         } catch (Exception e) {
-            return new int[]{ICON_SKIP, 0};
+            // 采样失败 = 这只 drawable 这一次不染色。吞掉本身可以（个别 ROM 在 canvas/位图上会抛），
+            // 但一次都不留痕的话，格数写错这类失效会永远查不到：只报第一次，避免逐 drawable 刷屏。
+            // 返回 null 而不是 SKIP：失败结果若进缓存，会被当成合法的「这图本来就不染」永久记住
+            if (!SAMPLING_FAILURE_LOGGED) {
+                SAMPLING_FAILURE_LOGGED = true;
+                android.util.Log.w("ThemeApplier",
+                        "drawable 采样失败，该图本次保持原色：" + d.getClass().getName(), e);
+            }
+            return null;
         } finally {
-            d.setBounds(orig); // 还原现场 bounds，避免 ImageView 按 16px 绘制
-            bmp.recycle();
+            if (orig != null) d.setBounds(orig); // 还原现场 bounds，避免 ImageView 按 16px 绘制
+            if (bmp != null) bmp.recycle();
         }
+    }
+
+    /** 带缓存的分类入口：null 表示这次采样失败（不缓存，下次还会再试） */
+    private static int[] classifyCached(Drawable d) {
+        if (d == null) return null;
+        Drawable.ConstantState cs = d.getConstantState();
+        if (cs != null) {
+            int[] hit = MONO_ICON_CACHE.get(cs);
+            if (hit != null) return hit;
+        }
+        int[] c = classifyDrawable(d);
+        if (c != null && cs != null) MONO_ICON_CACHE.put(cs, c);
+        return c;
     }
 
     /** API&lt;21 wrap 会产生新实例，必须设回视图 */
@@ -746,15 +791,11 @@ public class ThemeApplier {
         if (tint == null) {
             Drawable bg = button.getBackground();
             if (bg == null) return;
-            Drawable.ConstantState cs = bg.getConstantState();
-            int[] c = cs == null ? null : MONO_ICON_CACHE.get(cs);
-            if (c == null) {
-                c = classifyDrawable(bg);
-                if (cs != null) MONO_ICON_CACHE.put(cs, c);
-            }
-            if (c[0] == ICON_SATURATED) {
+            int[] c = classifyCached(bg);
+            if (c == null) return;
+            if (c[0] == TintRules.ICON_SATURATED) {
                 setTintedBackground(button, bg, p.accent);
-                if (isThemedTextColor(button.getCurrentTextColor())) {
+                if (TintRules.isThemedTextColor(button.getCurrentTextColor())) {
                     button.setTextColor(p.selectedText);
                 }
             }
@@ -762,15 +803,15 @@ public class ThemeApplier {
         }
         int def = tint.getDefaultColor();
         int fill;
-        if (sameRgb(def, p.buttonTint) || isDefaultSurface(def) || def == DEFAULT_TEXT || nearWhiteNeutral(def)) {
+        if (TintRules.sameRgb(def, p.buttonTint) || TintRules.isDefaultSurface(def) || def == TintRules.DEFAULT_TEXT || TintRules.nearWhiteNeutral(def)) {
             fill = p.buttonTint;
-        } else if (sameRgb(def, p.accent) || isHistoricPink(def) || isSaturatedColor(def)) {
+        } else if (TintRules.sameRgb(def, p.accent) || TintRules.isDecorPink(def) || TintRules.isSaturatedColor(def)) {
             fill = p.accent;
         } else {
             return;
         }
-        ThemeCompat.setBackgroundTintList(button, ThemeCompat.pressedStateList(fill, fill));
-        if (isThemedTextColor(button.getCurrentTextColor())) {
+        ThemeCompat.setBackgroundTintList(button, ThemeCompat.pressedStateList(fill));
+        if (TintRules.isThemedTextColor(button.getCurrentTextColor())) {
             button.setTextColor(p.selectedText);
         }
     }

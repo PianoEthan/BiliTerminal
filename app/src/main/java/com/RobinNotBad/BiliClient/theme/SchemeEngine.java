@@ -45,8 +45,10 @@ public class SchemeEngine {
         int accent = scheme.getPrimary();
         int accentLow = ThemePalette.withAlpha(scheme.getTertiary(), 0x99);
         int gray = ThemePalette.withAlpha(scheme.getOutline(), 0x70);
-        int link = Blend.harmonize(0xFF66CCFF, seedArgb);
-        int success = Blend.harmonize(0xFFBBFFBB, seedArgb);
+        int link = functionalTone(0xFF66CCFF, seedArgb, dark);
+        int success = functionalTone(0xFFBBFFBB, seedArgb, dark);
+        int danger = functionalTone(ThemePalette.DEFAULT_DANGER, seedArgb, dark);
+        int selected = functionalTone(ThemePalette.DEFAULT_SELECTED, seedArgb, dark);
 
         ThemePalette palette = new ThemePalette(
                 textPrimary,
@@ -64,13 +66,29 @@ public class SchemeEngine {
                 ThemePalette.withAlpha(accent, 0x33),
                 surfaceCard,
                 textPrimary,
-                textSecondary);
+                textSecondary,
+                danger,
+                selected);
 
         // 令牌覆盖
         if (manifest != null && manifest.colors != null) {
             palette = applyOverrides(palette, manifest);
         }
         return palette;
+    }
+
+    /**
+     * 功能/语义色派生：色相向种子 harmonize，但 tone 必须按明暗给。
+     * Blend.harmonize 只动色相不动亮度，历史上直接拿深色档字面量（link t78、success t94）
+     * 做基底，浅色主题下白底对比度只剩 1.2~1.8，等于看不见。深色侧维持原样。
+     */
+    private static final double LIGHT_FUNCTIONAL_TONE = 40.0;
+
+    private static int functionalTone(int baseArgb, int seedArgb, boolean dark) {
+        int harmonized = Blend.harmonize(baseArgb, seedArgb);
+        if (dark) return harmonized;
+        Hct h = Hct.fromInt(harmonized);
+        return Hct.from(h.getHue(), h.getChroma(), LIGHT_FUNCTIONAL_TONE).toInt();
     }
 
     private static ThemePalette applyOverrides(ThemePalette base, ThemeManifest manifest) {
@@ -90,6 +108,8 @@ public class SchemeEngine {
         int buttonTint = base.buttonTint;
         int selectedText = base.selectedText;
         int textSecondary = base.textSecondary;
+        int danger = base.danger;
+        int selected = base.selected;
 
         java.util.Map<String, String> over = manifest.colors.override;
         if (over != null) {
@@ -111,10 +131,14 @@ public class SchemeEngine {
             if ((v = ThemeManifest.parseColor(over.get("highEnergyFill"))) != null) highEnergyFill = v;
             if ((v = ThemeManifest.parseColor(over.get("buttonTint"))) != null) buttonTint = v;
             if ((v = ThemeManifest.parseColor(over.get("selectedText"))) != null) selectedText = v;
+            if ((v = ThemeManifest.parseColor(over.get("danger"))) != null) danger = v;
+            if ((v = ThemeManifest.parseColor(over.get("selected"))) != null) selected = v;
         }
+        // 语义令牌必须显式写回：16 参构造只给历史兜底值，直接从 over 读到的 danger/selected 否则会被丢掉
         return new ThemePalette(textPrimary, textTransparent, ripple, windowBackground,
                 accent, gray, accentLow, success, link, surfaceCard, snackBg,
-                highEnergyLine, highEnergyFill, buttonTint, selectedText, textSecondary);
+                highEnergyLine, highEnergyFill, buttonTint, selectedText, textSecondary)
+                .withSemantic(danger, selected);
     }
 
 }

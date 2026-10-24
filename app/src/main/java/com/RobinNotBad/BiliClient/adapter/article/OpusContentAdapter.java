@@ -234,12 +234,9 @@ public class OpusContentAdapter extends RecyclerView.Adapter<OpusContentAdapter.
                 likeLabel.setText(StringUtil.toWan(article.stats.like));
                 coinLabel.setText(StringUtil.toWan(article.stats.coin));
                 favLabel.setText(StringUtil.toWan(article.stats.favorite));
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like,
-                        article.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0);
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin,
-                        article.stats.coined > 0 ? R.drawable.icon_coin_1 : R.drawable.icon_coin_0);
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav,
-                        article.stats.favoured ? R.drawable.icon_fav_1 : R.drawable.icon_fav_0);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, article.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0, article.stats.liked);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, article.stats.coined > 0 ? R.drawable.icon_coin_1 : R.drawable.icon_coin_0, article.stats.coined > 0);
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, article.stats.favoured ? R.drawable.icon_fav_1 : R.drawable.icon_fav_0, article.stats.favoured);
 
                 View likeLayout = holder.itemView.findViewById(R.id.layout_like);
                 View coinLayout = holder.itemView.findViewById(R.id.layout_coin);
@@ -266,8 +263,7 @@ public class OpusContentAdapter extends RecyclerView.Adapter<OpusContentAdapter.
                                     likeLabel.setText(StringUtil.toWan(++article.stats.like));
                                 else
                                     likeLabel.setText(StringUtil.toWan(--article.stats.like));
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(like,
-                                        article.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(like, article.stats.liked ? R.drawable.icon_like_1 : R.drawable.icon_like_0, article.stats.liked);
                             });
                         } else {
                             context.runOnUiThread(() -> MsgUtil.showMsg("操作失败：" + result));
@@ -291,7 +287,7 @@ public class OpusContentAdapter extends RecyclerView.Adapter<OpusContentAdapter.
                                 context.runOnUiThread(() -> {
                                     MsgUtil.showMsg("投币成功！");
                                     coinLabel.setText(StringUtil.toWan(++article.stats.coin));
-                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(coin, R.drawable.icon_coin_1);
+                                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(coin, R.drawable.icon_coin_1, true);
                                 });
                             } else {
                                 String msg = "投币失败：" + result;
@@ -318,7 +314,7 @@ public class OpusContentAdapter extends RecyclerView.Adapter<OpusContentAdapter.
                             }
                         } else {
                             if (ArticleApi.favorite(article.id) == 0) {
-                                context.runOnUiThread(() -> com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_1));
+                                context.runOnUiThread(() -> com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true));
                                 article.stats.favorite++;
                             }
                         }

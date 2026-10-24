@@ -197,12 +197,15 @@ public class UserDynamicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 lvStr.append("  ").append(vipTypeMap.get(userInfo.vip_role)).append(" ");
                 lvStr.setSpan(
                         new RadiusBackgroundSpan(1, (int) context.getResources().getDimension(R.dimen.card_round),
-                                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().buttonTint, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent),
+                                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected),
                         ("Lv" + userInfo.level).length() + 1, lvStr.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             }
             this.userLevel.setText(lvStr);
             if (!userInfo.vip_nickname_color.isEmpty())
                 this.userName.setTextColor(Color.parseColor(userInfo.vip_nickname_color));
+            else
+                // 缺 else 会让复用到的 holder 留着上一个 UP 的 VIP 粉
+                this.userName.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
             this.userName.setText(userInfo.name);
             this.userDesc.setText(userInfo.sign);
             if (!userInfo.notice.isEmpty())

@@ -187,6 +187,9 @@ public class MenuActivity extends BaseActivity {
             layout.addView(materialButton, params);
         }
 
+        // 按钮是 setContentView 之后 new 出来再 addView 的，扼点遍历早就跑完了，补一次
+        com.RobinNotBad.BiliClient.theme.ThemeApplier.applyContent(layout);
+
         Log.e("debug", "MenuActivity onCreate in: " + (System.currentTimeMillis() - time));
     }
 

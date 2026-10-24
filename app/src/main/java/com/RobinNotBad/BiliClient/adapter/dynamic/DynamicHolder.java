@@ -406,13 +406,13 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
         if (likeCount != null) {
             if (dynamic.stats != null) {
                 if (dynamic.stats.liked) { // 这里，还有下面，一定要加else！否则会导致错乱
-                    likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                     likeCount.setCompoundDrawablesWithIntrinsicBounds(
                             ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null, null);
                     com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
-                            com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                            com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
                 } else {
-                    likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent);
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                     likeCount.setCompoundDrawablesWithIntrinsicBounds(
                             ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null, null);
                     com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
@@ -430,12 +430,12 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("点赞成功");
                                 likeCount.setText(toWan(++dynamic.stats.like));
-                                likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                                 likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null,
                                         null);
                                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
-                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
                             });
                         } else
                             ((Activity) context).runOnUiThread(() -> MsgUtil.showMsg("点赞失败"));
@@ -449,7 +449,7 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("取消成功");
                                 likeCount.setText(toWan(--dynamic.stats.like));
-                                likeCount.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent);
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
                                 likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null,
                                         null);

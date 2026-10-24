@@ -112,7 +112,7 @@ public class SettingPlayerChooseActivity extends BaseActivity {
         checkPosition = position;
         for (int i = 0; i < cardViewList.size(); i++) {
             if (position == i) {
-                cardViewList.get(i).setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+                cardViewList.get(i).setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
                 cardViewList.get(i).setStrokeWidth(ToolsUtil.dp2px(1));
             } else {
                 cardViewList.get(i).setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().gray);

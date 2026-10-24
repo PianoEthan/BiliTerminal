@@ -51,7 +51,7 @@ public class EmoteActivity extends BaseActivity {
         ViewPager viewPager = findViewById(R.id.viewPager);
         tabLayout.setBackgroundColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground);
         tabLayout.setTabTextColors(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
-        tabLayout.setSelectedTabIndicatorColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accent);
+        tabLayout.setSelectedTabIndicatorColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
         RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
