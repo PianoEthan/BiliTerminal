@@ -82,10 +82,10 @@ public class CookieRefreshApi {
         JSONObject result = new JSONObject(ObjectsCompat.requireNonNull(response.body()).string());
         if (result.getInt("code") == 0) {
             String refreshToken_new = result.getJSONObject("data").getString("refresh_token");
-            Logu.v("新的RefreshToken", refreshToken_new);
+            Logu.v("新的RefreshToken", "长度 " + refreshToken_new.length());
 
             String cookies_new = SharedPreferencesUtil.getString(SharedPreferencesUtil.cookies, "");
-            Logu.v("新的cookies", cookies_new);
+            Logu.v("新的cookies", cookies_new.split(";").length + " 项");
 
 
             //使老的Cookie失效

@@ -72,7 +72,6 @@ android {
     buildTypes {
         release {
             buildConfigField "boolean", "BETA", String.valueOf(betaVer > 0)
-            buildConfigField "boolean", "LOG_DEBUG", "true"
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

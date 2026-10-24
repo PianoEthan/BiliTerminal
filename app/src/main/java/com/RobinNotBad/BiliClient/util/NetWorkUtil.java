@@ -348,7 +348,7 @@ public class NetWorkUtil {
             if (index == 0) continue;   //如果没有等号，跳过
 
             String key = newCookie.substring(0, index);    //key=
-            Logu.d("newCookie", newCookie);
+            Logu.d("newCookie", key + "***");  //只报键名，值可能是 SESSDATA/bili_jct 等凭据
 
             boolean added = false;
             for (int i = 0; i < oldCookies.size(); i++) {  //查找旧cookie表有没有
@@ -370,7 +370,7 @@ public class NetWorkUtil {
         }
         //如果一次setCookies都没有，就不要存了， 因为是个空字符串
         if (setCookies.length() >= 2) {
-            Logu.d("save-result", setCookies.substring(0, setCookies.length() - 2));
+            Logu.d("save-result", "cookies " + oldCookies.size() + " 项 / " + (setCookies.length() - 2) + " 字符");
             SharedPreferencesUtil.putString(SharedPreferencesUtil.cookies, setCookies.substring(0, setCookies.length() - 2));
             refreshHeaders();
         }
