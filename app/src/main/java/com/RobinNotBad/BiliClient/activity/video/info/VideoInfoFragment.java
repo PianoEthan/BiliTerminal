@@ -582,7 +582,9 @@ public class VideoInfoFragment extends BaseFragment {
         if (string == null) return new SpannableString(videoInfo.title);
 
         SpannableString titleStr = new SpannableString(" " + string + " " + videoInfo.title);
-        RadiusBackgroundSpan badgeBG = new RadiusBackgroundSpan(0, (int) getResources().getDimension(R.dimen.card_round), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
+        com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+        RadiusBackgroundSpan badgeBG = new RadiusBackgroundSpan(0, (int) getResources().getDimension(R.dimen.card_round),
+                tp.color(Color.WHITE, tp.windowBackground), tp.color(0xFFCF4B5F, tp.selected));
         titleStr.setSpan(badgeBG, 0, string.length() + 2, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         return titleStr;
     }
@@ -604,7 +606,8 @@ public class VideoInfoFragment extends BaseFragment {
                 public void updateDrawState(TextPaint ds) {
                     super.updateDrawState(ds);
                     ds.setUnderlineText(false);
-                    ds.setColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().link);
+                    com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+                    ds.setColor(tp.color(0xFF03A9F4, tp.link));
                 }
             }, old_len, tag_str.length() - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         }

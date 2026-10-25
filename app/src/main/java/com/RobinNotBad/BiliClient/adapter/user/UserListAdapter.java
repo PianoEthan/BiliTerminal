@@ -56,7 +56,8 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Holder
             try {
                 holder.name.setTextColor(Color.parseColor(user.vip_nickname_color));
             } catch (IllegalArgumentException e) {
-                holder.name.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                com.RobinNotBad.BiliClient.theme.ThemePalette p = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+                holder.name.setTextColor(p.color(Color.WHITE, p.textPrimary));
             }
         }
         holder.desc.setText(user.sign);

@@ -72,6 +72,7 @@ public class MsgUtil {
      * 起的废弃路径，部分 ROM 已经不暴露这个 TextView，为一次提示把它变成崩溃不划算。
      */
     private static void tintToastMessage(Toast toast) {
+        if (com.RobinNotBad.BiliClient.theme.ThemeManager.palette().originalColors) return;
         android.view.View toastView = toast.getView();
         if (toastView == null) return;
         android.view.View message = toastView.findViewById(android.R.id.message);
@@ -131,7 +132,7 @@ public class MsgUtil {
         com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
         snackbar.setBackgroundTint(tp.snackBg);
         snackbar.setTextColor(tp.textPrimary);
-        snackbar.setActionTextColor(tp.accent);
+        if (!tp.originalColors) snackbar.setActionTextColor(tp.accent);
         View snackBarView = snackbar.getView();
         snackBarView.setOnTouchListener((v, event) -> false);
         snackBarView.setPadding(ToolsUtil.dp2px(6), 0, 0, 0);

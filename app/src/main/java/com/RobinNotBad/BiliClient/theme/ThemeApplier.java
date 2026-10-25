@@ -67,7 +67,8 @@ public class ThemeApplier {
         ThemeManager tm = ThemeManager.getInstance();
         if (tm == null || !tm.isReady() || activity == null || activity.getWindow() == null) return;
         ThemePalette palette = tm.getPalette();
-        if (palette == null) return;
+        // 原始色模式：窗口背景与系统栏保持 XML 原样，也不启用主题层的 edge-to-edge
+        if (palette == null || palette.originalColors) return;
 
         Drawable windowBg = null;
         File bgFile = tm.getActiveBackgroundFile();
@@ -340,6 +341,7 @@ public class ThemeApplier {
 
     @SuppressWarnings("ConstantValue")
     private static void tintView(View view, ThemePalette p) {
+        if (p.originalColors) return;
 
         // 单色 shape 背景跟随色板（含布局内联 hex 的 ColorDrawable）：
         // 有彩度 → accent；灰阶实心 → surfaceCard、弱化/分隔 → gray；
@@ -550,6 +552,11 @@ public class ThemeApplier {
         if (iv == null) return;
         iv.setImageResource(resId);
         ThemePalette p = ThemeManager.paletteDark();
+        if (p.originalColors) {
+            iv.clearColorFilter();
+            iv.setTag(R.id.theme_semantic, null);
+            return;
+        }
         int token = active ? TintRules.SEM_SELECTED : TintRules.SEM_TEXT_PRIMARY;
         iv.setColorFilter(TintRules.semanticColor(token, p),
                 android.graphics.PorterDuff.Mode.SRC_IN);
@@ -565,6 +572,11 @@ public class ThemeApplier {
         if (iv == null) return;
         iv.setImageResource(resId);
         ThemePalette p = ThemeManager.palette();
+        if (p.originalColors) {
+            iv.clearColorFilter();
+            iv.setTag(R.id.theme_semantic, null);
+            return;
+        }
         int token = active ? TintRules.SEM_SELECTED : TintRules.SEM_TEXT_PRIMARY;
         iv.setColorFilter(TintRules.semanticColor(token, p),
                 android.graphics.PorterDuff.Mode.SRC_IN);
@@ -573,7 +585,7 @@ public class ThemeApplier {
 
     /** TextView 换复合图标后按指定色重染（评论/动态点赞态） */
     public static void retintCompound(TextView tv, int color) {
-        if (tv == null) return;
+        if (tv == null || ThemeManager.palette().originalColors) return;
         ThemeCompat.tintCompoundDrawables(tv, color);
         int token = TintRules.semanticToken(color, ThemeManager.palette());
         tv.setTag(R.id.theme_semantic, TintRules.semanticWithIcon(semanticTag(tv), token));
@@ -628,6 +640,7 @@ public class ThemeApplier {
     }
 
     private static void retintBackground(View view, ThemePalette p) {
+        if (p.originalColors) return;
         // 单色背景跟随色板：
         // - 有彩度 → accent
         // - 灰阶按源亮度分档（见 TintRules.backgroundTier）：实心深灰 → surfaceCard 的 RGB、
@@ -688,6 +701,7 @@ public class ThemeApplier {
     }
 
     private static void tintIconIfMonochrome(ImageView iv, ThemePalette p) {
+        if (p.originalColors) return;
         int iconToken = TintRules.semanticIconToken(semanticTag(iv));
         if (iconToken != TintRules.SEM_NONE) {
             // setStateIcon/setStateImage 写定的状态色：按当前色板重放，别压成 accent

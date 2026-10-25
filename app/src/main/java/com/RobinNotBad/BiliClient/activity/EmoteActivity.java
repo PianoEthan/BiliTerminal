@@ -49,9 +49,13 @@ public class EmoteActivity extends BaseActivity {
         ImageView loading = findViewById(R.id.loading);
         TabLayout tabLayout = findViewById(R.id.tl_tab);
         ViewPager viewPager = findViewById(R.id.viewPager);
-        tabLayout.setBackgroundColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground);
-        tabLayout.setTabTextColors(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
-        tabLayout.setSelectedTabIndicatorColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
+        com.RobinNotBad.BiliClient.theme.ThemePalette p =
+                com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+        tabLayout.setBackgroundColor(p.windowBackground);
+        if (!p.originalColors) {
+            tabLayout.setTabTextColors(p.textTransparent, p.textPrimary);
+            tabLayout.setSelectedTabIndicatorColor(p.selected);
+        }
         RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {

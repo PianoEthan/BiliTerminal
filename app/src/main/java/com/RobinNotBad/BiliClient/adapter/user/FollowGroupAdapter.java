@@ -244,7 +244,8 @@ public class FollowGroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     try {
                         userHolder.name.setTextColor(Color.parseColor(user.vip_nickname_color));
                     } catch (IllegalArgumentException e) {
-                        userHolder.name.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                        com.RobinNotBad.BiliClient.theme.ThemePalette p = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+                        userHolder.name.setTextColor(p.color(Color.WHITE, p.textPrimary));
                     }
                 }
                 userHolder.desc.setText(user.sign);

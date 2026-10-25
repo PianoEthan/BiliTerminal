@@ -92,11 +92,15 @@ public class QualitySelectorAdapter extends RecyclerView.Adapter<QualitySelector
             // 播放器恒为深色场景（整棵树走 applyContentForcedDark），取深色套才不会在浅色主题下把芯片染成白底
             com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
             if (isSelected) {
-                button.setTextColor(tp.buttonTint);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selected));
+                button.setTextColor(tp.color(0xcc262626, tp.buttonTint));
+                ViewCompat.setBackgroundTintList(button, tp.originalColors
+                        ? AppCompatResources.getColorStateList(itemView.getContext(), R.color.background_button_selected)
+                        : com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.selected));
             } else {
-                button.setTextColor(tp.selectedText);
-                ViewCompat.setBackgroundTintList(button, com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint));
+                button.setTextColor(tp.color(0xffebe0e2, tp.selectedText));
+                ViewCompat.setBackgroundTintList(button, tp.originalColors
+                        ? AppCompatResources.getColorStateList(itemView.getContext(), R.color.background_button)
+                        : com.RobinNotBad.BiliClient.theme.ThemeCompat.pressedStateList(tp.buttonTint));
             }
             button.setOnClickListener(v -> {
                 setSelectedItemIndex(currentIndex);

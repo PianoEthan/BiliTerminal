@@ -23,9 +23,12 @@ public class SemanticTokensTest {
     public void builtinDarkKeepsHistoricSemanticValues() {
         ThemePalette p = ThemePalette.builtinDark();
         assertEquals(0xFFFF5722, p.danger);   // 警示橙：主题系统之前的原值
-        assertEquals(0xFFFB7299, p.selected); // 选中粉：历史 @color/pink 档
-        // 装饰强调色仍是中性——语义色回归不该把 accent 也带彩
-        assertEquals(0, chromaSpread(p.accent));
+        assertEquals(0xFFFB7299, p.selected);
+        assertEquals(0xFBFB8787, p.accent);
+        assertEquals(0x99FB8799, p.accentLow);
+        org.junit.Assert.assertTrue(p.originalColors);
+        assertEquals(0xFFCF4B5F, p.color(0xFFCF4B5F, p.selected));
+        assertEquals(0xFFFFFFFF, p.color(0xFFFFFFFF, p.windowBackground));
     }
 
     @Test
@@ -54,6 +57,10 @@ public class SemanticTokensTest {
         ThemePalette p = base.withSemantic(0xFF112233, 0xFF445566);
         assertEquals(0xFF112233, p.danger);
         assertEquals(0xFF445566, p.selected);
+        // 原始色标志必须跟着复制，否则 SchemeEngine 写回语义令牌后原始色会静默失效
+        org.junit.Assert.assertTrue(p.originalColors);
+        org.junit.Assert.assertFalse(ThemePalette.builtinDark(false)
+                .withSemantic(0xFF112233, 0xFF445566).originalColors);
         assertEquals(base.accent, p.accent);
         assertEquals(base.textPrimary, p.textPrimary);
         assertEquals(base.surfaceCard, p.surfaceCard);
@@ -149,17 +156,44 @@ public class SemanticTokensTest {
         assertEquals(a.selected, b.selected);
     }
 
-    /**
-     * 语义徽章（UP/VIP/未读）的配法：selected 做底、windowBackground 做文字。
-     * 白字在深色 selected #FB7299 上只有 2.64:1，11sp 小字读不出来；
-     * 页面底色在深色侧是黑（7.97:1）、浅色侧是白（5.87:1），两套都过 4.5。
-     */
     @Test
-    public void emphasisBadgeTextContrastsInBothModes() {
-        for (ThemePalette p : new ThemePalette[]{ThemePalette.builtinDark(), ThemePalette.builtinLight()}) {
+    public void paletteBadgesKeepContrastInBothModes() {
+        for (ThemePalette p : new ThemePalette[]{ThemePalette.builtinDark(false), ThemePalette.builtinLight(),
+                SchemeEngine.generate(0xFF1565C0, true, 35, null),
+                SchemeEngine.generate(0xFF1565C0, false, 35, null)}) {
+            org.junit.Assert.assertFalse(p.originalColors);
             double ratio = contrast(p.windowBackground, p.selected);
             org.junit.Assert.assertTrue("徽章文字对比不足: " + ratio, ratio >= 4.5);
+            assertEquals(p.selected, p.color(0xFFCF4B5F, p.selected));
         }
+    }
+
+    @Test
+    public void medalBadgeKeepsOriginalOrReadablePaletteColors() {
+        ThemePalette original = ThemePalette.builtinDark();
+        assertEquals(0xFFFFFFFF, original.color(0xFFFFFFFF, original.windowBackground));
+        assertEquals(0x8C9EBAE8, original.color(0x8C9EBAE8, original.link));
+        ThemePalette dark = ThemePalette.builtinDark(false);
+        for (ThemePalette p : new ThemePalette[]{dark, ThemePalette.builtinLight(),
+                SchemeEngine.generate(0xFF1565C0, true, 35, null),
+                SchemeEngine.generate(0xFF1565C0, false, 35, null)}) {
+            for (int surface : new int[]{p.windowBackground, p.surfaceCard}) {
+                int bg = overSurface(p.link, surface);
+                double ratio = contrast(p.windowBackground, bg);
+                org.junit.Assert.assertTrue("勋章字对比不足: " + ratio, ratio >= 4.5);
+            }
+        }
+        int darkBgOnCard = overSurface(dark.accentLow, dark.surfaceCard);
+        org.junit.Assert.assertTrue(contrast(dark.selectedText, darkBgOnCard) < 4.5);
+    }
+
+    /** 半透明令牌叠到某个不透明表面上，得到实际看到的颜色 */
+    private static int overSurface(int token, int surface) {
+        double a = (token >>> 24) / 255.0;
+        int r = (int) (((token >> 16) & 0xFF) * a + ((surface >> 16) & 0xFF) * (1 - a) + 0.5);
+        int g = (int) (((token >> 8) & 0xFF) * a + ((surface >> 8) & 0xFF) * (1 - a) + 0.5);
+        int b = (int) ((token & 0xFF) * a + (surface & 0xFF) * (1 - a) + 0.5);
+        return (r << 16) | (g << 8) | b;
     }
 
     private static double contrast(int a, int b) {

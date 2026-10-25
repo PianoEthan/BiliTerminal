@@ -234,7 +234,9 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
         if (!dynamic.userInfo.vip_nickname_color.isEmpty()) {
             username.setTextColor(Color.parseColor(dynamic.userInfo.vip_nickname_color));
         } else {
-            username.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+            com.RobinNotBad.BiliClient.theme.ThemePalette p =
+                    com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+            username.setTextColor(p.color(Color.WHITE, p.textPrimary));
         }
         if (pubdate != null)
             pubdate.setText(dynamic.pubTime);
@@ -405,18 +407,22 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
 
         if (likeCount != null) {
             if (dynamic.stats != null) {
+                com.RobinNotBad.BiliClient.theme.ThemePalette p =
+                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
                 if (dynamic.stats.liked) { // 这里，还有下面，一定要加else！否则会导致错乱
-                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount,
+                            p.color(0xFFFE679A, p.selected), p);
                     likeCount.setCompoundDrawablesWithIntrinsicBounds(
                             ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null, null);
                     com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
-                            com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
+                            p.selected);
                 } else {
-                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                    com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount,
+                            p.color(Color.WHITE, p.textTransparent), p);
                     likeCount.setCompoundDrawablesWithIntrinsicBounds(
                             ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null, null);
                     com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
-                            com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                            p.textPrimary);
                 }
                 likeCount.setText(toWan(dynamic.stats.like));
             } else {
@@ -430,12 +436,15 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("点赞成功");
                                 likeCount.setText(toWan(++dynamic.stats.like));
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                                com.RobinNotBad.BiliClient.theme.ThemePalette p =
+                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount,
+                                        p.color(0xFFFE679A, p.selected), p);
                                 likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null,
                                         null);
                                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
-                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
+                                        p.selected);
                             });
                         } else
                             ((Activity) context).runOnUiThread(() -> MsgUtil.showMsg("点赞失败"));
@@ -449,12 +458,15 @@ public class DynamicHolder extends RecyclerView.ViewHolder {
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("取消成功");
                                 likeCount.setText(toWan(--dynamic.stats.like));
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                                com.RobinNotBad.BiliClient.theme.ThemePalette p =
+                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(likeCount,
+                                        p.color(Color.WHITE, p.textTransparent), p);
                                 likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null,
                                         null);
                                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(likeCount,
-                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                                        p.textPrimary);
                             });
                         } else
                             ((Activity) context).runOnUiThread(() -> MsgUtil.showMsg("取消失败"));

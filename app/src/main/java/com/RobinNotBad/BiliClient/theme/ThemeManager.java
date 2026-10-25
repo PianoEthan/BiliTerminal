@@ -258,7 +258,8 @@ public class ThemeManager {
     /** 按指定明暗计算色板（纯计算；深浅两套始终可独立取得） */
     private ThemePalette computePalette(boolean darkMode) {
         if (TextUtils.isEmpty(themeId) || (preset == null && manifest == null)) {
-            return darkMode ? ThemePalette.builtinDark() : ThemePalette.builtinLight();
+            // 原始色只在全局深色时启用：浅色模式下给播放器取深色套，仍要按色板染色
+            return darkMode ? ThemePalette.builtinDark(dark) : ThemePalette.builtinLight();
         }
         try {
             if (preset != null) {
@@ -266,8 +267,8 @@ public class ThemeManager {
             }
             return SchemeEngine.generate(resolveSeed(), darkMode, blend, manifest);
         } catch (Throwable t) {
-            // material-color-utilities 在个别旧系统上可能加载失败，兜底内置主题保证不崩
-            return darkMode ? ThemePalette.builtinDark() : ThemePalette.builtinLight();
+            // 仅兜底颜色，保留自定义主题的背景与染色路径。
+            return darkMode ? ThemePalette.builtinDark(false) : ThemePalette.builtinLight();
         }
     }
 

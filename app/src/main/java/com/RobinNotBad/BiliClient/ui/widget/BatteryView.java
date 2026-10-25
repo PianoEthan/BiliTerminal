@@ -56,7 +56,7 @@ public class BatteryView extends View {
 
         com.RobinNotBad.BiliClient.theme.ThemePalette dp =
                 com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
-        int frame = dp.textPrimary;
+        int frame = dp.color(Color.WHITE, dp.textPrimary);
 
         //边框
         Paint paint = new Paint();
@@ -76,7 +76,7 @@ public class BatteryView extends View {
 
         //画电量
         paint.setStrokeWidth(0f);
-        paint.setColor(mCharging ? dp.success :
+        paint.setColor(mCharging ? dp.color(Color.GREEN, dp.success) :
                 (mPower <= 20 ? Color.RED : frame));
 
         if (power_percent != 0) {

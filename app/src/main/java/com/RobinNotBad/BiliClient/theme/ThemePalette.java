@@ -2,11 +2,12 @@ package com.RobinNotBad.BiliClient.theme;
 
 /**
  * 预解析的 ARGB 令牌集。
- * 默认深色 = 装饰色中性化、语义色（danger/selected/link/success）保留历史彩色；
- * 浅色为最佳努力反演（新观感）。所有字段不可变，生成主题由 SchemeEngine 产出。
+ * 默认深色保留原资源和各消费点的历史颜色；浅色和生成主题使用色板。
+ * 所有字段不可变，生成主题由 SchemeEngine 产出。
  */
 public class ThemePalette {
 
+    public final boolean originalColors;
     public final int textPrimary;
     public final int textTransparent;
     public final int ripple;
@@ -47,6 +48,17 @@ public class ThemePalette {
                         int surfaceCard, int snackBg, int highEnergyLine, int highEnergyFill,
                         int buttonTint, int selectedText, int textSecondary,
                         int danger, int selected) {
+        this(textPrimary, textTransparent, ripple, windowBackground, accent, gray, accentLow,
+                success, link, surfaceCard, snackBg, highEnergyLine, highEnergyFill,
+                buttonTint, selectedText, textSecondary, danger, selected, false);
+    }
+
+    private ThemePalette(int textPrimary, int textTransparent, int ripple, int windowBackground,
+                         int accent, int gray, int accentLow, int success, int link,
+                         int surfaceCard, int snackBg, int highEnergyLine, int highEnergyFill,
+                         int buttonTint, int selectedText, int textSecondary,
+                         int danger, int selected, boolean originalColors) {
+        this.originalColors = originalColors;
         this.textPrimary = textPrimary;
         this.textTransparent = textTransparent;
         this.ripple = ripple;
@@ -72,34 +84,39 @@ public class ThemePalette {
         return new ThemePalette(textPrimary, textTransparent, ripple, windowBackground,
                 accent, gray, accentLow, success, link, surfaceCard, snackBg,
                 highEnergyLine, highEnergyFill, buttonTint, selectedText, textSecondary,
-                danger, selected);
+                danger, selected, originalColors);
     }
 
-    /**
-     * 内置默认深色：装饰强调色为单色中性（无粉色）。
-     * 文字/表面沿用现状色值；danger/selected 保留历史彩色原值，
-     * 因为它们承载警示与选中状态语义，中性化会让反馈读不出来。
-     */
+    public int color(int original, int themed) {
+        return originalColors ? original : themed;
+    }
+
+    /** 默认深色沿用资源原色；浅色和生成主题按令牌染色。 */
     public static ThemePalette builtinDark() {
+        return builtinDark(true);
+    }
+
+    static ThemePalette builtinDark(boolean originalColors) {
         return new ThemePalette(
                 0xFFEBE0E2, // textPrimary   <- textwhite
                 0x50FEFEFE, // textTransparent
                 0x78FEFEFE, // ripple        <- color_ripple
                 0xFF000000, // windowBackground <- bgblack
-                0xFFEAEAEA, // accent        单色中性
+                originalColors ? 0xFBFB8787 : 0xFFEAEAEA, // accent
                 0x70707070, // gray
-                0x99EAEAEA, // accentLow
-                0xFFBBFFBB, // success       <- light_green（功能色保留）
-                0xFF66CCFF, // link          （功能色保留）
+                originalColors ? 0x99FB8799 : 0x99EAEAEA, // accentLow
+                0xFFBBFFBB, // success       <- light_green
+                0xFF66CCFF, // link
                 0xCC262626, // surfaceCard   <- Card/ButtonStyle
                 0x85808080, // snackBg       <- MsgUtil
-                0xA8EAEAEA, // highEnergyLine
-                0x33EAEAEA, // highEnergyFill
+                originalColors ? 0xA8FB7299 : 0xA8EAEAEA, // highEnergyLine
+                originalColors ? 0x33FB7299 : 0x33EAEAEA, // highEnergyFill
                 0xCC262626, // buttonTint
                 0xFFEBE0E2, // selectedText
-                0xFFA3A3A3, // textSecondary（中灰说明文字）
-                DEFAULT_DANGER,   // danger   <- 历史警示橙
-                DEFAULT_SELECTED  // selected <- 历史 @color/pink 选中粉
+                0xFFA3A3A3, // textSecondary
+                DEFAULT_DANGER,
+                DEFAULT_SELECTED,
+                originalColors
         );
     }
 

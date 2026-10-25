@@ -153,15 +153,15 @@ public class TutorialHelper {
                 com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
         if (color == null) return p.textPrimary;
         String c = color.trim();
-        if ("accent".equals(c) || "link".equals(c)) return p.accent;
+        if ("accent".equals(c) || "link".equals(c)) return p.color(0xFF4A8ECA, p.accent);
         if ("textPrimary".equals(c) || "text".equals(c)) return p.textPrimary;
         try {
             int parsed = Color.parseColor(c);
             int r = (parsed >> 16) & 0xFF, g = (parsed >> 8) & 0xFF, b = parsed & 0xFF;
             int max = Math.max(r, Math.max(g, b));
             int min = Math.min(r, Math.min(g, b));
-            if (min >= 0xB8 && (max - min) <= 0x2F) return p.textPrimary;
-            return p.accent;
+            if (min >= 0xB8 && (max - min) <= 0x2F) return p.color(parsed, p.textPrimary);
+            return p.color(parsed, p.accent);
         } catch (Exception ignored) {
             return p.textPrimary;
         }

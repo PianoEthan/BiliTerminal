@@ -32,6 +32,8 @@ import com.RobinNotBad.BiliClient.api.ReplyApi;
 import com.RobinNotBad.BiliClient.listener.OnItemClickListener;
 import com.RobinNotBad.BiliClient.model.Reply;
 import com.RobinNotBad.BiliClient.model.UserInfo;
+import com.RobinNotBad.BiliClient.theme.ThemeManager;
+import com.RobinNotBad.BiliClient.theme.ThemePalette;
 import com.RobinNotBad.BiliClient.ui.widget.RadiusBackgroundSpan;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.GlideUtil;
@@ -151,6 +153,7 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             }
 
             UserInfo sender = reply.sender;
+            ThemePalette tp = ThemeManager.palette();
             SpannableStringBuilder name_str = new SpannableStringBuilder();
 
             // 大会员红字
@@ -163,7 +166,8 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 name_str.append(" UP ");
                 name_str.append(reply.sender.name);
                 name_str.setSpan(
-                        new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected),
+                        new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small),
+                                tp.color(Color.WHITE, tp.windowBackground), tp.color(0xFFCF4B5F, tp.selected)),
                         0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 name_str.setSpan(new RelativeSizeSpan(0.8f), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             } else
@@ -182,8 +186,7 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                         .append(" ");
                 name_str.setSpan(
                         new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small),
-                                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selectedText,
-                                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accentLow),
+                                tp.color(Color.WHITE, tp.windowBackground), tp.color(0x8C9EBAE8, tp.link)),
                         last_length + 1, name_str.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 name_str.setSpan(new RelativeSizeSpan(0.8f), last_length + 1, name_str.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -206,17 +209,17 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             replyHolder.likeCount.setText(toWan(reply.likeCount));
 
             if (reply.liked) {
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, tp.color(0xFFFE679A, tp.selected), tp);
                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null, null);
                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
-                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
+                        tp.selected);
             } else {
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, tp.color(Color.WHITE, tp.textTransparent), tp);
                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null, null);
                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
-                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                        tp.textPrimary);
             }
 
             if (reply.childCount != 0 && !(realPosition == 0 && isDetail)) {
@@ -240,7 +243,10 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                         if (child.sender.mid == up_mid) {
                             childMsg.append(" UP ");
                             childMsg.append(child.sender.name);
-                            childMsg.setSpan(new RadiusBackgroundSpan(2, (int) context.getResources().getDimension(R.dimen.round_small), com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            childMsg.setSpan(new RadiusBackgroundSpan(2,
+                                    (int) context.getResources().getDimension(R.dimen.round_small),
+                                    tp.color(Color.WHITE, tp.windowBackground), tp.color(0xFFCF4B5F, tp.selected)),
+                                    0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                             childMsg.setSpan(new RelativeSizeSpan(0.8f), 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         } else
                             childMsg.append(child.sender.name);
@@ -328,12 +334,13 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("点赞成功");
                                 replyHolder.likeCount.setText(toWan(++reply.likeCount));
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                                ThemePalette p = ThemeManager.palette();
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, p.color(0xFFFE679A, p.selected), p);
                                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like1), null, null,
                                         null);
                                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
-                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected);
+                                        p.selected);
                             });
                         } else
                             ((Activity) context).runOnUiThread(() -> MsgUtil.showMsg("点赞失败"));
@@ -349,12 +356,13 @@ public class ReplyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             ((Activity) context).runOnUiThread(() -> {
                                 MsgUtil.showMsg("取消成功");
                                 replyHolder.likeCount.setText(toWan(--reply.likeCount));
-                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textTransparent, com.RobinNotBad.BiliClient.theme.ThemeManager.palette());
+                                ThemePalette p = ThemeManager.palette();
+                                com.RobinNotBad.BiliClient.theme.ThemeApplier.setSemanticText(replyHolder.likeCount, p.color(Color.WHITE, p.textTransparent), p);
                                 replyHolder.likeCount.setCompoundDrawablesWithIntrinsicBounds(
                                         ContextCompat.getDrawable(context, R.drawable.icon_reply_like0), null, null,
                                         null);
                                 com.RobinNotBad.BiliClient.theme.ThemeApplier.retintCompound(replyHolder.likeCount,
-                                        com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                                        p.textPrimary);
                             });
                         } else
                             ((Activity) context).runOnUiThread(() -> MsgUtil.showMsg("取消失败"));

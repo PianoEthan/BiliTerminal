@@ -189,8 +189,8 @@
                 android:paddingEnd="14dp"
 
                 android:paddingRight="14dp"
-                android:progressTint="#eeEAEAEA"
-                android:secondaryProgressTint="#50FEFEFE"
+                android:progressTint="#aa44aaff"
+                android:secondaryProgressTint="#eeFEFEFE"
                 android:thumb="@drawable/player_selector_progress"
                 android:thumbOffset="8dp"
                 tools:targetApi="lollipop" />

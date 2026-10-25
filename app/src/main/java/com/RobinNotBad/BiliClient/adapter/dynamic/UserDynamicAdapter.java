@@ -36,6 +36,8 @@ import com.RobinNotBad.BiliClient.api.UserInfoApi;
 import com.RobinNotBad.BiliClient.model.Dynamic;
 import com.RobinNotBad.BiliClient.model.ElectricPanel;
 import com.RobinNotBad.BiliClient.model.UserInfo;
+import com.RobinNotBad.BiliClient.theme.ThemeManager;
+import com.RobinNotBad.BiliClient.theme.ThemePalette;
 import com.RobinNotBad.BiliClient.ui.widget.RadiusBackgroundSpan;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.GlideUtil;
@@ -174,14 +176,15 @@ public class UserDynamicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         public void setFollowed(boolean followed) {
             msgBtn.setVisibility((followed ? View.VISIBLE : View.GONE));
-            com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
+            ThemePalette tp = ThemeManager.palette();
             followBtn.setBackgroundTintList(ColorStateList
-                    .valueOf(followed ? tp.buttonTint : tp.accent));
+                    .valueOf(followed ? tp.color(0xDD262626, tp.buttonTint) : tp.color(0xFEF05D8E, tp.accent)));
             followBtn.setText((followed ? "已关注" : "关注"));
         }
 
         @SuppressLint("SetTextI18n")
         public void bind(Context context, UserInfo userInfo) {
+            ThemePalette tp = ThemeManager.palette();
             SpannableStringBuilder lvStr = new SpannableStringBuilder("Lv" + userInfo.level);
             lvStr.setSpan(StringUtil.getLevelBadge(context, userInfo), 0, lvStr.length(),
                     Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -197,7 +200,7 @@ public class UserDynamicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 lvStr.append("  ").append(vipTypeMap.get(userInfo.vip_role)).append(" ");
                 lvStr.setSpan(
                         new RadiusBackgroundSpan(1, (int) context.getResources().getDimension(R.dimen.card_round),
-                                com.RobinNotBad.BiliClient.theme.ThemeManager.palette().windowBackground, com.RobinNotBad.BiliClient.theme.ThemeManager.palette().selected),
+                                tp.color(Color.WHITE, tp.windowBackground), tp.color(0xFFCF4B5F, tp.selected)),
                         ("Lv" + userInfo.level).length() + 1, lvStr.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             }
             this.userLevel.setText(lvStr);
@@ -205,7 +208,8 @@ public class UserDynamicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 this.userName.setTextColor(Color.parseColor(userInfo.vip_nickname_color));
             else
                 // 缺 else 会让复用到的 holder 留着上一个 UP 的 VIP 粉
-                this.userName.setTextColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().textPrimary);
+                // 原始色模式下取主题 textwhite 的继承值；这一行历史代码没写过颜色，不是纯白
+                this.userName.setTextColor(tp.color(0xFFEBE0E2, tp.textPrimary));
             this.userName.setText(userInfo.name);
             this.userDesc.setText(userInfo.sign);
             if (!userInfo.notice.isEmpty())

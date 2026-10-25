@@ -117,7 +117,8 @@ public class PrivateMsgSessionsAdapter
                 nameStr.append(BADGE_TEXT);
                 com.RobinNotBad.BiliClient.theme.ThemePalette tp = com.RobinNotBad.BiliClient.theme.ThemeManager.palette();
                 nameStr.setSpan(
-                        new RadiusBackgroundSpan(1, cardRoundRadius, tp.windowBackground, tp.selected),
+                        new RadiusBackgroundSpan(1, cardRoundRadius,
+                                tp.color(0xFFFFFFFF, tp.windowBackground), tp.color(0xFFCF4B5F, tp.selected)),
                         nameLength + 1, nameStr.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 holder.nameText.setText(nameStr);
             } else {

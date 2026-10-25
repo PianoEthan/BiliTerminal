@@ -1737,10 +1737,10 @@ public class PlayerActivity extends Activity implements IjkMediaPlayer.OnPrepare
         // 是整个 progressDrawable 套单一色，进度与缓冲会被压成同一个颜色
         if (android.os.Build.VERSION.SDK_INT >= 21 && seekbar_progress != null) {
             com.RobinNotBad.BiliClient.theme.ThemePalette dp = com.RobinNotBad.BiliClient.theme.ThemeManager.paletteDark();
-            seekbar_progress.setProgressTintList(android.content.res.ColorStateList.valueOf(dp.accent));
+            seekbar_progress.setProgressTintList(android.content.res.ColorStateList.valueOf(dp.color(0xAA44AAFF, dp.accent)));
             // 缓冲档取次级文字色（tone 64），不再用 textTransparent（0x50 合成到黑条只剩 tone 31，
             // 等于看不见）；比已播放的 accent 暗、比轨道亮，三档才拉得开
-            seekbar_progress.setSecondaryProgressTintList(android.content.res.ColorStateList.valueOf(dp.textSecondary));
+            seekbar_progress.setSecondaryProgressTintList(android.content.res.ColorStateList.valueOf(dp.color(0xEEFEFEFE, dp.textSecondary)));
         }
         final String cover = getIntent().getStringExtra("cover");
         if (cover == null || cover.isEmpty()) return;
