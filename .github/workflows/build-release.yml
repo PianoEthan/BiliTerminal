@@ -15,21 +15,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK platform
-        run: |
-          sdkmanager "platforms;android-33" > /dev/null
-          yes | sdkmanager --licenses > /dev/null || true
 
       - name: Prepare signing config
         env:
@@ -56,14 +48,14 @@ jobs:
 
       - name: Verify APK signature
         run: |
-          apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort | tail -1)
           "$apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk | tee apk-certs.txt
           grep -q "CN=PianoEthan" apk-certs.txt
 
       - name: Check version matches tag
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort | tail -1)
+          aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort | tail -1)
           version=$("$aapt2" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
           echo "APK versionName=$version, tag=$GITHUB_REF_NAME"
           [ "v$version" = "$GITHUB_REF_NAME" ]
