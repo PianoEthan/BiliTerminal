@@ -38,10 +38,8 @@ public class LikeCoinFavApi {
         return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post("https://api.bilibili.com/x/web-interface/coin/add", per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
     }
 
-    public static int favorite(long aid, long fid) throws IOException, JSONException {
-        String strMid = String.valueOf(SharedPreferencesUtil.getLong("mid", 0));
-        String per = "rid=" + aid + "&type=2&add_media_ids=" + (fid + strMid.substring(strMid.length() - 2)) + "&del_media_ids=&csrf=" + SharedPreferencesUtil.getString("csrf", "");
-        return GsonUtil.fromJson(ObjectsCompat.requireNonNull(NetWorkUtil.post("https://api.bilibili.com/medialist/gateway/coll/resource/deal", per, NetWorkUtil.webHeaders).body()).string(), ApiResponse.class).code;
+    public static int favorite(long aid, long mediaId) throws IOException, JSONException {
+        return FavoriteApi.addFavorite(aid, mediaId);
     }
 
     public static ApiResponse getVideoStats(VideoInfo videoInfo) {

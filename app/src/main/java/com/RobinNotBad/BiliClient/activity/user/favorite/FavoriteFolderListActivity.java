@@ -1,11 +1,8 @@
 package com.RobinNotBad.BiliClient.activity.user.favorite;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
-
-import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.activity.base.RefreshListActivity;
 import com.RobinNotBad.BiliClient.adapter.favorite.FavoriteFolderAdapter;
 import com.RobinNotBad.BiliClient.api.FavoriteApi;
@@ -18,55 +15,71 @@ import java.util.ArrayList;
 
 public class FavoriteFolderListActivity extends RefreshListActivity {
 
-    private FavoriteFolderAdapter adapter;
-    private ArrayList<FavoriteFolder> folderList;
     private long mid;
+    private boolean loading;
+    private boolean destroyed;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setPageName("收藏");
-
         mid = SharedPreferencesUtil.getLong("mid", 0);
-        folderList = new ArrayList<>();
-
+        setOnRefreshListener(this::loadFolders);
         loadFolders();
     }
 
     private void loadFolders() {
+        if (loading) return;
+        if (mid <= 0) {
+            MsgUtil.showMsg("请先登录后查看收藏夹");
+            emptyView.setText("请先登录后查看收藏夹");
+            showEmptyView();
+            setRefreshing(false);
+            return;
+        }
+        loading = true;
+        setRefreshing(true);
         CenterThreadPool.run(() -> {
             try {
-                folderList.clear();
-                folderList.addAll(FavoriteApi.getFavoriteFolders(mid));
-                adapter = new FavoriteFolderAdapter(this, folderList, mid);
-                adapter.setOnCreateClickListener(() -> showCreateDialog());
-                adapter.setOnLongClickListener(position -> {
-                    if (position >= 0 && position < folderList.size()) {
-                        FavoriteFolder folder = folderList.get(position);
-                        if (folder.mediaId == 0) {
-                            MsgUtil.showMsg("无法获取收藏夹信息，请稍后重试");
+                ArrayList<FavoriteFolder> folders = FavoriteApi.getFavoriteFolders(mid);
+                runOnUiThread(() -> {
+                    if (destroyed || isFinishing()) return;
+                    FavoriteFolderAdapter adapter = new FavoriteFolderAdapter(this, folders, mid);
+                    adapter.setOnCreateClickListener(this::showCreateDialog);
+                    adapter.setOnLongClickListener(position -> {
+                        if (position < 0 || position >= folders.size()) return;
+                        FavoriteFolder folder = folders.get(position);
+                        if (folder.mediaId <= 0) {
+                            MsgUtil.showMsg("无法获取收藏夹信息，请下拉重试");
                             return;
                         }
                         Intent intent = new Intent(this, FavoriteFolderEditActivity.class);
                         intent.putExtra("mediaId", folder.mediaId);
-                        intent.putExtra("title", folder.name);
-                        intent.putExtra("intro", "");
-                        intent.putExtra("isDefault", folder.isDefault);
                         startActivityForResult(intent, 1);
-                    }
+                    });
+                    hideEmptyView();
+                    setAdapter(adapter);
+                    loading = false;
+                    setRefreshing(false);
                 });
-                setAdapter(adapter);
-                setRefreshing(false);
             } catch (Exception e) {
-                loadFail(e);
+                runOnUiThread(() -> {
+                    if (destroyed || isFinishing()) return;
+                    loading = false;
+                    if (e instanceof com.RobinNotBad.BiliClient.api.FavoriteContract.ApiException) {
+                        MsgUtil.showMsgLong(e.getMessage());
+                    } else {
+                        report(e);
+                        MsgUtil.showMsg("收藏夹加载失败，请下拉重试");
+                    }
+                    setRefreshing(false);
+                });
             }
         });
     }
 
     private void showCreateDialog() {
-        Intent intent = new Intent(this, FavoriteFolderCreateActivity.class);
-        startActivityForResult(intent, 2);
+        startActivityForResult(new Intent(this, FavoriteFolderCreateActivity.class), 2);
     }
 
     @Override
@@ -75,5 +88,11 @@ public class FavoriteFolderListActivity extends RefreshListActivity {
         if ((requestCode == 1 || requestCode == 2) && resultCode == RESULT_OK) {
             loadFolders();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        destroyed = true;
+        super.onDestroy();
     }
 }

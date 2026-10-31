@@ -12,15 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.RobinNotBad.BiliClient.R;
 import com.RobinNotBad.BiliClient.api.FavoriteApi;
+import com.RobinNotBad.BiliClient.model.FavoriteSelectionState;
 import com.RobinNotBad.BiliClient.util.CenterThreadPool;
 import com.RobinNotBad.BiliClient.util.MsgUtil;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.RobinNotBad.BiliClient.util.ToolsUtil;
 import com.google.android.material.card.MaterialCardView;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 //选择收藏夹
@@ -28,21 +26,19 @@ import java.util.ArrayList;
 
 public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapter.FolderHolder> {
 
-    final Context context;
-    final ArrayList<String> folderList;
-    final ArrayList<Boolean> chooseState;
-    final ArrayList<Long> fidList;
-    final long aid;
-    boolean adding;
-    public boolean added;
-    public boolean changed;
+    private final Context context;
+    private final ArrayList<String> folderList;
+    private final ArrayList<Long> mediaIds;
+    private final FavoriteSelectionState selection;
+    private final long aid;
+    private int busyPosition = RecyclerView.NO_POSITION;
 
-    public FolderChooseAdapter(Context context, ArrayList<String> folderList, ArrayList<Long> fidList,
+    public FolderChooseAdapter(Context context, ArrayList<String> folderList, ArrayList<Long> mediaIds,
                                ArrayList<Boolean> chooseState, long aid) {
         this.context = context;
-        this.folderList = folderList;
-        this.fidList = fidList;
-        this.chooseState = chooseState;
+        this.folderList = new ArrayList<>(folderList);
+        this.mediaIds = new ArrayList<>(mediaIds);
+        this.selection = new FavoriteSelectionState(chooseState);
         this.aid = aid;
     }
 
@@ -55,67 +51,54 @@ public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapte
 
     @Override
     public void onBindViewHolder(@NonNull FolderHolder holder, int position) {
-        if (position < 0 || position >= folderList.size())
-            return;
-        if (position >= chooseState.size() || position >= fidList.size())
-            return;
-
         MaterialCardView cardView = (MaterialCardView) holder.itemView;
-
         holder.folder_name.setText(folderList.get(position));
-        setCardView(cardView, chooseState.get(position));
-
+        setCardView(cardView, selection.isSelected(position));
+        if (position == busyPosition) {
+            cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accentLow);
+            cardView.setStrokeWidth(ToolsUtil.dp2px(1f));
+        }
         holder.itemView.setOnClickListener(view -> {
-            if (!adding && position < chooseState.size() && position < fidList.size()) {
-                adding = true;
-                cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().accentLow);
-                cardView.setStrokeWidth(ToolsUtil.dp2px(1f));
-
-                if (chooseState.get(position)) {
-                    CenterThreadPool.run(() -> {
-                        try {
-                            int result = FavoriteApi.deleteFavorite(aid, fidList.get(position));
-                            adding = false;
-                            if (result == 0) {
-                                chooseState.set(position, false);
-                                ((Activity) context).runOnUiThread(() -> setCardView(cardView, false));
-                                changed = true;
-                            } else
-                                ((Activity) context).runOnUiThread(() -> {
-                                    MsgUtil.showMsg("删除失败！错误码：" + result);
-                                    setCardView(cardView, true);
-                                });
-                        } catch (IOException | JSONException e) {
-                            e.printStackTrace();
+            int currentPosition = holder.getAdapterPosition();
+            if (isBusy() || currentPosition == RecyclerView.NO_POSITION
+                    || currentPosition >= selection.size() || currentPosition >= mediaIds.size()) return;
+            final boolean selected = !selection.isSelected(currentPosition);
+            final long mediaId = mediaIds.get(currentPosition);
+            busyPosition = currentPosition;
+            notifyItemChanged(currentPosition);
+            try {
+                CenterThreadPool.run(() -> {
+                    Exception error = null;
+                    try {
+                        int result = selected ? FavoriteApi.addFavorite(aid, mediaId)
+                                : FavoriteApi.deleteFavorite(aid, mediaId);
+                        if (result != 0) {
+                            throw new com.RobinNotBad.BiliClient.api.FavoriteContract.ApiException(
+                                    (selected ? "添加" : "删除") + "失败！错误码：" + result);
                         }
-                    });
-                } else {
-                    cardView.setStrokeColor(com.RobinNotBad.BiliClient.theme.ThemeManager.palette().gray);
-                    cardView.setStrokeWidth(ToolsUtil.dp2px(0.1f));
-                    CenterThreadPool.run(() -> {
-                        try {
-                            int result = FavoriteApi.addFavorite(aid, fidList.get(position));
-                            adding = false;
-                            if (result == 0) {
-                                chooseState.set(position, true);
-                                ((Activity) context).runOnUiThread(() -> setCardView(cardView, true));
-                                changed = true;
-                                added = true;
-                            } else
-                                ((Activity) context).runOnUiThread(() -> {
-                                    MsgUtil.showMsg("添加失败！错误码：" + result);
-                                    setCardView(cardView, false);
-                                });
-                            if (SharedPreferencesUtil.getBoolean("fav_single", false))
-                                ((Activity) context).finish();
-                        } catch (IOException | JSONException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                }
+                    } catch (Exception e) {
+                        error = e;
+                    }
+                    final Exception requestError = error;
+                    ((Activity) context).runOnUiThread(() -> completeRequest(currentPosition, selected, requestError));
+                });
+            } catch (Exception e) {
+                completeRequest(currentPosition, selected, e);
             }
         });
+    }
 
+    private void completeRequest(int position, boolean selected, Exception error) {
+        selection.applyResult(position, selected, error == null);
+        busyPosition = RecyclerView.NO_POSITION;
+        notifyItemChanged(position);
+        if (error instanceof com.RobinNotBad.BiliClient.api.FavoriteContract.ApiException) {
+            MsgUtil.showMsgLong(error.getMessage());
+        } else if (error != null) {
+            MsgUtil.err(error);
+        } else if (selected && SharedPreferencesUtil.getBoolean("fav_single", false)) {
+            ((Activity) context).finish();
+        }
     }
 
     @Override
@@ -144,11 +127,15 @@ public class FolderChooseAdapter extends RecyclerView.Adapter<FolderChooseAdapte
         }
     }
 
-    public boolean isAllDeleted() {
-        for (boolean b : chooseState) {
-            if (b)
-                return false;
-        }
-        return true;
+    public boolean hasChanges() {
+        return selection.hasChanges();
+    }
+
+    public boolean isFavorite() {
+        return selection.isFavorite();
+    }
+
+    public boolean isBusy() {
+        return busyPosition != RecyclerView.NO_POSITION;
     }
 }

@@ -121,7 +121,7 @@ public class FavoriteFolderAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     return;
 
                 favoriteHolder.name.setText(StringUtil.htmlToString(folder.name));
-                favoriteHolder.count.setText(folder.videoCount + "/" + folder.maxCount);
+                favoriteHolder.count.setText(folder.videoCount + "个视频");
                 Glide.with(BiliTerminal.context).asDrawable().load(GlideUtil.url(folder.cover))
                         .transition(GlideUtil.getTransitionOptions())
                         .apply(RequestOptions.bitmapTransform(new RoundedCorners(ToolsUtil.dp2px(5))))
@@ -131,8 +131,7 @@ public class FavoriteFolderAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 favoriteHolder.itemView.setOnClickListener(view -> {
                     Intent intent = new Intent();
                     intent.setClass(context, FavoriteVideoListActivity.class);
-                    intent.putExtra("fid", folder.id);
-                    intent.putExtra("mid", mid);
+                    intent.putExtra("mediaId", folder.mediaId);
                     intent.putExtra("name", folder.name);
                     context.startActivity(intent);
                 });

@@ -91,10 +91,14 @@ public class VideoInfoFragment extends BaseFragment {
         @Override
         public void onActivityResult(ActivityResult o) {
             int code = o.getResultCode();
-            if (code == RESULT_ADDED) {
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav, R.drawable.icon_fav_1, true);
-            } else if (code == RESULT_DELETED) {
-                com.RobinNotBad.BiliClient.theme.ThemeApplier.setImage(fav, R.drawable.icon_fav_0);
+            if (code != RESULT_ADDED && code != RESULT_DELETED) return;
+            boolean favoured = code == RESULT_ADDED;
+            if (videoInfo != null && videoInfo.stats != null) {
+                videoInfo.stats.favoured = favoured;
+            }
+            if (fav != null) {
+                com.RobinNotBad.BiliClient.theme.ThemeApplier.setStateIcon(fav,
+                        favoured ? R.drawable.icon_fav_1 : R.drawable.icon_fav_0, favoured);
             }
         }
     });

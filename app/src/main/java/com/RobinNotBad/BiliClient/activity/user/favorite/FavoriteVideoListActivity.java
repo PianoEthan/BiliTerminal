@@ -1,9 +1,6 @@
 package com.RobinNotBad.BiliClient.activity.user.favorite;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.RobinNotBad.BiliClient.activity.base.RefreshListActivity;
 import com.RobinNotBad.BiliClient.adapter.video.VideoCardAdapter;
@@ -14,100 +11,163 @@ import com.RobinNotBad.BiliClient.util.MsgUtil;
 
 import java.util.ArrayList;
 
-//收藏夹内
-//2023-08-08
-//2024-05-01
-
 public class FavoriteVideoListActivity extends RefreshListActivity {
 
-    private long mid;
-    private long fid;
-    private ArrayList<VideoCard> videoList;
+    private long mediaId;
+    private final ArrayList<VideoCard> videoList = new ArrayList<>();
     private VideoCardAdapter videoCardAdapter;
-
-    private int longClickPosition = -1;
+    private boolean busy;
+    private boolean destroyed;
+    private boolean firstPageLoaded;
+    private long longClickAid = -1;
     private long longClickTimestamp;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mediaId = getIntent().getLongExtra("mediaId", 0);
+        String name = getIntent().getStringExtra("name");
+        setPageName(name == null ? "收藏夹" : name);
+        if (mediaId <= 0) {
+            setRefreshing(false);
+            MsgUtil.showMsg("收藏夹参数无效，请返回重试");
+            finish();
+            return;
+        }
+        videoCardAdapter = new VideoCardAdapter(this, videoList);
+        videoCardAdapter.setOnLongClickListener(this::handleLongClick);
+        setAdapter(videoCardAdapter);
+        setOnRefreshListener(this::refreshVideos);
+        setOnLoadMoreListener(this::loadMore);
+        refreshVideos();
+    }
 
-        Intent intent = getIntent();
-        mid = intent.getLongExtra("mid", 0);
-        fid = intent.getLongExtra("fid", 0);
-        String name = intent.getStringExtra("name");
+    private void refreshVideos() {
+        if (busy) return;
+        page = 1;
+        setBottom(false);
+        longClickAid = -1;
+        loadVideos(1, true);
+    }
 
-        setPageName(name);
+    private void loadMore(int nextPage) {
+        if (busy) {
+            page = Math.max(1, nextPage - 1);
+            return;
+        }
+        if (!firstPageLoaded) {
+            page = 1;
+            loadVideos(1, true);
+        } else {
+            loadVideos(nextPage, false);
+        }
+    }
 
-        videoList = new ArrayList<>();
-
+    @SuppressWarnings("NotifyDataSetChanged")
+    private void loadVideos(int requestedPage, boolean refresh) {
+        busy = true;
+        setRefreshing(true);
         CenterThreadPool.run(() -> {
             try {
-                int result = FavoriteApi.getFolderVideos(mid, fid, page, videoList);
-                if (result != -1) {
-                    videoCardAdapter = new VideoCardAdapter(this, videoList);
-
-                    videoCardAdapter.setOnLongClickListener(position -> {
-                        long timestamp = System.currentTimeMillis();
-                        if (longClickPosition == position && timestamp - longClickTimestamp < 4000) {
-                            CenterThreadPool.run(() -> {
-                                try {
-                                    int delResult = FavoriteApi.deleteFavorite(videoList.get(position).aid, fid);
-                                    longClickPosition = -1;
-                                    if (delResult == 0) runOnUiThread(() -> {
-                                        MsgUtil.showMsg("删除成功");
-                                        videoList.remove(position);
-                                        videoCardAdapter.notifyItemRemoved(position);
-                                        videoCardAdapter.notifyItemRangeChanged(position, videoList.size() - position);
-                                    });
-                                    else
-                                        runOnUiThread(() -> MsgUtil.showMsg("删除失败，错误码：" + delResult));
-                                } catch (Exception e) {
-                                    report(e);
-                                }
-                            });
-                        } else {
-                            longClickPosition = position;
-                            longClickTimestamp = timestamp;
-                            MsgUtil.showMsg("再次长按删除");
-                        }
-                    });
-
-                    setOnLoadMoreListener(this::continueLoading);
-                    setAdapter(videoCardAdapter);
-                    setRefreshing(false);
-
-                    if (result == 1) {
-                        Log.e("debug", "到底了");
-                        setBottom(true);
+                var result = FavoriteApi.getFolderVideos(mediaId, requestedPage);
+                runOnUiThread(() -> {
+                    if (destroyed || isFinishing()) return;
+                    if (refresh) {
+                        videoList.clear();
+                        videoList.addAll(result.videos);
+                        videoCardAdapter.notifyDataSetChanged();
+                        firstPageLoaded = true;
+                    } else {
+                        int start = videoList.size();
+                        videoList.addAll(result.videos);
+                        videoCardAdapter.notifyItemRangeInserted(start, result.videos.size());
                     }
-                }
-
+                    page = requestedPage;
+                    setBottom(!result.hasMore);
+                    busy = false;
+                    setRefreshing(false);
+                });
             } catch (Exception e) {
-                loadFail(e);
+                runOnUiThread(() -> {
+                    if (destroyed || isFinishing()) return;
+                    page = refresh ? 1 : Math.max(1, requestedPage - 1);
+                    if (refresh) firstPageLoaded = false;
+                    busy = false;
+                    if (e instanceof com.RobinNotBad.BiliClient.api.FavoriteContract.ApiException) {
+                        MsgUtil.showMsgLong(e.getMessage());
+                    } else {
+                        report(e);
+                    }
+                    setRefreshing(false);
+                });
             }
         });
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private void continueLoading(int page) {
+    private void handleLongClick(int position) {
+        if (busy || position < 0 || position >= videoList.size()) return;
+        VideoCard video = videoList.get(position);
+        long aid = video.aid;
+        long timestamp = System.currentTimeMillis();
+        if (longClickAid != aid || timestamp - longClickTimestamp >= 4000) {
+            longClickAid = aid;
+            longClickTimestamp = timestamp;
+            MsgUtil.showMsg("再次长按删除");
+            return;
+        }
+        longClickAid = -1;
+        busy = true;
+        swipeRefreshLayout.setEnabled(false);
+        setRefreshing(true);
         CenterThreadPool.run(() -> {
             try {
-                int lastSize = videoList.size();
-                int result = FavoriteApi.getFolderVideos(mid, fid, page, videoList);
-                if (result != -1) {
-                    Log.e("debug", "下一页");
-                    runOnUiThread(() -> videoCardAdapter.notifyItemRangeInserted(lastSize, videoList.size() - lastSize));
-                    if (result == 1) {
-                        Log.e("debug", "到底了");
-                        setBottom(true);
+                int result = FavoriteApi.deleteFavorite(aid, mediaId);
+                runOnUiThread(() -> {
+                    if (destroyed || isFinishing()) return;
+                    if (result == 0) {
+                        int index = videoList.indexOf(video);
+                        if (index < 0) {
+                            for (int i = 0; i < videoList.size(); i++) {
+                                if (videoList.get(i).aid == aid) {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                        }
+                        if (index >= 0) {
+                            videoList.remove(index);
+                            videoCardAdapter.notifyItemRemoved(index);
+                            videoCardAdapter.notifyItemRangeChanged(index, videoList.size() - index);
+                        }
+                        MsgUtil.showMsg("删除成功");
+                    } else {
+                        MsgUtil.showMsg("删除失败，错误码：" + result);
                     }
-                }
-                setRefreshing(false);
+                    finishDelete();
+                });
             } catch (Exception e) {
-                loadFail(e);
+                runOnUiThread(() -> {
+                    if (destroyed || isFinishing()) return;
+                    if (e instanceof com.RobinNotBad.BiliClient.api.FavoriteContract.ApiException) {
+                        MsgUtil.showMsgLong(e.getMessage());
+                    } else {
+                        report(e);
+                    }
+                    finishDelete();
+                });
             }
         });
+    }
+
+    private void finishDelete() {
+        busy = false;
+        swipeRefreshLayout.setEnabled(true);
+        setRefreshing(false);
+    }
+
+    @Override
+    protected void onDestroy() {
+        destroyed = true;
+        super.onDestroy();
     }
 }
