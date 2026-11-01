@@ -28,8 +28,8 @@ android {
         minSdk 14
         //noinspection ExpiredTargetSdkVersion
         targetSdk 26
-        versionCode 20261031
-        versionName "3.1.2-Qx"
+        versionCode 20261101
+        versionName "3.1.3-Qx"
 
         if (betaVer) {
             versionName += "-BETA" + betaVer
