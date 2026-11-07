@@ -6,13 +6,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Pair;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.RobinNotBad.BiliClient.activity.base.RefreshListFragment;
 import com.RobinNotBad.BiliClient.adapter.ReplyAdapter;
@@ -43,7 +41,6 @@ public class ReplyFragment extends RefreshListFragment {
     protected ReplyAdapter replyAdapter;
     public int replyType = ReplyApi.REPLY_TYPE_VIDEO;
     private long seek;
-    private String pagination = "";
     private boolean isManager = false;
 
     public static ReplyFragment newInstance(long aid, int type) {
@@ -164,104 +161,111 @@ public class ReplyFragment extends RefreshListFragment {
         return new ReplyAdapter(requireContext(), replyList, aid, 0, type, sort, mid);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private void continueLoading(int page) {
-        CenterThreadPool.run(() -> {
-            try {
-                List<Reply> list = new ArrayList<>();
-                Pair<Integer, String> pageState = ReplyApi.getRepliesLazy(aid, 0, pagination, type, sort, list);
-                int result = pageState.first;
-                this.pagination = pageState.second;
-                if (result != -1) {
-                    Log.e("debug", "下一页");
-                    runOnUiThread(() -> {
-                        replyList.addAll(list);
-                        if (replyAdapter != null)
-                            replyAdapter.notifyItemRangeInserted(replyList.size() - list.size() + 1, list.size());
-                    });
-                    if (result == 1) {
-                        Log.e("debug", "到底了");
-                        bottom = true;
-                    }
-                    setRefreshing(false);
-                } else {
-                    this.page--;
-                    runOnUiThread(() -> {
-                        setRefreshing(false);
-                        if (SharedPreferencesUtil.getLong(SharedPreferencesUtil.mid, 0) == 0) {
-                            MsgUtil.showMsgLong("请先登录后再查看评论");
-                        } else {
-                            MsgUtil.showMsgLong("加载失败，请稍后重试");
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                loadFail(e);
-            }
-        });
-    }
+    private final com.RobinNotBad.BiliClient.model.ReplyPagination pages = new com.RobinNotBad.BiliClient.model.ReplyPagination();
 
-    public void notifyReplyInserted(ReplyEvent replyEvent) {
-        if (replyEvent.getOid() != aid) return;
-        Reply reply = replyEvent.getMessage();
-        if (reply.root == 0) {
-            LinearLayoutManager layoutManager = (LinearLayoutManager) ObjectsCompat.requireNonNull(recyclerView.getLayoutManager());
-            int pos = layoutManager.findFirstCompletelyVisibleItemPosition();
-            pos = Math.max(pos, 0);
-            replyList.add(pos, reply);
-            int finalPos = pos;
-            runOnUiThread(() -> {
-                replyAdapter.notifyItemInserted(finalPos);
-                replyAdapter.notifyItemRangeChanged(finalPos, replyList.size() - finalPos + 1);
-                layoutManager.scrollToPositionWithOffset(finalPos + 1, 0);
-            });
-        } else if (replyEvent.getPos() >= 0) {
-            replyList.get(replyEvent.getPos()).childMsgList.add(reply);
-            replyList.get(replyEvent.getPos()).childCount++;
-            runOnUiThread(() -> replyAdapter.notifyItemChanged(replyEvent.getPos() + 1));
+    private void continueLoading(int ignored) {
+        com.RobinNotBad.BiliClient.model.ReplyPagination.Request request = pages.next();
+        if (request != null) loadPage(request);
+        else {
+            page = Math.max(1, pages.loadedPage());
+            if (!pages.hasMore()) setRefreshing(false);
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void refresh(long aid) {
-        pagination = "";
-        this.aid = aid;
+    private void loadPage(com.RobinNotBad.BiliClient.model.ReplyPagination.Request request) {
+        final long requestedOid = aid;
+        final int requestedSort = sort == 3 ? 1 : 0;
+        final int requestedType = type;
         setRefreshing(true);
         CenterThreadPool.run(() -> {
             try {
-                List<Reply> list = new ArrayList<>();
-                Pair<Integer, String> pageState = ReplyApi.getRepliesLazy(aid, seek, pagination, type, sort, list);
-                int result = pageState.first;
-                this.pagination = pageState.second;
-                setRefreshing(false);
-                if (result != -1 && isAdded()) {
-                    runOnUiThread(() -> {
-                        if (!isAdded()) return;
-                        if (replyList != null) replyList.clear();
-                        else replyList = new ArrayList<>();
-                        replyList.addAll(list);
-                        if (replyAdapter == null) {
-                            replyAdapter = createReplyAdapter();
-                            replyAdapter.count = count;
-                            replyAdapter.isManager = isManager;
-                            setOnSortSwitch();
-                            setAdapter(replyAdapter);
-                        } else {
-                            replyAdapter.notifyDataSetChanged();
+                ReplyApi.ReplyPage result = ReplyApi.getRepliesPage(requestedOid, 0, request.page, requestedType, requestedSort);
+                Reply focused = null;
+                if (request.refresh && seek > 0) {
+                    boolean found = false;
+                    for (Reply reply : result.replies) if (reply.rpid == seek) found = true;
+                    if (!found) {
+                        try {
+                            focused = ReplyApi.getRootReply(com.RobinNotBad.BiliClient.model.ContentType.getContentType(requestedType), requestedOid, seek).getOrNull();
+                        } catch (Exception ignored) {
                         }
-                    });
-                    //replyAdapter.notifyItemRangeInserted(0,replyList.size());
-                    if (result == 1) {
-                        Log.e("debug", "到底了");
-                        bottom = true;
-                    } else bottom = false;
-                } else if (result == -1 && isAdded()) {
-                    loadFail();
+                    }
                 }
+                final Reply focus = focused;
+                runOnUiThread(() -> {
+                    if (getView() == null || !pages.accepts(request)) return;
+                    if (request.refresh) replyList.clear();
+                    int start = replyList.size();
+                    int appended = ReplyApi.appendUnique(replyList, result.replies);
+                    if (focus != null) {
+                        boolean found = false;
+                        for (Reply reply : replyList) if (reply.rpid == focus.rpid) found = true;
+                        if (!found) replyList.add(0, focus);
+                    }
+                    if (replyAdapter == null) {
+                        replyAdapter = createReplyAdapter();
+                        replyAdapter.isManager = isManager;
+                        setOnSortSwitch();
+                        setAdapter(replyAdapter);
+                    }
+                    if (request.refresh && result.count >= 0) count = (int) Math.min(Integer.MAX_VALUE, result.count);
+                    replyAdapter.count = count;
+                    if (request.refresh) replyAdapter.notifyDataSetChanged();
+                    else if (appended > 0) replyAdapter.notifyItemRangeInserted(start + 1, appended);
+                    pages.succeed(request, result.hasMore, appended);
+                    page = request.page;
+                    bottom = !pages.hasMore();
+                    setRefreshing(false);
+                });
             } catch (Exception e) {
-                loadFail(e);
+                runOnUiThread(() -> {
+                    if (getView() == null || !pages.accepts(request)) return;
+                    pages.fail(request);
+                    page = Math.max(1, pages.loadedPage());
+                    setRefreshing(false);
+                    if (e instanceof com.RobinNotBad.BiliClient.api.ReplyPageContract.ApiException) MsgUtil.showMsgLong(e.getMessage());
+                    else report(e);
+                });
             }
         });
+    }
+
+    public void notifyReplyInserted(ReplyEvent event) {
+        if (event.getOid() != aid || event.getMessage() == null || replyAdapter == null) return;
+        runOnUiThread(() -> {
+            if (getView() == null || replyAdapter == null) return;
+            Reply reply = event.getMessage();
+            if (reply.root == 0) {
+                for (Reply existing : replyList) if (existing.rpid == reply.rpid) return;
+                replyList.add(0, reply);
+                replyAdapter.notifyItemInserted(1);
+            } else {
+                for (int i = 0; i < replyList.size(); i++) {
+                    Reply parent = replyList.get(i);
+                    if (parent.rpid == reply.root) {
+                        if (ReplyApi.appendUnique(parent.childMsgList, java.util.Collections.singletonList(reply)) > 0) parent.childCount++;
+                        replyAdapter.notifyItemChanged(i + 1);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    public void refresh(long aid) {
+        this.aid = aid;
+        if (getView() == null) return;
+        page = 1;
+        bottom = false;
+        loadPage(pages.refresh());
+    }
+
+    @Override
+    public void onDestroyView() {
+        pages.invalidate();
+        replyAdapter = null;
+        super.onDestroyView();
     }
 
     private void setOnSortSwitch() {

@@ -1,10 +1,6 @@
 package com.RobinNotBad.BiliClient.api;
 
-import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
-
-import androidx.annotation.NonNull;
 
 import com.RobinNotBad.BiliClient.model.ApiResponse;
 import com.RobinNotBad.BiliClient.model.ContentType;
@@ -15,10 +11,6 @@ import com.RobinNotBad.BiliClient.util.NetWorkUtil;
 import com.RobinNotBad.BiliClient.util.Result;
 import com.RobinNotBad.BiliClient.util.SharedPreferencesUtil;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,133 +31,70 @@ public class ReplyApi {
     public static final int REPLY_TYPE_DYNAMIC = 17;
     public static final String TOP_TIP = "[置顶]";
 
-    public static class ReplyListData {
-        @SerializedName("replies")
-        public JsonArray replies;
-        @SerializedName("top_replies")
-        public JsonArray top_replies;
-        @SerializedName("page")
-        public PageData page;
-    }
-
-    public static class PageData {
-        @SerializedName("size")
-        public int size;
-        @SerializedName("num")
-        public int num;
-    }
-
-    public static class ReplyLazyData {
-        @SerializedName("replies")
-        public JsonArray replies;
-        @SerializedName("top_replies")
-        public JsonArray top_replies;
-        @SerializedName("cursor")
-        public CursorData cursor;
-    }
-
-    public static class CursorData {
-        @SerializedName("is_begin")
-        public boolean is_begin;
-        @SerializedName("is_end")
-        public boolean is_end;
-        @SerializedName("pagination_reply")
-        public PaginationReply pagination_reply;
-    }
-
-    public static class PaginationReply {
-        @SerializedName("next_offset")
-        public String next_offset;
-    }
-
-    public static class ReplyRootData {
-        @SerializedName("root")
-        public JsonElement root;
-    }
-
     public static class ReplyCountData {
         @SerializedName("count")
         public long count;
     }
 
-    public static int getReplies(long originId, long rpid, int pageNumber, ContentType type, int sort, List<Reply> replyArrayList) throws IOException, JSONException {
-        String url = "https://api.bilibili.com/x/v2/reply" + (rpid == 0 ? "" : "/reply") + "?pn=" + pageNumber
-                + "&type=" + type.getTypeCode() + "&oid=" + originId + "&sort=" + sort + (rpid == 0 ? "" : ("&root=" + rpid));
-        String json = NetWorkUtil.getJson(url).toString();
-        ApiResponse<ReplyListData> resp = GsonUtil.fromJson(json, new com.google.gson.reflect.TypeToken<ApiResponse<ReplyListData>>(){}.getType());
-        if (resp == null || resp.code != 0 || resp.data == null) return -1;
+    public static final class ReplyPage {
+        public final java.util.ArrayList<Reply> replies;
+        public final boolean hasMore;
+        public final long count;
+        public final long upMid;
 
-        int size = replyArrayList.size();
-        ReplyListData data = resp.data;
-        if (data.replies == null || data.page == null || data.page.size <= 0) return 1;
-
-        if (rpid == 0 && data.top_replies != null && data.page.num == 1) {
-            analyzeReplyArray(true, data.top_replies, replyArrayList);
+        private ReplyPage(java.util.ArrayList<Reply> replies, boolean hasMore, long count, long upMid) {
+            this.replies = replies;
+            this.hasMore = hasMore;
+            this.count = count;
+            this.upMid = upMid;
         }
-        analyzeReplyArray(rpid == 0, data.replies, replyArrayList);
-        return replyArrayList.size() == size ? 1 : 0;
     }
 
-    public static Result<Reply> getRootReply(ContentType contentType, long originId, long rpid) {
-        String url = "https://api.bilibili.com/x/v2/reply/reply?type=" + contentType.getTypeCode() + "&oid=" + originId + "&root=" + rpid;
+    private static String read(String url) throws IOException {
+        try (okhttp3.Response response = NetWorkUtil.get(url)) {
+            if (!response.isSuccessful()) throw new IOException("评论请求 HTTP " + response.code());
+            if (response.body() == null) throw new IOException("评论响应为空");
+            return response.body().string();
+        }
+    }
+
+    public static ReplyPage getRepliesPage(long oid, long root, int page, int type, int sort) throws IOException, JSONException {
+        ReplyPageContract.Page parsed = ReplyPageContract.parse(read(ReplyPageContract.url(oid, root, page, type, sort)), page, root);
+        java.util.ArrayList<Reply> replies = new java.util.ArrayList<>();
+        for (com.google.gson.JsonObject value : parsed.replies) {
+            Reply reply = new Reply(root == 0, new JSONObject(value.toString()));
+            if (reply.oid == 0) reply.oid = oid;
+            reply.isDynamic = type == REPLY_TYPE_DYNAMIC || type == REPLY_TYPE_DYNAMIC_CHILD;
+            replies.add(reply);
+        }
+        return new ReplyPage(replies, parsed.hasMore, parsed.count, parsed.upMid);
+    }
+
+    public static int getReplies(long oid, long root, int page, ContentType type, int sort, List<Reply> replies) throws IOException, JSONException {
+        ReplyPage result = getRepliesPage(oid, root, page, type.getTypeCode(), sort);
+        appendUnique(replies, result.replies);
+        return result.hasMore ? 0 : 1;
+    }
+
+    public static int appendUnique(List<Reply> target, List<Reply> incoming) {
+        java.util.HashSet<Long> ids = new java.util.HashSet<>();
+        for (Reply reply : target) ids.add(reply.rpid);
+        int start = target.size();
+        for (Reply reply : incoming) {
+            if (ids.add(reply.rpid)) target.add(reply);
+        }
+        return target.size() - start;
+    }
+
+    public static Result<Reply> getRootReply(ContentType type, long oid, long rpid) {
         try {
-            String json = NetWorkUtil.getJson(url).toString();
-            ApiResponse<ReplyRootData> resp = GsonUtil.fromJson(json, new com.google.gson.reflect.TypeToken<ApiResponse<ReplyRootData>>(){}.getType());
-            if (resp == null || resp.code != 0 || resp.data == null || resp.data.root == null)
-                return Result.failure(new Exception("未找到根评论"));
-            JSONObject rootJson = new JSONObject(resp.data.root.toString());
-            return Result.success(new Reply(true, rootJson));
-        } catch (Exception e) { return Result.failure(e); }
-    }
-
-    @NonNull
-    public static Pair<Integer, String> getRepliesLazy(long oid, long rpid, String pagination, int type, int sort, List<Reply> replyArrayList) throws IOException, JSONException {
-        NetWorkUtil.FormData reqData = new NetWorkUtil.FormData().setUrlParam(true)
-                .put("type", type).put("oid", oid).put("plat", 1).put("web_location", "1315875").put("mode", sort);
-        reqData.put("pagination_str", new JSONObject().put("offset", TextUtils.isEmpty(pagination) ? "" : pagination));
-        if (rpid > 0) reqData.put("seek_rpid", rpid);
-        String url = "https://api.bilibili.com/x/v2/reply/wbi/main" + reqData;
-        String json = NetWorkUtil.getJson(ConfInfoApi.signWBI(url)).toString();
-        ApiResponse<ReplyLazyData> resp = GsonUtil.fromJson(json, new com.google.gson.reflect.TypeToken<ApiResponse<ReplyLazyData>>(){}.getType());
-        if (resp == null || resp.code != 0 || resp.data == null) return new Pair<>(-1, "");
-
-        ReplyLazyData data = resp.data;
-        CursorData cursor = data.cursor;
-        if (cursor == null) return new Pair<>(-1, "");
-
-        if (data.replies != null && data.replies.size() > 0) {
-            if (rpid <= 0 && data.top_replies != null && cursor.is_begin)
-                analyzeReplyArray(true, data.top_replies, replyArrayList);
-            analyzeReplyArray(true, data.replies, replyArrayList);
-            String nextOffset = cursor.pagination_reply != null ? cursor.pagination_reply.next_offset : null;
-            if (cursor.is_end || TextUtils.isEmpty(nextOffset)) return new Pair<>(1, "");
-            return new Pair<>(0, nextOffset);
-        } else if (rpid <= 0 && data.top_replies != null && cursor.is_begin) {
-            analyzeReplyArray(true, data.top_replies, replyArrayList);
-            return new Pair<>(1, "");
-        }
-        return new Pair<>(1, "");
-    }
-
-    public static void analyzeReplyArray(boolean isRoot, JSONArray replies, List<Reply> replyArrayList) {
-        for (int i = 0; i < replies.length(); i++) {
-            try {
-                JSONObject reply = replies.optJSONObject(i);
-                if (reply != null) replyArrayList.add(new Reply(isRoot, reply));
-            } catch (Exception e) {
-                Log.w("ReplyApi", "Failed to parse reply at index " + i + ": " + e.getMessage());
-            }
-        }
-    }
-
-    public static void analyzeReplyArray(boolean isRoot, JsonArray replies, List<Reply> replyArrayList) {
-        for (int i = 0; i < replies.size(); i++) {
-            try {
-                JSONObject reply = new JSONObject(replies.get(i).toString());
-                replyArrayList.add(new Reply(isRoot, reply));
-            } catch (Exception e) {
-                Log.w("ReplyApi", "Failed to parse reply at index " + i + ": " + e.getMessage());
-            }
+            com.google.gson.JsonElement root = ReplyPageContract.data(read(ReplyPageContract.detailUrl(oid, rpid, type.getTypeCode()))).get("root");
+            if (root == null || !root.isJsonObject()) return Result.failure(new ReplyPageContract.ApiException("未找到根评论"));
+            Reply reply = new Reply(true, new JSONObject(root.toString()));
+            if (reply.oid == 0) reply.oid = oid;
+            return Result.success(reply);
+        } catch (Exception e) {
+            return Result.failure(e);
         }
     }
 
